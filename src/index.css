@@ -105,8 +105,8 @@
   }
 
   .card-dark {
-    background: linear-gradient(145deg, hsl(28 55% 22%), hsl(26 50% 18%));
-    border: 1px solid hsl(32 45% 32%);
+    background: linear-gradient(145deg, hsl(35 55% 88%), hsl(36 45% 84%));
+    border: 1px solid hsl(35 40% 76%);
   }
 
   .shimmer {

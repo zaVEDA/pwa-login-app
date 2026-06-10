@@ -504,9 +504,9 @@ export default function AdminPanel() {
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-cormorant text-xl font-semibold text-white">{selectedUser.name}</h3>
-                  <p className="text-sm text-white/50">{selectedUser.phone}</p>
-                  <p className="text-xs text-amber-400 mt-0.5">{selectedUser.specialty}</p>
+                  <h3 className="font-cormorant text-xl font-semibold text-foreground">{selectedUser.name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.phone}</p>
+                  <p className="text-xs text-amber-700 mt-0.5">{selectedUser.specialty}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -516,9 +516,9 @@ export default function AdminPanel() {
                   { label: "Оплата", value: selectedUser.paidAt ?? "Нет" },
                   { label: "Сумма", value: selectedUser.paymentAmount ? `₽${selectedUser.paymentAmount}` : "—" },
                 ].map((i) => (
-                  <div key={i.label} className="bg-white/5 rounded-xl p-2.5">
-                    <p className="text-[10px] text-white/40 mb-0.5">{i.label}</p>
-                    <p className="text-sm font-medium text-white">{i.value}</p>
+                  <div key={i.label} className="bg-amber-700/5 rounded-xl p-2.5">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{i.label}</p>
+                    <p className="text-sm font-medium text-foreground">{i.value}</p>
                   </div>
                 ))}
               </div>

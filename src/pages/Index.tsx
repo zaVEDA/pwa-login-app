@@ -240,12 +240,12 @@ export default function Index() {
               <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-5"
                 style={{ background: "radial-gradient(circle, hsl(43 72% 58%), transparent)", transform: "translate(30%, -30%)" }} />
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon name="Sparkles" size={14} className="text-amber-400" />
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Icon name="Sparkles" size={14} className="text-amber-700" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-amber-400 font-medium uppercase tracking-wider mb-1.5">Мысль дня</p>
-                  <p className="font-cormorant text-lg font-medium text-white leading-snug italic">«{todayPhrase}»</p>
+                  <p className="text-[10px] text-amber-700 font-medium uppercase tracking-wider mb-1.5">Мысль дня</p>
+                  <p className="font-cormorant text-lg font-medium text-foreground leading-snug italic">«{todayPhrase}»</p>
                 </div>
               </div>
             </div>
@@ -258,11 +258,11 @@ export default function Index() {
                   onClick={() => setActiveTab("docs")}
                   className="card-dark rounded-2xl p-4 text-left active:scale-[0.97] transition-transform"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-amber-600/20 flex items-center justify-center mb-3">
-                    <Icon name="FilePlus" size={18} className="text-amber-400" />
+                  <div className="w-9 h-9 rounded-xl bg-amber-600/15 flex items-center justify-center mb-3">
+                    <Icon name="FilePlus" size={18} className="text-amber-700" />
                   </div>
-                  <p className="text-sm font-medium text-white/90">Создать документ</p>
-                  <p className="text-xs text-white/40 mt-0.5">Договор, акт, счёт</p>
+                  <p className="text-sm font-medium text-foreground">Создать документ</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Договор, акт, счёт</p>
                 </button>
                 <button
                   onClick={() => setActiveTab("templates")}
@@ -464,12 +464,12 @@ export default function Index() {
                 className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10"
                 style={{ background: "radial-gradient(circle, hsl(43 72% 58%), transparent)", transform: "translate(30%, -30%)" }}
               />
-              <span className="doc-tag bg-amber-500/20 text-amber-300 text-[10px] mb-3 inline-block">Рекомендуем</span>
-              <h3 className="font-cormorant text-xl font-semibold text-white mb-2">Старт самозанятого</h3>
-              <p className="text-sm text-white/60 mb-4 leading-relaxed">
+              <span className="doc-tag bg-amber-500/15 text-amber-700 text-[10px] mb-3 inline-block">Рекомендуем</span>
+              <h3 className="font-cormorant text-xl font-semibold text-foreground mb-2">Старт самозанятого</h3>
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 Полный гайд: регистрация, первый клиент, первый документ, первый налог
               </p>
-              <button className="flex items-center gap-2 text-amber-400 text-sm font-medium">
+              <button className="flex items-center gap-2 text-amber-700 text-sm font-medium">
                 Читать гайд <Icon name="ArrowRight" size={14} />
               </button>
             </div>
@@ -505,11 +505,11 @@ export default function Index() {
                   <span className="font-cormorant text-2xl font-bold text-white">АС</span>
                 </div>
                 <div>
-                  <h3 className="font-cormorant text-xl font-semibold text-white">Анна Смирнова</h3>
-                  <p className="text-sm text-white/50">+7 (916) 000-00-00</p>
+                  <h3 className="font-cormorant text-xl font-semibold text-foreground">Анна Смирнова</h3>
+                  <p className="text-sm text-muted-foreground">+7 (916) 000-00-00</p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <Icon name="Briefcase" size={11} className="text-amber-400" />
-                    <span className="text-xs text-amber-400">Психолог · Самозанятая</span>
+                    <Icon name="Briefcase" size={11} className="text-amber-700" />
+                    <span className="text-xs text-amber-700">Психолог · Самозанятая</span>
                   </div>
                 </div>
               </div>
