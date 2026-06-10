@@ -47,12 +47,13 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [loginStep, setLoginStep] = useState<"phone" | "code">("phone");
+  const [loginStep, setLoginStep] = useState<"phone" | "code" | "status">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [inn, setInn] = useState("");
   const [fullName, setFullName] = useState("Анна Смирнова");
   const [innSaved, setInnSaved] = useState(false);
+  const [isSelfEmployed, setIsSelfEmployed] = useState<boolean | null>(null);
 
   if (!isLoggedIn) {
     return (
@@ -93,13 +94,44 @@ export default function Index() {
           {/* Login form */}
           <div className="card-warm rounded-2xl p-6 shadow-lg shadow-amber-900/10">
             <h2 className="font-cormorant text-2xl font-semibold mb-1">
-              {loginStep === "phone" ? "Войти в аккаунт" : "Введите код"}
+              {loginStep === "phone" ? "Войти в аккаунт" : loginStep === "code" ? "Введите код" : "Ваш статус"}
             </h2>
             <p className="text-muted-foreground text-sm mb-5">
-              {loginStep === "phone" ? "Введите номер телефона — вход через ПЭП" : `Код отправлен на +7 ${phone}`}
+              {loginStep === "phone" ? "Введите номер телефона — вход через ПЭП" : loginStep === "code" ? `Код отправлен на +7 ${phone}` : "Выберите, как вы работаете"}
             </p>
 
-            {loginStep === "phone" ? (
+            {loginStep === "status" ? (
+              <div className="space-y-3">
+                <button
+                  onClick={() => { setIsSelfEmployed(true); setIsLoggedIn(true); }}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${isSelfEmployed === true ? "border-primary gold-gradient" : "border-border bg-white/60 hover:border-primary/40"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelfEmployed === true ? "bg-white/20" : "bg-amber-700/10"}`}>
+                      <Icon name="Briefcase" size={16} className={isSelfEmployed === true ? "text-white" : "text-amber-700"} />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-medium ${isSelfEmployed === true ? "text-white" : "text-foreground"}`}>Самозанятый</p>
+                      <p className={`text-xs mt-0.5 ${isSelfEmployed === true ? "text-white/70" : "text-muted-foreground"}`}>Зарегистрирован в «Мой налог»</p>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => { setIsSelfEmployed(false); setIsLoggedIn(true); }}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${isSelfEmployed === false ? "border-primary gold-gradient" : "border-border bg-white/60 hover:border-primary/40"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelfEmployed === false ? "bg-white/20" : "bg-amber-700/10"}`}>
+                      <Icon name="User" size={16} className={isSelfEmployed === false ? "text-white" : "text-amber-700"} />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-medium ${isSelfEmployed === false ? "text-white" : "text-foreground"}`}>Ещё не оформлен</p>
+                      <p className={`text-xs mt-0.5 ${isSelfEmployed === false ? "text-white/70" : "text-muted-foreground"}`}>Помогу разобраться с регистрацией</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            ) : loginStep === "phone" ? (
               <div className="space-y-4">
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
@@ -148,7 +180,7 @@ export default function Index() {
                   autoFocus
                 />
                 <button
-                  onClick={() => setIsLoggedIn(true)}
+                  onClick={() => setLoginStep("status")}
                   className="w-full py-3 rounded-xl gold-gradient text-white font-medium text-sm"
                 >
                   Войти
@@ -471,8 +503,8 @@ export default function Index() {
               </div>
             </div>
 
-            {/* ИНН блок */}
-            <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
+            {/* ИНН блок — только для самозанятых */}
+            {isSelfEmployed && <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Icon name="Hash" size={15} className="text-amber-700" />
                 <p className="text-sm font-medium">Данные самозанятого</p>
@@ -507,10 +539,10 @@ export default function Index() {
               <p className="text-xs text-muted-foreground leading-relaxed">
                 ИНН и ФИО будут автоматически подставляться во все документы
               </p>
-            </div>
+            </div>}
 
-            {/* Мой налог */}
-            <div
+            {/* Мой налог — только для самозанятых */}
+            {isSelfEmployed && <div
               className="rounded-2xl p-4 border border-amber-300/40"
               style={{ background: "linear-gradient(135deg, hsl(43 72% 58% / 0.12), hsl(38 65% 42% / 0.08))" }}
             >
@@ -533,7 +565,7 @@ export default function Index() {
                 <Icon name="ExternalLink" size={14} />
                 Открыть «Мой налог»
               </a>
-            </div>
+            </div>}
 
             {/* Settings list */}
             <div className="space-y-2">
