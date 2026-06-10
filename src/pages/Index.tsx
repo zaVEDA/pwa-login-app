@@ -50,8 +50,52 @@ const motivationalPhrases = [
   "Каждый новый клиент — новая возможность сделать всё правильно.",
 ];
 
+const themes = {
+  honey: {
+    label: "Янтарь",
+    phraseIcon: "Leaf",
+    phraseBg: "linear-gradient(135deg, hsl(40 60% 93%), hsl(38 50% 90%))",
+    phraseBorder: "hsl(38 40% 82%)",
+    phraseIconBg: "hsl(38 60% 85%)",
+    phraseIconColor: "text-amber-700",
+    phraseLabel: "text-amber-600",
+    phraseText: "text-amber-950",
+  },
+  sage: {
+    label: "Шалфей",
+    phraseIcon: "Sprout",
+    phraseBg: "linear-gradient(135deg, hsl(140 25% 92%), hsl(145 20% 89%))",
+    phraseBorder: "hsl(140 20% 80%)",
+    phraseIconBg: "hsl(140 30% 84%)",
+    phraseIconColor: "text-emerald-700",
+    phraseLabel: "text-emerald-600",
+    phraseText: "text-emerald-950",
+  },
+  rose: {
+    label: "Роза",
+    phraseIcon: "Flower2",
+    phraseBg: "linear-gradient(135deg, hsl(345 40% 93%), hsl(340 35% 90%))",
+    phraseBorder: "hsl(345 30% 82%)",
+    phraseIconBg: "hsl(345 40% 86%)",
+    phraseIconColor: "text-rose-600",
+    phraseLabel: "text-rose-500",
+    phraseText: "text-rose-950",
+  },
+  clay: {
+    label: "Глина",
+    phraseIcon: "TreePine",
+    phraseBg: "linear-gradient(135deg, hsl(20 40% 92%), hsl(18 35% 89%))",
+    phraseBorder: "hsl(20 30% 81%)",
+    phraseIconBg: "hsl(20 40% 84%)",
+    phraseIconColor: "text-orange-800",
+    phraseLabel: "text-orange-700",
+    phraseText: "text-orange-950",
+  },
+} as const;
+
 export default function Index() {
   const todayPhrase = motivationalPhrases[new Date().getDate() % motivationalPhrases.length];
+  const [colorTheme, setColorTheme] = useState<"honey" | "sage" | "rose" | "clay">("honey");
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -215,8 +259,8 @@ export default function Index() {
       style={{ background: "linear-gradient(160deg, hsl(36 25% 96%) 0%, hsl(36 20% 91%) 100%)" }}
     >
       {/* Header */}
-      <header className="px-5 pt-12 pb-5">
-        <div className="flex items-center justify-between">
+      <header className="px-5 pt-12 pb-4">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">Добро пожаловать</p>
             <h1 className="font-cormorant text-2xl font-semibold text-foreground">Анна Смирнова</h1>
@@ -228,6 +272,23 @@ export default function Index() {
             <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></span>
           </button>
         </div>
+        {/* Переключатель тем */}
+        <div className="flex gap-1.5">
+          {(Object.entries(themes) as [keyof typeof themes, typeof themes[keyof typeof themes]][]).map(([key, t]) => (
+            <button
+              key={key}
+              onClick={() => setColorTheme(key)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all border ${
+                colorTheme === key
+                  ? "gold-gradient text-white border-transparent shadow-sm"
+                  : "bg-white/50 border-border text-muted-foreground"
+              }`}
+            >
+              <Icon name={t.phraseIcon} size={10} />
+              {t.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       {/* Content */}
@@ -236,9 +297,18 @@ export default function Index() {
         {activeTab === "home" && (
           <div className="space-y-6 animate-slide-up">
             {/* Мотивирующая фраза дня */}
-            <div className="px-1 py-2">
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mb-2">Мысль дня</p>
-              <p className="font-cormorant text-xl font-medium leading-snug italic text-foreground/80">«{todayPhrase}»</p>
+            <div className="rounded-2xl p-4 relative overflow-hidden"
+              style={{ background: themes[colorTheme].phraseBg, border: `1px solid ${themes[colorTheme].phraseBorder}` }}>
+              <div className="flex gap-3 items-start">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: themes[colorTheme].phraseIconBg }}>
+                  <Icon name={themes[colorTheme].phraseIcon} size={16} className={themes[colorTheme].phraseIconColor} />
+                </div>
+                <div>
+                  <p className={`text-[10px] font-semibold uppercase tracking-widest mb-1.5 ${themes[colorTheme].phraseLabel}`}>Мысль дня</p>
+                  <p className={`font-cormorant text-lg font-medium leading-snug italic ${themes[colorTheme].phraseText}`}>«{todayPhrase}»</p>
+                </div>
+              </div>
             </div>
 
             {/* Quick actions */}
