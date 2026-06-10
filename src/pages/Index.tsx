@@ -54,6 +54,7 @@ export default function Index() {
   const [fullName, setFullName] = useState("Анна Смирнова");
   const [innSaved, setInnSaved] = useState(false);
   const [isSelfEmployed, setIsSelfEmployed] = useState<boolean | null>(null);
+  const [userStatus, setUserStatus] = useState<"self_employed" | "ip" | "ooo" | null>(null);
 
   if (!isLoggedIn) {
     return (
@@ -101,35 +102,32 @@ export default function Index() {
             </p>
 
             {loginStep === "status" ? (
-              <div className="space-y-3">
-                <button
-                  onClick={() => { setIsSelfEmployed(true); setIsLoggedIn(true); }}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${isSelfEmployed === true ? "border-primary gold-gradient" : "border-border bg-white/60 hover:border-primary/40"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelfEmployed === true ? "bg-white/20" : "bg-amber-700/10"}`}>
-                      <Icon name="Briefcase" size={16} className={isSelfEmployed === true ? "text-white" : "text-amber-700"} />
-                    </div>
-                    <div>
-                      <p className={`text-sm font-medium ${isSelfEmployed === true ? "text-white" : "text-foreground"}`}>Самозанятый</p>
-                      <p className={`text-xs mt-0.5 ${isSelfEmployed === true ? "text-white/70" : "text-muted-foreground"}`}>Зарегистрирован в «Мой налог»</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => { setIsSelfEmployed(false); setIsLoggedIn(true); }}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${isSelfEmployed === false ? "border-primary gold-gradient" : "border-border bg-white/60 hover:border-primary/40"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelfEmployed === false ? "bg-white/20" : "bg-amber-700/10"}`}>
-                      <Icon name="User" size={16} className={isSelfEmployed === false ? "text-white" : "text-amber-700"} />
-                    </div>
-                    <div>
-                      <p className={`text-sm font-medium ${isSelfEmployed === false ? "text-white" : "text-foreground"}`}>Ещё не оформлен</p>
-                      <p className={`text-xs mt-0.5 ${isSelfEmployed === false ? "text-white/70" : "text-muted-foreground"}`}>Помогу разобраться с регистрацией</p>
-                    </div>
-                  </div>
-                </button>
+              <div className="space-y-2.5">
+                {([
+                  { id: "self_employed", icon: "Leaf", title: "Самозанятый", desc: "Зарегистрирован в «Мой налог», плачу НПД 4–6%" },
+                  { id: "ip", icon: "Briefcase", title: "ИП", desc: "Индивидуальный предприниматель, УСН или патент" },
+                  { id: "ooo", icon: "Building2", title: "Сотрудник / руководитель ООО", desc: "Работаю в компании или возглавляю её" },
+                  { id: null, icon: "HelpCircle", title: "Ещё не оформлен", desc: "Помогу разобраться, какой статус выбрать" },
+                ] as const).map((s) => {
+                  const active = userStatus === s.id;
+                  return (
+                    <button
+                      key={String(s.id)}
+                      onClick={() => { setUserStatus(s.id as "self_employed" | "ip" | "ooo" | null); setIsSelfEmployed(s.id === "self_employed"); setIsLoggedIn(true); }}
+                      className={`w-full p-3.5 rounded-xl border-2 text-left transition-all active:scale-[0.98] ${active ? "border-primary gold-gradient" : "border-border bg-white/60 hover:border-primary/30"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? "bg-white/20" : "bg-amber-700/10"}`}>
+                          <Icon name={s.icon} size={16} className={active ? "text-white" : "text-amber-700"} />
+                        </div>
+                        <div>
+                          <p className={`text-sm font-medium ${active ? "text-white" : "text-foreground"}`}>{s.title}</p>
+                          <p className={`text-xs mt-0.5 leading-tight ${active ? "text-white/70" : "text-muted-foreground"}`}>{s.desc}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             ) : loginStep === "phone" ? (
               <div className="space-y-4">
