@@ -2,91 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Golos+Text:wght@400;500;600;700&display=swap");
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 36 25% 96%;
+    --foreground: 20 15% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 36 30% 93%;
+    --card-foreground: 20 15% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 36 30% 93%;
+    --popover-foreground: 20 15% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 38 65% 42%;
+    --primary-foreground: 36 25% 96%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 30 20% 85%;
+    --secondary-foreground: 20 15% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 36 15% 88%;
+    --muted-foreground: 25 12% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 35 55% 32%;
+    --accent-foreground: 36 25% 96%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 36 25% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 35 20% 80%;
+    --input: 35 20% 80%;
+    --ring: 38 65% 42%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    --beige: 36 25% 96%;
+    --gold: 38 65% 42%;
+    --gold-light: 43 72% 58%;
+    --bronze: 30 45% 35%;
+    --brown: 22 35% 22%;
+    --dark: 20 15% 10%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 36 20% 90%;
+    --sidebar-foreground: 20 15% 12%;
+    --sidebar-primary: 38 65% 42%;
+    --sidebar-primary-foreground: 36 25% 96%;
+    --sidebar-accent: 35 20% 83%;
+    --sidebar-accent-foreground: 20 15% 12%;
+    --sidebar-border: 35 20% 80%;
+    --sidebar-ring: 38 65% 42%;
   }
 }
 
@@ -96,6 +60,117 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-golos;
+    background-image:
+      radial-gradient(
+        ellipse at 20% 50%,
+        hsl(38 65% 42% / 0.05) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse at 80% 20%,
+        hsl(30 45% 35% / 0.04) 0%,
+        transparent 50%
+      );
+  }
+}
+
+@layer utilities {
+  .font-cormorant {
+    font-family: "Cormorant", serif;
+  }
+  .font-golos {
+    font-family: "Golos Text", sans-serif;
+  }
+
+  .gold-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(43 72% 58%),
+      hsl(38 65% 42%),
+      hsl(30 45% 35%)
+    );
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, hsl(43 72% 58%), hsl(38 65% 42%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card-warm {
+    background: linear-gradient(145deg, hsl(36 30% 95%), hsl(36 25% 91%));
+    border: 1px solid hsl(35 25% 82%);
+  }
+
+  .card-dark {
+    background: linear-gradient(145deg, hsl(22 35% 18%), hsl(20 30% 14%));
+    border: 1px solid hsl(35 30% 28%);
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(43 72% 58% / 0.15),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .nav-pill {
+    @apply flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200;
+  }
+
+  .nav-pill.active {
+    background: linear-gradient(135deg, hsl(38 65% 42%), hsl(30 45% 35%));
+    color: hsl(36 25% 96%);
+  }
+
+  .nav-pill:not(.active) {
+    color: hsl(25 12% 50%);
+  }
+
+  .doc-tag {
+    @apply text-xs px-2.5 py-0.5 rounded-full font-medium;
   }
 }
