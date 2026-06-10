@@ -37,13 +37,21 @@ const knowledgeArticles = [
   { icon: "AlertCircle", title: "Частые ошибки", desc: "Топ-5 ошибок самозанятых при работе с документами", time: "7 мин" },
 ];
 
-const stats = [
-  { label: "Документов", value: "12", icon: "FileText" },
-  { label: "Клиентов", value: "8", icon: "Users" },
-  { label: "Доход / мес", value: "₽48K", icon: "TrendingUp" },
+const motivationalPhrases = [
+  "Сегодня лучший день, чтобы сделать первый шаг.",
+  "Каждый подписанный договор — это уважение к себе и клиенту.",
+  "Профессионал отличается не талантом, а порядком в делах.",
+  "Один правильно оформленный документ защищает лучше любых слов.",
+  "Ваше время стоит дорого — цените его в договоре.",
+  "Прозрачность в работе — основа доверия клиента.",
+  "Сегодня хороший день, чтобы навести порядок в документах.",
+  "Ваша экспертиза заслуживает официального оформления.",
+  "Чёткие условия — меньше недопонимания, больше результата.",
+  "Каждый новый клиент — новая возможность сделать всё правильно.",
 ];
 
 export default function Index() {
+  const todayPhrase = motivationalPhrases[new Date().getDate() % motivationalPhrases.length];
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -54,7 +62,7 @@ export default function Index() {
   const [fullName, setFullName] = useState("Анна Смирнова");
   const [innSaved, setInnSaved] = useState(false);
   const [isSelfEmployed, setIsSelfEmployed] = useState<boolean | null>(null);
-  const [userStatus, setUserStatus] = useState<"self_employed" | "ip" | "ooo" | null>(null);
+  const [userStatus, setUserStatus] = useState<"self_employed" | "ip" | "ooo" | "individual" | null>(null);
 
   if (!isLoggedIn) {
     return (
@@ -107,13 +115,14 @@ export default function Index() {
                   { id: "self_employed", icon: "Leaf", title: "Самозанятый", desc: "Зарегистрирован в «Мой налог», плачу НПД 4–6%" },
                   { id: "ip", icon: "Briefcase", title: "ИП", desc: "Индивидуальный предприниматель, УСН или патент" },
                   { id: "ooo", icon: "Building2", title: "Сотрудник / руководитель ООО", desc: "Работаю в компании или возглавляю её" },
-                  { id: null, icon: "HelpCircle", title: "Ещё не оформлен", desc: "Помогу разобраться, какой статус выбрать" },
+                  { id: "individual", icon: "User", title: "Физическое лицо", desc: "Работаю без регистрации, хочу разобраться" },
+                  { id: null, icon: "HelpCircle", title: "Ещё не определился", desc: "Помогу разобраться, какой статус подходит" },
                 ] as const).map((s) => {
                   const active = userStatus === s.id;
                   return (
                     <button
                       key={String(s.id)}
-                      onClick={() => { setUserStatus(s.id as "self_employed" | "ip" | "ooo" | null); setIsSelfEmployed(s.id === "self_employed"); setIsLoggedIn(true); }}
+                      onClick={() => { setUserStatus(s.id as "self_employed" | "ip" | "ooo" | "individual" | null); setIsSelfEmployed(s.id === "self_employed"); setIsLoggedIn(true); }}
                       className={`w-full p-3.5 rounded-xl border-2 text-left transition-all active:scale-[0.98] ${active ? "border-primary gold-gradient" : "border-border bg-white/60 hover:border-primary/30"}`}
                     >
                       <div className="flex items-center gap-3">
@@ -226,14 +235,19 @@ export default function Index() {
 
         {activeTab === "home" && (
           <div className="space-y-6 animate-slide-up">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              {stats.map((s) => (
-                <div key={s.label} className="card-warm rounded-2xl p-3.5 text-center shadow-sm">
-                  <p className="font-cormorant text-2xl font-semibold gold-text">{s.value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+            {/* Мотивирующая фраза дня */}
+            <div className="card-dark rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-5"
+                style={{ background: "radial-gradient(circle, hsl(43 72% 58%), transparent)", transform: "translate(30%, -30%)" }} />
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Icon name="Sparkles" size={14} className="text-amber-400" />
                 </div>
-              ))}
+                <div>
+                  <p className="text-[10px] text-amber-400 font-medium uppercase tracking-wider mb-1.5">Мысль дня</p>
+                  <p className="font-cormorant text-lg font-medium text-white leading-snug italic">«{todayPhrase}»</p>
+                </div>
+              </div>
             </div>
 
             {/* Quick actions */}
