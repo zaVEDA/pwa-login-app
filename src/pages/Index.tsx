@@ -50,6 +50,9 @@ export default function Index() {
   const [loginStep, setLoginStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
+  const [inn, setInn] = useState("");
+  const [fullName, setFullName] = useState("Анна Смирнова");
+  const [innSaved, setInnSaved] = useState(false);
 
   if (!isLoggedIn) {
     return (
@@ -280,13 +283,21 @@ export default function Index() {
               className="rounded-2xl p-4 border border-amber-300/40"
               style={{ background: "linear-gradient(135deg, hsl(43 72% 58% / 0.12), hsl(38 65% 42% / 0.08))" }}
             >
-              <div className="flex gap-3 items-start">
+              <div className="flex gap-3 items-start mb-3">
                 <Icon name="Bell" size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-foreground">Налог за май</p>
                   <p className="text-xs text-muted-foreground mt-0.5">До 25 июня нужно оплатить ₽1 872 в приложении «Мой налог»</p>
                 </div>
               </div>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); window.open("https://lknpd.nalog.ru/", "_blank"); }}
+                className="w-full py-2 rounded-xl bg-amber-700/15 text-amber-800 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+              >
+                <Icon name="ExternalLink" size={12} />
+                Открыть «Мой налог»
+              </a>
             </div>
           </div>
         )}
@@ -458,6 +469,70 @@ export default function Index() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* ИНН блок */}
+            <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Icon name="Hash" size={15} className="text-amber-700" />
+                <p className="text-sm font-medium">Данные самозанятого</p>
+                {innSaved && <span className="ml-auto doc-tag bg-green-100 text-green-700 text-[10px]">Сохранено</span>}
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">ФИО</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => { setFullName(e.target.value); setInnSaved(false); }}
+                  placeholder="Иванова Анна Сергеевна"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">ИНН</label>
+                <input
+                  type="number"
+                  value={inn}
+                  onChange={(e) => { setInn(e.target.value.slice(0, 12)); setInnSaved(false); }}
+                  placeholder="123456789012"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <button
+                onClick={() => inn.length === 12 && setInnSaved(true)}
+                className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all ${inn.length === 12 ? "gold-gradient text-white shadow-sm" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
+              >
+                Сохранить данные
+              </button>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                ИНН и ФИО будут автоматически подставляться во все документы
+              </p>
+            </div>
+
+            {/* Мой налог */}
+            <div
+              className="rounded-2xl p-4 border border-amber-300/40"
+              style={{ background: "linear-gradient(135deg, hsl(43 72% 58% / 0.12), hsl(38 65% 42% / 0.08))" }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-600/15 flex items-center justify-center flex-shrink-0">
+                  <Icon name="Receipt" size={16} className="text-amber-700" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Выбить чек самозанятого</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Откроет официальное приложение ФНС «Мой налог» для выдачи чека клиенту
+                  </p>
+                </div>
+              </div>
+              <a
+                href="mynalog://register"
+                onClick={(e) => { e.preventDefault(); window.open("https://lknpd.nalog.ru/", "_blank"); }}
+                className="mt-3 w-full py-2.5 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-transform"
+              >
+                <Icon name="ExternalLink" size={14} />
+                Открыть «Мой налог»
+              </a>
             </div>
 
             {/* Settings list */}
