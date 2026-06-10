@@ -236,16 +236,18 @@ export default function Index() {
         {activeTab === "home" && (
           <div className="space-y-6 animate-slide-up">
             {/* Мотивирующая фраза дня */}
-            <div className="card-dark rounded-2xl p-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-5"
-                style={{ background: "radial-gradient(circle, hsl(43 72% 58%), transparent)", transform: "translate(30%, -30%)" }} />
+            <div className="rounded-2xl p-5 relative overflow-hidden"
+              style={{ background: "linear-gradient(145deg, #F5E6E8, #EDD8DC)", border: "1px solid #D4A0A8" }}>
+              <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20"
+                style={{ background: "radial-gradient(circle, #D4A0A8, transparent)", transform: "translate(30%, -30%)" }} />
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon name="Sparkles" size={14} className="text-amber-700" />
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: "rgba(180, 100, 115, 0.12)" }}>
+                  <Icon name="Heart" size={14} className="text-rose-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-amber-700 font-medium uppercase tracking-wider mb-1.5">Мысль дня</p>
-                  <p className="font-cormorant text-lg font-medium text-foreground leading-snug italic">«{todayPhrase}»</p>
+                  <p className="text-[10px] font-medium uppercase tracking-wider mb-1.5" style={{ color: "#B06070" }}>Мысль дня</p>
+                  <p className="font-cormorant text-lg font-medium leading-snug italic" style={{ color: "#5C2D35" }}>«{todayPhrase}»</p>
                 </div>
               </div>
             </div>
@@ -459,17 +461,16 @@ export default function Index() {
             </div>
 
             {/* Featured */}
-            <div className="card-dark rounded-2xl p-5 relative overflow-hidden">
-              <div
-                className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10"
-                style={{ background: "radial-gradient(circle, hsl(43 72% 58%), transparent)", transform: "translate(30%, -30%)" }}
-              />
-              <span className="doc-tag bg-amber-500/15 text-amber-700 text-[10px] mb-3 inline-block">Рекомендуем</span>
-              <h3 className="font-cormorant text-xl font-semibold text-foreground mb-2">Старт самозанятого</h3>
-              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            <div className="rounded-2xl p-5 relative overflow-hidden"
+              style={{ background: "linear-gradient(145deg, #F5E6E8, #EDD8DC)", border: "1px solid #D4A0A8" }}>
+              <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20"
+                style={{ background: "radial-gradient(circle, #D4A0A8, transparent)", transform: "translate(30%, -30%)" }} />
+              <span className="doc-tag text-[10px] mb-3 inline-block" style={{ background: "rgba(180,100,115,0.12)", color: "#B06070" }}>Рекомендуем</span>
+              <h3 className="font-cormorant text-xl font-semibold mb-2" style={{ color: "#5C2D35" }}>Старт самозанятого</h3>
+              <p className="text-sm mb-4 leading-relaxed" style={{ color: "#8B5560" }}>
                 Полный гайд: регистрация, первый клиент, первый документ, первый налог
               </p>
-              <button className="flex items-center gap-2 text-amber-700 text-sm font-medium">
+              <button className="flex items-center gap-2 text-sm font-medium" style={{ color: "#B06070" }}>
                 Читать гайд <Icon name="ArrowRight" size={14} />
               </button>
             </div>
