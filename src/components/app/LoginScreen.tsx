@@ -46,8 +46,7 @@ export default function LoginScreen({
     >
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
-        <div className="flex justify-center mb-10">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-10">
           <svg width="48" height="66" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
             {/* Телефон */}
             <rect x="10" y="2" width="40" height="76" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
@@ -74,7 +73,6 @@ export default function LoginScreen({
               Вашими документами
             </p>
           </div>
-        </div>
         </div>
 
         {/* Specialties */}
