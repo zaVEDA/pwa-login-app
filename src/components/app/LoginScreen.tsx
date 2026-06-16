@@ -44,7 +44,7 @@ export default function LoginScreen({
       className="min-h-screen flex flex-col items-center justify-start pt-8 px-5 overflow-y-auto"
       style={{ background: "linear-gradient(160deg, hsl(36 25% 96%) 0%, hsl(36 20% 91%) 50%, hsl(30 25% 87%) 100%)" }}
     >
-      <div className="w-full max-w-sm animate-fade-in">
+      <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="flex justify-center mb-10">
         <div className="flex items-center gap-4">
