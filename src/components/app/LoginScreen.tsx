@@ -173,7 +173,14 @@ export default function LoginScreen({
           )}
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-5 leading-relaxed">
+        <button
+          onClick={() => setIsLoggedIn(true)}
+          className="w-full mt-4 py-2.5 rounded-xl border border-border bg-white/40 text-xs text-muted-foreground hover:bg-white/70 transition-colors"
+        >
+          Посмотреть без регистрации →
+        </button>
+
+        <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed">
           Регистрируясь, вы соглашаетесь с{" "}
           <span className="text-primary cursor-pointer">условиями использования</span>{" "}
           и <span className="text-primary cursor-pointer">политикой конфиденциальности</span>
