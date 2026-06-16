@@ -164,7 +164,7 @@ export default function InvestorProblem() {
               { icon: "Repeat", text: "Данные вводятся один раз и автоматически подставляются во все документы" },
               { icon: "PenLine", text: "Подписание по ЭДО встроено в процесс — без распечаток и сканов" },
               { icon: "MessageCircle", text: "Язык живой, не бухгалтерский — понятен без специального образования" },
-              { icon: "Map", text: "Чёткая логика шагов — специалист всегда знает, что делать дальше" },
+              { icon: "Map", text: "Чёткая логика шагов — человек всегда знает, что делать дальше" },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "hsl(35 72% 42% / 0.12)" }}>
