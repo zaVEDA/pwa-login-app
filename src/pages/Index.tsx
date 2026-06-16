@@ -32,7 +32,8 @@ export default function Index() {
   const [colorTheme, setColorTheme] = useState<keyof typeof themes>("honey");
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
+  const [isLoggedIn, setIsLoggedIn] = useState(isDemo);
   const [loginStep, setLoginStep] = useState<"phone" | "code" | "status">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");

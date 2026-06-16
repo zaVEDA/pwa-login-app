@@ -1,6 +1,7 @@
 import Icon from "@/components/ui/icon";
 
 const APP_URL = window.location.origin;
+const DEMO_URL = window.location.origin + "/?demo=1";
 
 const problems = [
   { icon: "FileX", text: "Неудобное оформление документов в бухгалтерских программах" },
@@ -101,14 +102,14 @@ export default function Investor() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href={APP_URL}
+              href={DEMO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
               style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))", color: "white" }}
             >
               <Icon name="Smartphone" size={16} />
-              Смотреть приложение
+              Открыть демо приложения
             </a>
             <a href="#invest"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm border transition-all hover:bg-white/60"
@@ -442,18 +443,29 @@ export default function Investor() {
             Посмотрите прототип
           </h2>
           <p className="text-white/80 text-sm mb-6 relative z-10">
-            Работающее PWA-приложение уже доступно прямо сейчас
+            Работающее PWA-приложение доступно прямо сейчас — без регистрации
           </p>
-          <a
-            href={APP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03] relative z-10"
-            style={{ background: "white", color: "hsl(35 72% 38%)" }}
-          >
-            <Icon name="Smartphone" size={16} />
-            Открыть приложение
-          </a>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-10">
+            <a
+              href={DEMO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03]"
+              style={{ background: "white", color: "hsl(35 72% 38%)" }}
+            >
+              <Icon name="Smartphone" size={16} />
+              Открыть демо
+            </a>
+            <a
+              href={APP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03] border border-white/40 text-white"
+            >
+              <Icon name="LogIn" size={16} />
+              Войти в аккаунт
+            </a>
+          </div>
         </div>
       </section>
 
