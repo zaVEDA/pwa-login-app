@@ -73,11 +73,16 @@ export default function InvestorSolution() {
               </div>
             ))}
           </div>
-          <p className="text-sm text-foreground/75 leading-relaxed">
+          <p className="text-sm text-foreground/75 leading-relaxed mb-4">
             Этот проект рождён из личного понимания боли — изнутри. 
             Я знаю, как работают бухгалтерские программы, как ведут себя клиенты при работе с документами, 
             как меняется нормативная база. И знаю, как объяснить это простым языком — потому что сама самоучка.
           </p>
+          <div className="rounded-xl p-4 border-l-4" style={{ background: "hsl(35 72% 42% / 0.05)", borderLeftColor: "hsl(35 72% 42%)" }}>
+            <p className="text-sm text-foreground/75 leading-relaxed">
+              Более 10 месяцев на постоянной основе работала с помогающими специалистами разного уровня — изучала их продукты, проходила путь клиента изнутри. Хорошо понимаю специфику их практик, логику выстраивания отношений с клиентом и точки, где документы становятся барьером.
+            </p>
+          </div>
         </div>
       </section>
 
