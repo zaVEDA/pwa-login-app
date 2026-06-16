@@ -144,7 +144,7 @@ export default function InvestorInvest() {
           <p className="text-white/80 text-sm mb-6 relative z-10">
             Работающее PWA-приложение доступно прямо сейчас — без регистрации
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-10">
+          <div className="flex justify-center relative z-10">
             <a
               href={DEMO_URL}
               target="_blank"
@@ -154,15 +154,6 @@ export default function InvestorInvest() {
             >
               <Icon name="Smartphone" size={16} />
               Открыть демо
-            </a>
-            <a
-              href={APP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03] border border-white/40 text-white"
-            >
-              <Icon name="LogIn" size={16} />
-              Войти в аккаунт
             </a>
           </div>
         </div>
