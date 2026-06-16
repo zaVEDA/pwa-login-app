@@ -145,7 +145,7 @@ export default function LoginScreen({
               </div>
               <button
                 onClick={() => phone.length >= 10 && setLoginStep("code")}
-                className="w-full py-3 rounded-xl gold-gradient text-white font-medium text-sm shadow-sm shadow-amber-900/20 active:scale-[0.98] transition-transform"
+                className="w-full py-3 rounded-xl border border-border bg-white/40 text-sm font-medium text-muted-foreground hover:bg-white/70 transition-colors active:scale-[0.98]"
               >
                 Получить код
               </button>
@@ -194,7 +194,7 @@ export default function LoginScreen({
 
         <button
           onClick={() => setIsLoggedIn(true)}
-          className="w-full mt-4 py-2.5 rounded-xl border border-border bg-white/40 text-xs text-muted-foreground hover:bg-white/70 transition-colors"
+          className="w-full mt-4 py-2.5 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm shadow-amber-900/20 active:scale-[0.98] transition-transform"
         >
           Посмотреть без регистрации →
         </button>
