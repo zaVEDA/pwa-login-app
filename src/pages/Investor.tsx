@@ -178,6 +178,36 @@ export default function Investor() {
             <p className="font-cormorant text-5xl font-semibold text-white">11,6 млн ₽</p>
           </div>
         </div>
+
+        {/* Воронка захвата рынка */}
+        <div className="mt-6 p-6 rounded-2xl border bg-white/60" style={{ borderColor: "hsl(36 28% 82%)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-5">Воронка захвата рынка</p>
+          <div className="space-y-3">
+            {[
+              { label: "Весь рынок самозанятых", value: "16 629 553", pct: 100, color: "hsl(36 28% 82%)", textColor: "text-foreground/50" },
+              { label: "Помогающие специалисты (≈15%)", value: "≈ 2 494 000", pct: 15, color: "hsl(35 72% 70%)", textColor: "text-foreground/60" },
+              { label: "Целевая аудитория с болью (≈5%)", value: "≈ 831 000", pct: 5, color: "hsl(35 72% 55%)", textColor: "text-foreground/70" },
+              { label: "Цель через 12 мес.", value: "10 000", pct: 0.06, color: "hsl(35 72% 40%)", textColor: "font-semibold text-foreground", accent: true },
+            ].map((row) => (
+              <div key={row.label}>
+                <div className="flex justify-between items-baseline mb-1">
+                  <span className={`text-sm ${row.textColor}`}>{row.label}</span>
+                  <span className={`text-sm font-mono ${row.accent ? "font-bold" : "text-muted-foreground"}`} style={row.accent ? { color: "hsl(35 72% 38%)" } : {}}>{row.value}</span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${Math.max(row.pct, 0.5)}%`, background: row.color }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 pt-4 border-t flex items-center gap-2" style={{ borderColor: "hsl(36 28% 82%)" }}>
+            <Icon name="Info" size={13} className="text-muted-foreground flex-shrink-0" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Для достижения цели достаточно привлечь <strong>0,06% от общего рынка</strong> — или <strong>1,2% от целевой аудитории</strong> помогающих специалистов.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Проблема */}
