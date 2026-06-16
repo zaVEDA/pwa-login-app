@@ -151,6 +151,32 @@ export default function InvestorProblem() {
         </div>
       </section>
 
+      {/* Наше отличие */}
+      <section className="px-5 pb-4 max-w-3xl mx-auto">
+        <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.1))", borderColor: "hsl(35 72% 48% / 0.25)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "hsl(35 72% 42%)" }}>Наше отличие</p>
+          <h2 className="font-cormorant text-3xl font-semibold mb-4" style={{ color: "hsl(24 20% 13%)" }}>
+            Просто. Мобильно. Понятно.
+          </h2>
+          <div className="space-y-3">
+            {[
+              { icon: "Smartphone", text: "Разработано с нуля под мобильный экран — всё крупно, удобно, попадёшь пальцем" },
+              { icon: "Repeat", text: "Данные вводятся один раз и автоматически подставляются во все документы" },
+              { icon: "PenLine", text: "Подписание по ЭДО встроено в процесс — без распечаток и сканов" },
+              { icon: "MessageCircle", text: "Язык живой, не бухгалтерский — понятен без специального образования" },
+              { icon: "Map", text: "Чёткая логика шагов — специалист всегда знает, что делать дальше" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "hsl(35 72% 42% / 0.12)" }}>
+                  <Icon name={item.icon} size={14} style={{ color: "hsl(35 72% 42%)" }} />
+                </div>
+                <p className="text-sm leading-relaxed text-foreground/80">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Социальная миссия */}
       <section className="px-5 py-14 max-w-3xl mx-auto">
         <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(36 40% 96%) 0%, hsl(36 30% 92%) 100%)", borderColor: "hsl(36 40% 78%)" }}>
