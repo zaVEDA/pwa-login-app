@@ -129,9 +129,15 @@ export default function InvestorProblem() {
           <h2 className="font-cormorant text-3xl font-semibold mb-4" style={{ color: "hsl(24 20% 13%)" }}>
             Больше специалистов,<br />которые работают честно
           </h2>
-          <p className="text-sm leading-relaxed text-foreground/70 mb-6">
+          <p className="text-sm leading-relaxed text-foreground/70 mb-4">
             Когда помогающий специалист — психолог, коуч, репетитор, мастер — понимает, как правильно оформить свою деятельность, он перестаёт бояться. И начинает работать открыто: подписывает официальные документы с клиентами, декларирует доходы, платит налоги.
           </p>
+          <div className="rounded-xl p-4 mb-6 border-l-4" style={{ background: "hsl(35 72% 42% / 0.06)", borderLeftColor: "hsl(35 72% 42%)" }}>
+            <p className="text-sm font-semibold mb-1" style={{ color: "hsl(24 20% 13%)" }}>Мы не навязываем правила игры</p>
+            <p className="text-sm leading-relaxed text-foreground/70">
+              Оплату и декларирование налогов специалист производит сам — это его ответственность и его выбор. Мы помогаем вести учёт, держать руку на пульсе и анализировать внесённые данные, чтобы ничего не упустить.
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {socialItems.map((item, i) => (
               <div key={i} className="flex flex-col gap-2 p-4 rounded-xl bg-white/60 border" style={{ borderColor: "hsl(36 28% 82%)" }}>
