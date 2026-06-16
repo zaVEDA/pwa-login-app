@@ -314,7 +314,7 @@ export default function TabContent({
             ))}
           </div>
 
-          <p className="text-center text-xs text-muted-foreground pb-2">ЧПэ · версия 1.0.0</p>
+          <p className="text-center text-xs text-muted-foreground pb-2">ЗаВедующая · версия 1.0.0</p>
         </div>
       )}
     </>
