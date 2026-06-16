@@ -53,9 +53,9 @@ export default function LoginScreen({
             {/* Нотч */}
             <rect x="23" y="2" width="22" height="7" rx="3.5" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
             {/* Кнопка громкость+ слева */}
-            <rect x="8" y="22" width="5" height="9" rx="2.5" fill="none" stroke="#C8862A" strokeWidth="2.2"/>
+            <line x1="9" y1="23" x2="9" y2="31" stroke="#C8862A" strokeWidth="5" strokeLinecap="round"/>
             {/* Кнопка громкость- слева */}
-            <rect x="8" y="34" width="5" height="9" rx="2.5" fill="none" stroke="#C8862A" strokeWidth="2.2"/>
+            <line x1="9" y1="35" x2="9" y2="43" stroke="#C8862A" strokeWidth="5" strokeLinecap="round"/>
             {/* Свиток — верхний валик */}
             <rect x="18" y="17" width="34" height="9" rx="4.5" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — тело */}
