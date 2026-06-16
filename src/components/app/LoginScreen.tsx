@@ -53,15 +53,15 @@ export default function LoginScreen({
             <line x1="10" y1="12" x2="54" y2="12" stroke="#C8862A" strokeWidth="2.5"/>
             <line x1="10" y1="52" x2="54" y2="52" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — верхний валик */}
-            <rect x="20" y="15" width="24" height="4" rx="2" fill="#C8862A"/>
-            {/* Свиток — тело */}
-            <rect x="22" y="19" width="20" height="22" rx="1" fill="none" stroke="#C8862A" strokeWidth="2"/>
+            <rect x="19" y="14" width="26" height="5" rx="2.5" fill="#C8862A"/>
+            {/* Свиток — тело с ровными краями */}
+            <rect x="21" y="19" width="22" height="22" rx="0" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — нижний валик */}
-            <rect x="20" y="41" width="24" height="4" rx="2" fill="#C8862A"/>
+            <rect x="19" y="41" width="26" height="5" rx="2.5" fill="#C8862A"/>
             {/* Галочка */}
-            <path d="M25 30 L30 35 L39 24" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M26 31 L30 36 L38 25" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
             {/* Звёздочка */}
-            <path d="M41 20 L41.8 22 L44 22 L42.3 23.4 L43 25.5 L41 24.2 L39 25.5 L39.7 23.4 L38 22 L40.2 22 Z" fill="#C8862A"/>
+            <path d="M40 19 L40.9 21.5 L43.5 21.5 L41.4 23 L42.2 25.5 L40 24 L37.8 25.5 L38.6 23 L36.5 21.5 L39.1 21.5 Z" fill="#C8862A"/>
           </svg>
           <div>
             <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
