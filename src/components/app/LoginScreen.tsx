@@ -47,23 +47,23 @@ export default function LoginScreen({
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-4 mb-10">
-          <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+          <svg width="68" height="80" viewBox="0 0 68 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
             {/* Телефон */}
-            <rect x="10" y="2" width="40" height="76" rx="9" stroke="#C8862A" strokeWidth="3.2" fill="none"/>
+            <rect x="13" y="2" width="44" height="76" rx="10" stroke="#C8862A" strokeWidth="3.2" fill="none"/>
             {/* Нотч */}
-            <rect x="19" y="2" width="22" height="7" rx="3.5" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
+            <rect x="23" y="2" width="22" height="7" rx="3.5" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
             {/* Кнопка громкость+ слева */}
-            <path d="M10 22 Q5 22 5 25 L5 31 Q5 34 10 34" stroke="#C8862A" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            <rect x="8" y="22" width="5" height="9" rx="2.5" fill="none" stroke="#C8862A" strokeWidth="2.2"/>
             {/* Кнопка громкость- слева */}
-            <path d="M10 36 Q5 36 5 39 L5 45 Q5 48 10 48" stroke="#C8862A" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            <rect x="8" y="34" width="5" height="9" rx="2.5" fill="none" stroke="#C8862A" strokeWidth="2.2"/>
             {/* Свиток — верхний валик */}
-            <rect x="14" y="17" width="32" height="9" rx="4.5" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
+            <rect x="18" y="17" width="34" height="9" rx="4.5" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — тело */}
-            <rect x="16" y="26" width="28" height="26" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
+            <rect x="20" y="26" width="30" height="26" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
             {/* Свиток — нижний валик */}
-            <rect x="14" y="52" width="32" height="9" rx="4.5" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
+            <rect x="18" y="52" width="34" height="9" rx="4.5" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Галочка */}
-            <path d="M22 40 L28 47 L40 32" stroke="#C8862A" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M25 40 L31 47 L45 31" stroke="#C8862A" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <div>
             <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
