@@ -54,7 +54,7 @@ export default function LoginScreen({
             <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
           </h1>
           <p className="font-cormorant text-lg italic text-muted-foreground">
-            вами документами
+            Вашими документами
           </p>
         </div>
 
