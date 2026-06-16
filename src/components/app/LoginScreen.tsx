@@ -48,22 +48,21 @@ export default function LoginScreen({
         {/* Logo */}
         <div className="flex items-center gap-4 mb-10">
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 -my-1">
-            {/* Телефон */}
-            <rect x="10" y="4" width="44" height="56" rx="8" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
-            {/* Нотч — полочка с камерой */}
-            <rect x="22" y="4" width="20" height="6" rx="3" fill="none" stroke="#C8862A" strokeWidth="1.2"/>
-            <circle cx="32" cy="7" r="1.5" fill="none" stroke="#C8862A" strokeWidth="1"/>
-
-            {/* Свиток — верхний валик */}
-            <rect x="19" y="14" width="26" height="4" rx="2" fill="#C8862A"/>
-            {/* Свиток — тело с ровными краями */}
-            <rect x="21" y="18" width="22" height="24" rx="0" fill="none" stroke="#C8862A" strokeWidth="1.2"/>
-            {/* Свиток — нижний валик */}
-            <rect x="19" y="42" width="26" height="4" rx="2" fill="#C8862A"/>
+            {/* Телефон — жирный контур как на картинке */}
+            <rect x="11" y="3" width="42" height="58" rx="9" stroke="#C8862A" strokeWidth="3" fill="none"/>
+            {/* Нотч */}
+            <rect x="23" y="3" width="18" height="6" rx="3" fill="none" stroke="#C8862A" strokeWidth="1.2"/>
+            <circle cx="32" cy="6" r="1.3" fill="none" stroke="#C8862A" strokeWidth="1"/>
+            {/* Свиток — верхний валик (контур, без заливки) */}
+            <rect x="18" y="14" width="28" height="5" rx="2.5" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
+            {/* Свиток — тело */}
+            <rect x="20" y="19" width="24" height="22" fill="none" stroke="#C8862A" strokeWidth="1.2"/>
+            {/* Свиток — нижний валик (контур, без заливки) */}
+            <rect x="18" y="41" width="28" height="5" rx="2.5" fill="none" stroke="#C8862A" strokeWidth="1.8"/>
             {/* Галочка */}
-            <path d="M26 31 L30 36 L38 25" stroke="#C8862A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M25 31 L30 36 L39 24" stroke="#C8862A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             {/* Звёздочка */}
-            <path d="M40 19 L40.9 21.5 L43.5 21.5 L41.4 23 L42.2 25.5 L40 24 L37.8 25.5 L38.6 23 L36.5 21.5 L39.1 21.5 Z" fill="#C8862A"/>
+            <path d="M40.5 17 L41.5 20 L44.5 20 L42.2 21.8 L43.1 24.8 L40.5 23 L37.9 24.8 L38.8 21.8 L36.5 20 L39.5 20 Z" stroke="#C8862A" strokeWidth="0.8" fill="none"/>
           </svg>
           <div>
             <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
