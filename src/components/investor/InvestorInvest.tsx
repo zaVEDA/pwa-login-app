@@ -65,7 +65,7 @@ export default function InvestorInvest() {
           style={{ background: "hsl(38 30% 93%)", borderColor: "hsl(36 28% 80%)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Icon name="Repeat2" size={16} style={{ color: "hsl(35 72% 42%)" }} />
-            <span className="text-sm font-semibold">Второй раунд — через 2–2,5 месяца</span>
+            <span className="text-sm font-semibold">Второй раунд — через 2,5–3 месяца</span>
           </div>
           <ul className="space-y-1.5 text-sm text-foreground/70">
             <li>• Отчёт о проделанной работе и показателях</li>
