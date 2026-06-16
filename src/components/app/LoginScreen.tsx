@@ -53,13 +53,13 @@ export default function LoginScreen({
             <line x1="10" y1="12" x2="54" y2="12" stroke="#C8862A" strokeWidth="2.5"/>
             <line x1="10" y1="52" x2="54" y2="52" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — верхний валик */}
-            <rect x="19" y="14" width="26" height="5" rx="2.5" fill="#C8862A"/>
+            <rect x="19" y="14" width="26" height="4" rx="2" fill="#C8862A"/>
             {/* Свиток — тело с ровными краями */}
-            <rect x="21" y="19" width="22" height="22" rx="0" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
+            <rect x="21" y="18" width="22" height="24" rx="0" fill="none" stroke="#C8862A" strokeWidth="1.2"/>
             {/* Свиток — нижний валик */}
-            <rect x="19" y="41" width="26" height="5" rx="2.5" fill="#C8862A"/>
+            <rect x="19" y="42" width="26" height="4" rx="2" fill="#C8862A"/>
             {/* Галочка */}
-            <path d="M26 31 L30 36 L38 25" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M26 31 L30 36 L38 25" stroke="#C8862A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             {/* Звёздочка */}
             <path d="M40 19 L40.9 21.5 L43.5 21.5 L41.4 23 L42.2 25.5 L40 24 L37.8 25.5 L38.6 23 L36.5 21.5 L39.1 21.5 Z" fill="#C8862A"/>
           </svg>
