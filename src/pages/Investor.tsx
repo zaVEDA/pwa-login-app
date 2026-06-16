@@ -89,6 +89,7 @@ export default function Investor() {
             style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 72% 38%)" }}>
             Инвестиционное предложение · Раунд 1
           </span>
+          <p className="font-cormorant text-2xl font-medium mb-2" style={{ color: "hsl(35 72% 42%)" }}>ООО «ЗаВедующая»</p>
           <h1 className="font-cormorant text-5xl md:text-6xl font-semibold leading-tight mb-5"
             style={{ color: "hsl(24 20% 13%)" }}>
             Сервис документооборота<br />
@@ -458,7 +459,7 @@ export default function Investor() {
 
       {/* Footer */}
       <footer className="px-5 py-8 text-center border-t" style={{ borderColor: "hsl(36 28% 85%)" }}>
-        <p className="font-cormorant text-lg font-medium mb-1" style={{ color: "hsl(35 72% 42%)" }}>ДокуМастер</p>
+        <p className="font-cormorant text-lg font-medium mb-1" style={{ color: "hsl(35 72% 42%)" }}>ООО «ЗаВедующая»</p>
         <p className="text-xs text-muted-foreground">Инвестиционное предложение · 2026</p>
       </footer>
 
