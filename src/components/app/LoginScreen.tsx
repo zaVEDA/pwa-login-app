@@ -52,9 +52,9 @@ export default function LoginScreen({
             <rect x="8" y="2" width="48" height="68" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
             {/* Нотч */}
             <rect x="22" y="2" width="20" height="7" rx="3.5" fill="none" stroke="#C8862A" strokeWidth="2"/>
-            {/* Кнопки сбоку */}
-            <rect x="5" y="20" width="3" height="8" rx="1.5" fill="none" stroke="#C8862A" strokeWidth="1.5"/>
-            <rect x="56" y="18" width="3" height="6" rx="1.5" fill="none" stroke="#C8862A" strokeWidth="1.5"/>
+            {/* Кнопки сбоку — выступы на контуре */}
+            <rect x="4.5" y="22" width="4" height="10" rx="2" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
+            <rect x="55.5" y="20" width="4" height="7" rx="2" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — верхний валик */}
             <rect x="15" y="16" width="34" height="8" rx="4" fill="none" stroke="#C8862A" strokeWidth="2.5"/>
             {/* Свиток — тело */}
