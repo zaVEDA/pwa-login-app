@@ -48,11 +48,13 @@ export default function LoginScreen({
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-5 gold-gradient shadow-lg shadow-amber-900/20">
-            <span className="font-cormorant text-3xl font-bold text-white">ЧП</span>
+            <span className="font-cormorant text-3xl font-bold text-white">ЗВ</span>
           </div>
-          <h1 className="font-cormorant text-4xl font-semibold text-foreground mb-2">ЧПэ</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Платформа для помогающих<br />специалистов
+          <h1 className="font-cormorant text-4xl font-semibold text-foreground mb-1">
+            <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
+          </h1>
+          <p className="font-cormorant text-lg italic text-muted-foreground">
+            вами документами
           </p>
         </div>
 
