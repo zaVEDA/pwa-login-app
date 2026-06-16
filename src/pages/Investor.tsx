@@ -250,6 +250,34 @@ export default function Investor() {
         </div>
       </section>
 
+      {/* Социальная миссия */}
+      <section className="px-5 py-14 max-w-3xl mx-auto">
+        <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(36 40% 96%) 0%, hsl(36 30% 92%) 100%)", borderColor: "hsl(36 40% 78%)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "hsl(35 72% 42%)" }}>Социальная задача</p>
+          <h2 className="font-cormorant text-3xl font-semibold mb-4" style={{ color: "hsl(24 20% 13%)" }}>
+            Больше специалистов,<br />которые работают честно
+          </h2>
+          <p className="text-sm leading-relaxed text-foreground/70 mb-6">
+            Когда помогающий специалист — психолог, коуч, репетитор, мастер — понимает, как правильно оформить свою деятельность, он перестаёт бояться. И начинает работать открыто: подписывает официальные документы с клиентами, декларирует доходы, платит налоги.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { icon: "FileCheck", title: "Официальные договоры", desc: "Клиент защищён, специалист защищён" },
+              { icon: "Receipt", title: "Декларирование доходов", desc: "Прозрачная деятельность без страха проверок" },
+              { icon: "Users", title: "Доверие к профессии", desc: "Ответственный рынок помогающих практик" },
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col gap-2 p-4 rounded-xl bg-white/60 border" style={{ borderColor: "hsl(36 28% 82%)" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(35 72% 42% / 0.1)" }}>
+                  <Icon name={item.icon} size={15} style={{ color: "hsl(35 72% 42%)" }} />
+                </div>
+                <p className="text-sm font-semibold" style={{ color: "hsl(24 20% 13%)" }}>{item.title}</p>
+                <p className="text-xs leading-relaxed text-foreground/60">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Решение */}
       <section className="px-5 py-12 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Решение</p>
