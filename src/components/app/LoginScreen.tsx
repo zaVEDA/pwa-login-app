@@ -48,7 +48,7 @@ export default function LoginScreen({
         {/* Logo */}
         <div className="flex justify-center mb-10">
         <div className="flex items-center gap-4">
-          <svg width="44" height="60" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+          <svg width="48" height="66" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
             {/* Телефон */}
             <rect x="10" y="2" width="40" height="76" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
             {/* Нотч */}
@@ -67,10 +67,10 @@ export default function LoginScreen({
             <path d="M23 40 L29 47 L43 30" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <div>
-            <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
+            <h1 className="font-cormorant text-4xl font-semibold text-foreground leading-tight">
               <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
             </h1>
-            <p className="font-cormorant text-lg italic font-semibold text-foreground/70 tracking-wide leading-tight">
+            <p className="font-cormorant text-xl italic font-semibold text-foreground/70 tracking-wide leading-tight">
               Вашими документами
             </p>
           </div>
