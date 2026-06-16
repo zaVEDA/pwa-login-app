@@ -132,6 +132,54 @@ export default function Investor() {
         </div>
       </section>
 
+      {/* Рынок и показатели */}
+      <section className="px-5 py-12 max-w-3xl mx-auto">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Рынок и цели</p>
+        <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
+          Огромный рынок — и мы знаем, как в него войти
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          {/* Объём рынка */}
+          <div className="col-span-1 sm:col-span-2 p-6 rounded-2xl border text-center"
+            style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(40 80% 62% / 0.1))", borderColor: "hsl(35 72% 48% / 0.25)" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Объём рынка</p>
+            <p className="font-cormorant text-5xl font-semibold mb-1" style={{ color: "hsl(35 72% 38%)" }}>16 629 553</p>
+            <p className="text-sm text-foreground/70">зарегистрированных самозанятых в России</p>
+            <p className="text-xs text-muted-foreground mt-1">по данным на 31.05.2026</p>
+          </div>
+          {/* Пользователи */}
+          <div className="p-5 rounded-2xl border bg-white/70"
+            style={{ borderColor: "hsl(36 28% 82%)" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "hsl(140 40% 45% / 0.1)" }}>
+                <Icon name="Users" size={15} className="text-emerald-600" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Через 12 месяцев</p>
+            </div>
+            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(140 40% 35%)" }}>10 000+</p>
+            <p className="text-sm text-foreground/70 mt-1">пользователей</p>
+          </div>
+          {/* Тариф */}
+          <div className="p-5 rounded-2xl border bg-white/70"
+            style={{ borderColor: "hsl(36 28% 82%)" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "hsl(35 72% 48% / 0.1)" }}>
+                <Icon name="Tag" size={15} style={{ color: "hsl(35 72% 42%)" }} />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Средний тариф</p>
+            </div>
+            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>3 333 ₽</p>
+            <p className="text-sm text-foreground/70 mt-1">в месяц</p>
+          </div>
+          {/* Выручка */}
+          <div className="col-span-1 sm:col-span-2 p-5 rounded-2xl border text-center"
+            style={{ background: "hsl(35 72% 48%)", borderColor: "hsl(35 72% 40%)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/70 mb-2">Планируемая выручка · 12 мес.</p>
+            <p className="font-cormorant text-5xl font-semibold text-white">11,6 млн ₽</p>
+          </div>
+        </div>
+      </section>
+
       {/* Проблема */}
       <section className="px-5 py-12 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Проблема</p>
