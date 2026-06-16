@@ -46,16 +46,16 @@ export default function LoginScreen({
     >
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-4 mb-10" style={{alignItems: 'center'}}>
           <svg width="56" height="80" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
             {/* Телефон */}
             <rect x="10" y="2" width="40" height="76" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
             {/* Нотч */}
             <rect x="19" y="2" width="18" height="7" rx="3.5" stroke="#C8862A" strokeWidth="2" fill="none"/>
             {/* Кнопка громкость+ слева */}
-            <rect x="5" y="22" width="5" height="11" rx="2.5" fill="#C8862A"/>
+            <rect x="6" y="24" width="4" height="9" rx="2" fill="#C8862A"/>
             {/* Кнопка громкость- слева */}
-            <rect x="5" y="36" width="5" height="11" rx="2.5" fill="#C8862A"/>
+            <rect x="6" y="36" width="4" height="9" rx="2" fill="#C8862A"/>
             {/* Свиток — верхний валик */}
             <rect x="14" y="16" width="32" height="10" rx="5" stroke="#C8862A" strokeWidth="2.5" fill="none"/>
             {/* Свиток — тело */}
