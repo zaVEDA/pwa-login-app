@@ -373,17 +373,75 @@ export default function Investor() {
         </div>
       </section>
 
+      {/* Контакты */}
+      <section className="px-5 py-12 max-w-3xl mx-auto">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Связаться</p>
+        <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
+          Готовы обсудить участие?
+        </h2>
+        <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(36 28% 82%)" }}>
+          {/* Шапка карточки */}
+          <div className="p-6 flex items-center gap-4"
+            style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.1))" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))" }}>
+              <span className="font-cormorant text-2xl font-bold text-white">ЮК</span>
+            </div>
+            <div>
+              <p className="font-semibold text-base">Кузнецова Юлия</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Основатель проекта · Москва (МСК)</p>
+            </div>
+          </div>
+          {/* Контакты */}
+          <div className="divide-y" style={{ borderColor: "hsl(36 28% 86%)" }}>
+            <a href="tel:+79016625752"
+              className="flex items-center gap-4 px-6 py-4 bg-white/60 hover:bg-white/90 transition-colors">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(35 72% 48% / 0.1)" }}>
+                <Icon name="Phone" size={16} style={{ color: "hsl(35 72% 42%)" }} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Телефон</p>
+                <p className="text-sm font-medium">+7 901 662-57-52</p>
+              </div>
+            </a>
+            <a href="https://t.me/+79016625752" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-4 px-6 py-4 bg-white/60 hover:bg-white/90 transition-colors">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(200 80% 50% / 0.1)" }}>
+                <Icon name="Send" size={16} className="text-sky-500" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Telegram</p>
+                <p className="text-sm font-medium">+7 901 662-57-52</p>
+              </div>
+            </a>
+            <a href="mailto:89016625752@mail.ru"
+              className="flex items-center gap-4 px-6 py-4 bg-white/60 hover:bg-white/90 transition-colors">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(35 72% 48% / 0.1)" }}>
+                <Icon name="Mail" size={16} style={{ color: "hsl(35 72% 42%)" }} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">E-mail</p>
+                <p className="text-sm font-medium">89016625752@mail.ru</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="px-5 py-16 max-w-3xl mx-auto text-center">
-        <div className="rounded-3xl p-10 relative overflow-hidden"
+      <section className="px-5 pb-16 max-w-3xl mx-auto">
+        <div className="rounded-3xl p-10 relative overflow-hidden text-center"
           style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 40%))" }}>
           <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10"
             style={{ background: "radial-gradient(circle, white, transparent)", transform: "translate(30%, -30%)" }} />
           <h2 className="font-cormorant text-3xl font-semibold text-white mb-3 relative z-10">
-            Готовы обсудить участие?
+            Посмотрите прототип
           </h2>
           <p className="text-white/80 text-sm mb-6 relative z-10">
-            Посмотрите на работающий прототип приложения прямо сейчас
+            Работающее PWA-приложение уже доступно прямо сейчас
           </p>
           <a
             href={APP_URL}
