@@ -48,9 +48,9 @@ export default function LoginScreen({
         {/* Logo */}
         <div className="flex items-center gap-4 mb-10">
           <img
-            src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/21facad7-34e4-4309-a443-ae28caa4c642.jpg"
+            src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/84a6be1b-237d-4e9c-a002-7b5daaa32577.jpg"
             alt="ЗаВедующая"
-            className="w-16 h-16 object-cover rounded-2xl flex-shrink-0 -my-1"
+            className="w-16 h-16 object-cover flex-shrink-0 -my-1"
           />
           <div>
             <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
