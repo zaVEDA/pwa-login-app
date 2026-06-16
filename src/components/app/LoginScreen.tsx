@@ -47,7 +47,7 @@ export default function LoginScreen({
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="flex items-end gap-2 mb-10" style={{alignItems: 'flex-end'}}>
-          <svg width="72" height="112" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" style={{marginRight: '-5px'}}>
+          <svg width="72" height="112" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" style={{marginRight: '-5px', marginTop: '6px'}}>
             {/* Телефон */}
             <rect x="10" y="2" width="40" height="76" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
             {/* Нотч */}
