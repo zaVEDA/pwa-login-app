@@ -46,16 +46,20 @@ export default function LoginScreen({
     >
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="w-24 h-24 mb-5 mx-auto">
-            <img src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/ed876326-07ff-4ebd-9b49-b93e7f218340.jpg" alt="ЗаВедующая" className="w-full h-full object-contain rounded-3xl" />
+        <div className="flex items-center gap-4 mb-10">
+          <img
+            src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/ed876326-07ff-4ebd-9b49-b93e7f218340.jpg"
+            alt="ЗаВедующая"
+            className="w-16 h-16 object-contain rounded-2xl flex-shrink-0"
+          />
+          <div>
+            <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
+              <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
+            </h1>
+            <p className="font-cormorant text-lg italic font-semibold text-foreground/70 tracking-wide leading-tight">
+              Вашими документами
+            </p>
           </div>
-          <h1 className="font-cormorant text-4xl font-semibold text-foreground mb-1">
-            <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
-          </h1>
-          <p className="font-cormorant text-lg italic font-semibold text-foreground/70 tracking-wide">
-            Вашими документами
-          </p>
         </div>
 
         {/* Specialties */}
