@@ -47,12 +47,24 @@ export default function LoginScreen({
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-4 mb-10">
-          <img
-            src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/13961fae-dd7a-42f5-b2e4-9e2ee961eaa8.jpg"
-            alt="logo"
-            className="flex-shrink-0 mix-blend-multiply"
-            style={{ width: 64, height: 80, objectFit: 'contain' }}
-          />
+          <svg width="56" height="80" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+            {/* Телефон */}
+            <rect x="10" y="2" width="40" height="76" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
+            {/* Нотч */}
+            <rect x="19" y="2" width="18" height="7" rx="3.5" stroke="#C8862A" strokeWidth="2" fill="none"/>
+            {/* Кнопка громкость+ слева */}
+            <rect x="5" y="22" width="5" height="11" rx="2.5" fill="#C8862A"/>
+            {/* Кнопка громкость- слева */}
+            <rect x="5" y="36" width="5" height="11" rx="2.5" fill="#C8862A"/>
+            {/* Свиток — верхний валик */}
+            <rect x="14" y="16" width="32" height="10" rx="5" stroke="#C8862A" strokeWidth="2.5" fill="none"/>
+            {/* Свиток — тело */}
+            <rect x="16" y="26" width="28" height="26" stroke="#C8862A" strokeWidth="2" fill="none"/>
+            {/* Свиток — нижний валик */}
+            <rect x="14" y="52" width="32" height="10" rx="5" stroke="#C8862A" strokeWidth="2.5" fill="none"/>
+            {/* Галочка */}
+            <path d="M23 40 L29 47 L43 30" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
           <div>
             <h1 className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
               <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
