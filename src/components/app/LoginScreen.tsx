@@ -53,7 +53,7 @@ export default function LoginScreen({
           <h1 className="font-cormorant text-4xl font-semibold text-foreground mb-1">
             <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
           </h1>
-          <p className="font-cormorant text-lg italic text-muted-foreground">
+          <p className="font-cormorant text-lg italic font-semibold text-foreground/70 tracking-wide">
             Вашими документами
           </p>
         </div>
