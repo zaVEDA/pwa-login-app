@@ -66,10 +66,10 @@ export default function LoginScreen({
             <path d="M23 40 L29 47 L43 30" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <div>
-            <h1 className="font-cormorant text-4xl font-semibold text-foreground leading-tight">
+            <h1 className="font-cormorant text-6xl font-semibold text-foreground leading-tight">
               <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
             </h1>
-            <p className="font-cormorant text-xl italic font-semibold text-foreground/70 tracking-wide leading-tight">
+            <p className="font-cormorant text-2xl italic font-semibold text-foreground/70 tracking-wide leading-tight">
               Вашими документами
             </p>
           </div>
