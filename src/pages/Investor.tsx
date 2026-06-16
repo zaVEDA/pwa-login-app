@@ -4,11 +4,24 @@ const APP_URL = window.location.origin;
 const DEMO_URL = window.location.origin + "/?demo=1";
 
 const problems = [
-  { icon: "FileX", text: "Неудобное оформление документов в бухгалтерских программах" },
-  { icon: "Smartphone", text: "Невозможность нормально заполнить документы с телефона" },
-  { icon: "Clock", text: "Потери времени на ввод одних и тех же данных в разные окна" },
-  { icon: "Lock", text: "Нет единой системы: формирование, подписание и контроль — в разных местах" },
-  { icon: "BarChart2", text: "Сложности с выгрузкой данных для аналитики и отчётов" },
+  {
+    icon: "RefreshCw",
+    tag: "Правила меняются",
+    title: "За изменениями невозможно уследить",
+    text: "Законодательство обновляется постоянно. Документ, который был актуален полгода назад, сегодня может не пройти проверку. Непонятно, какие бумаги нужны прямо сейчас — а какие понадобятся через год.",
+  },
+  {
+    icon: "Building2",
+    tag: "Разные органы",
+    title: "Каждый контролёр требует своё",
+    text: "Налоговая, Роспотребнадзор, трудовая инспекция — у каждого свой список документов, свой порядок, свои обязательные реквизиты. Разобраться самому — значит потратить дни на изучение нормативов.",
+  },
+  {
+    icon: "ListChecks",
+    tag: "Порядок и реквизиты",
+    title: "Что, когда и в каком порядке?",
+    text: "Какие документы формировать первыми? Какие реквизиты обязательны? Одна ошибка в оформлении — и документ теряет юридическую силу. А узнаёшь об этом только на проверке.",
+  },
 ];
 
 const features = [
@@ -213,20 +226,25 @@ export default function Investor() {
       </section>
 
       {/* Проблема */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-14 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Проблема</p>
-        <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
-          Специалисты тратят часы на то,<br />что должно занимать минуты
+        <h2 className="font-cormorant text-3xl font-semibold mb-10" style={{ color: "hsl(24 20% 13%)" }}>
+          Документы — это не разовая задача.<br />Это бесконечная гонка за правилами
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {problems.map((p, i) => (
-            <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/60 border"
-              style={{ borderColor: "hsl(36 28% 82%)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "hsl(0 60% 50% / 0.08)" }}>
-                <Icon name={p.icon} size={16} className="text-rose-500" />
+            <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(36 28% 82%)" }}>
+              <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: "hsl(0 60% 50% / 0.08)" }}>
+                  <Icon name={p.icon} size={15} className="text-rose-500" />
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-rose-400">{p.tag}</span>
               </div>
-              <p className="text-sm leading-relaxed text-foreground/80 pt-1.5">{p.text}</p>
+              <div className="px-4 pb-4">
+                <p className="font-cormorant text-xl font-semibold mb-1" style={{ color: "hsl(24 20% 13%)" }}>{p.title}</p>
+                <p className="text-sm leading-relaxed text-foreground/70">{p.text}</p>
+              </div>
             </div>
           ))}
         </div>
