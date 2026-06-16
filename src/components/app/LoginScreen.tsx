@@ -50,6 +50,9 @@ export default function LoginScreen({
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 -my-1">
             {/* Телефон */}
             <rect x="10" y="4" width="44" height="56" rx="8" stroke="#C8862A" strokeWidth="3.5" fill="none"/>
+            {/* Нотч — полочка с камерой */}
+            <rect x="22" y="4" width="20" height="6" rx="3" fill="#C8862A"/>
+            <circle cx="32" cy="7" r="1.5" fill="none" stroke="hsl(36 25% 96%)" strokeWidth="1"/>
 
             {/* Свиток — верхний валик */}
             <rect x="19" y="14" width="26" height="4" rx="2" fill="#C8862A"/>
