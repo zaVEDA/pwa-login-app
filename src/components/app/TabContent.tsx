@@ -36,6 +36,13 @@ const specialties = [
   { icon: "Camera", label: "Фотограф" },
 ];
 
+const themes = {
+  honey: { label: "Янтарь", phraseIcon: "Leaf" },
+  sage:  { label: "Шалфей", phraseIcon: "Sprout" },
+  rose:  { label: "Роза",   phraseIcon: "Flower2" },
+  clay:  { label: "Глина",  phraseIcon: "TreePine" },
+} as const;
+
 interface Props {
   activeTab: Tab;
   isSelfEmployed: boolean | null;
@@ -46,6 +53,8 @@ interface Props {
   innSaved: boolean;
   setInnSaved: (v: boolean) => void;
   setIsLoggedIn: (v: boolean) => void;
+  colorTheme: keyof typeof themes;
+  setColorTheme: (t: keyof typeof themes) => void;
 }
 
 export default function TabContent({
@@ -58,6 +67,8 @@ export default function TabContent({
   innSaved,
   setInnSaved,
   setIsLoggedIn,
+  colorTheme,
+  setColorTheme,
 }: Props) {
   return (
     <>
@@ -223,6 +234,30 @@ export default function TabContent({
                   <span className="text-xs text-amber-700">Психолог · Самозанятая</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Цветовая тема */}
+          <div className="card-warm rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon name="Palette" size={15} className="text-amber-700" />
+              <p className="text-sm font-medium">Оформление</p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {(Object.entries(themes) as [keyof typeof themes, typeof themes[keyof typeof themes]][]).map(([key, t]) => (
+                <button
+                  key={key}
+                  onClick={() => setColorTheme(key)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                    colorTheme === key
+                      ? "gold-gradient text-white border-transparent shadow-sm"
+                      : "bg-white/60 border-border text-muted-foreground"
+                  }`}
+                >
+                  <Icon name={t.phraseIcon} size={11} />
+                  {t.label}
+                </button>
+              ))}
             </div>
           </div>
 

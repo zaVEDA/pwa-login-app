@@ -81,23 +81,7 @@ export default function Index() {
             <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></span>
           </button>
         </div>
-        {/* Переключатель тем */}
-        <div className="flex gap-1.5">
-          {(Object.entries(themes) as [keyof typeof themes, typeof themes[keyof typeof themes]][]).map(([key, t]) => (
-            <button
-              key={key}
-              onClick={() => setColorTheme(key)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all border ${
-                colorTheme === key
-                  ? "gold-gradient text-white border-transparent shadow-sm"
-                  : "bg-white/50 border-border text-muted-foreground"
-              }`}
-            >
-              <Icon name={t.phraseIcon} size={10} />
-              {t.label}
-            </button>
-          ))}
-        </div>
+
       </header>
 
       {/* Content */}
@@ -119,6 +103,8 @@ export default function Index() {
           innSaved={innSaved}
           setInnSaved={setInnSaved}
           setIsLoggedIn={setIsLoggedIn}
+          colorTheme={colorTheme}
+          setColorTheme={setColorTheme}
         />
       </main>
 
