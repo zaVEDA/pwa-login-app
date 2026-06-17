@@ -42,8 +42,7 @@ export default function InvestorHero() {
             <span style={{ color: "hsl(35 72% 48%)" }}>для помогающих специалистов</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
-            Психологи, консультанты и коучи теряют время и деньги на бумажную работу. 
-            Мы решаем это одним приложением.
+            Вместо того чтобы уделяя 10–15 мин в день на ведение учета, специалист просто не оформляет документы вовсе. Никаких договоров, никаких актов — только надежда, что «пронесёт».
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
