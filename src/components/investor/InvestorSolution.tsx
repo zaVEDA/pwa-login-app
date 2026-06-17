@@ -58,9 +58,10 @@ export default function InvestorSolution() {
         <div className="rounded-3xl p-8 border"
           style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(140 25% 60% / 0.06))", borderColor: "hsl(35 72% 48% / 0.2)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Основатель</p>
-          <h2 className="font-cormorant text-3xl font-semibold mb-6" style={{ color: "hsl(24 20% 13%)" }}>
-            17 лет в учёте и тысячи предпринимателей
+          <h2 className="font-cormorant text-3xl font-semibold mb-1" style={{ color: "hsl(24 20% 13%)" }}>
+            Юлия Кузнецова
           </h2>
+          <p className="text-sm text-muted-foreground mb-6">17 лет в бухгалтерском и налоговом учёте</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
             {[
               { num: "17+", label: "лет в бух. и налоговом учёте" },
@@ -74,13 +75,11 @@ export default function InvestorSolution() {
             ))}
           </div>
           <p className="text-sm text-foreground/75 leading-relaxed mb-4">
-            Этот проект рождён из личного понимания боли — изнутри. 
-            Я знаю, как работают бухгалтерские программы, как ведут себя клиенты при работе с документами, 
-            как меняется нормативная база. И знаю, как объяснить это простым языком — потому что сама самоучка.
+            Этот проект — из личного опыта. Я работала в учёте, обучала людей работе с 1С, консультировала предпринимателей и видела одно и то же: люди боятся не работы, а бумаг. Я понимаю, как устроены программы, как меняется нормативная база и — главное — как объяснить это простым языком.
           </p>
           <div className="rounded-xl p-4 border-l-4" style={{ background: "hsl(35 72% 42% / 0.05)", borderLeftColor: "hsl(35 72% 42%)" }}>
             <p className="text-sm text-foreground/75 leading-relaxed">
-              Более 10 месяцев на постоянной основе работала с помогающими специалистами разного уровня — изучала их продукты, проходила путь клиента изнутри. Хорошо понимаю специфику их практик, логику выстраивания отношений с клиентом и точки, где документы становятся барьером.
+              Более 10 месяцев я работала с помогающими специалистами — изучала их практики, проходила путь клиента изнутри. Я хорошо понимаю, где именно документы становятся барьером — и как этот барьер убрать.
             </p>
           </div>
         </div>
