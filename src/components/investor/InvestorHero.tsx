@@ -38,7 +38,7 @@ export default function InvestorHero() {
           <p className="font-cormorant text-2xl font-medium mb-2" style={{ color: "hsl(35 72% 42%)" }}>ООО «ЗаВедующая»</p>
           <h1 className="font-cormorant text-5xl md:text-6xl font-semibold leading-tight mb-5"
             style={{ color: "hsl(24 20% 13%)" }}>
-            Сервис документооборота<br />
+            Сервис мобильного документооборота<br />
             <span style={{ color: "hsl(35 72% 48%)" }}>для помогающих специалистов</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
