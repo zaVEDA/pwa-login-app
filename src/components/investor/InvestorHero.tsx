@@ -42,7 +42,7 @@ export default function InvestorHero() {
             <span style={{ color: "hsl(35 72% 48%)" }}>для помогающих специалистов</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
-            Психологи, коучи и консультанты хотят работать и получать деньги законно — а не бояться проверок и разбираться в документах. Мы даём им это спокойствие.
+            Психологи, коучи и консультанты хотят работать и получать деньги законно — а не бояться проверок и разбираться в документах.<br />Мы даём им это спокойствие.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
