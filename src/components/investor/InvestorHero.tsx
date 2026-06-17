@@ -9,6 +9,16 @@ const audience = [
   { emoji: "✨", label: "Мастера" },
 ];
 
+const audienceMore = [
+  { emoji: "📸", label: "Фотографы" },
+  { emoji: "👶", label: "Няни" },
+  { emoji: "📚", label: "Репетиторы" },
+];
+
+const audienceExtra = [
+  { emoji: "🏠", label: "Арендодатели" },
+];
+
 export default function InvestorHero() {
   return (
     <>
@@ -58,11 +68,29 @@ export default function InvestorHero() {
 
       {/* Аудитория */}
       <section className="px-5 py-10 max-w-3xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap justify-center gap-4 mb-3">
           {audience.map((a) => (
             <div key={a.label} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/70 border shadow-sm text-sm font-medium"
               style={{ borderColor: "hsl(36 28% 82%)" }}>
               <span className="text-xl">{a.emoji}</span>
+              {a.label}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap justify-center gap-2.5 mb-2.5">
+          {audienceMore.map((a) => (
+            <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
+              style={{ borderColor: "hsl(36 28% 85%)" }}>
+              <span className="text-base">{a.emoji}</span>
+              {a.label}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap justify-center gap-2.5">
+          {audienceExtra.map((a) => (
+            <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
+              style={{ borderColor: "hsl(36 28% 85%)" }}>
+              <span className="text-base">{a.emoji}</span>
               {a.label}
             </div>
           ))}
