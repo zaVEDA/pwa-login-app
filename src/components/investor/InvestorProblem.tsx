@@ -74,6 +74,26 @@ export default function InvestorProblem() {
             <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>3 000</p>
             <p className="text-xs text-muted-foreground mt-1">активных пользователей</p>
           </div>
+          <div className="p-5 rounded-2xl border bg-white/70" style={{ borderColor: "hsl(36 28% 82%)" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "hsl(35 72% 48% / 0.1)" }}>
+                <Icon name="Tag" size={15} style={{ color: "hsl(35 72% 42%)" }} />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Средний тариф</p>
+            </div>
+            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>3 333 ₽</p>
+            <p className="text-xs text-muted-foreground mt-1">в месяц на пользователя</p>
+          </div>
+          <div className="p-5 rounded-2xl border bg-white/70" style={{ borderColor: "hsl(36 28% 82%)" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "hsl(140 40% 45% / 0.1)" }}>
+                <Icon name="TrendingUp" size={15} className="text-emerald-600" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Выручка · 12 месяцев</p>
+            </div>
+            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>11,6 млн</p>
+            <p className="text-xs text-muted-foreground mt-1">минимальный плановый объём</p>
+          </div>
         </div>
         <div className="p-5 rounded-2xl border bg-white/60" style={{ borderColor: "hsl(36 28% 82%)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Воронка рынка</p>
