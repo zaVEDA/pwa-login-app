@@ -57,7 +57,7 @@ export default function InvestorProblem() {
             <p className="text-sm text-foreground/70">только зарегистрированных самозанятых в России</p>
             <p className="text-xs text-muted-foreground mt-1">по данным на 31.05.2026</p>
             <p className="text-xs text-muted-foreground mt-3 pt-3 border-t" style={{ borderColor: "hsl(35 72% 48% / 0.2)" }}>
-              Реальная аудитория шире — приложение подойдёт любому, кто продаёт товар или услугу: ИП, фрилансерам, арендодателям и физлицам
+              Реальная аудитория шире — сервис полезен любому, кто что-то продаёт, покупает, сдаёт или оказывает услугу: ИП, фрилансерам, арендодателям и физлицам. Акцент на помогающих специалистах — стартовая точка, которая уточняется по итогам тестирования
             </p>
           </div>
           <div className="p-5 rounded-2xl border bg-white/70" style={{ borderColor: "hsl(36 28% 82%)" }}>
