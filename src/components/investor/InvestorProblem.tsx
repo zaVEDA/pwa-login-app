@@ -53,7 +53,7 @@ export default function InvestorProblem() {
           <div className="col-span-1 sm:col-span-2 p-6 rounded-2xl border text-center"
             style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(40 80% 62% / 0.1))", borderColor: "hsl(35 72% 48% / 0.25)" }}>
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Объём рынка</p>
-            <p className="font-cormorant text-5xl font-semibold mb-1" style={{ color: "hsl(35 72% 38%)" }}>16 629 553</p>
+            <p className="font-cormorant text-5xl font-semibold mb-1" style={{ color: "hsl(35 72% 38%)" }}>от 16 629 553</p>
             <p className="text-sm text-foreground/70">только зарегистрированных самозанятых в России</p>
             <p className="text-xs text-muted-foreground mt-1">по данным на 31.05.2026</p>
             <p className="text-xs text-muted-foreground mt-3 pt-3 border-t" style={{ borderColor: "hsl(35 72% 48% / 0.2)" }}>
