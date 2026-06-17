@@ -63,37 +63,37 @@ export default function InvestorHero() {
               Условия инвестирования
             </a>
           </div>
-        </div>
-      </section>
 
-      {/* Аудитория */}
-      <section className="px-5 py-10 max-w-3xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-4 mb-3">
-          {audience.map((a) => (
-            <div key={a.label} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/70 border shadow-sm text-sm font-medium"
-              style={{ borderColor: "hsl(36 28% 82%)" }}>
-              <span className="text-xl">{a.emoji}</span>
-              {a.label}
+          {/* Аудитория */}
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <div className="flex flex-wrap justify-center gap-3">
+              {audience.map((a) => (
+                <div key={a.label} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/70 border shadow-sm text-sm font-medium"
+                  style={{ borderColor: "hsl(36 28% 82%)" }}>
+                  <span className="text-xl">{a.emoji}</span>
+                  {a.label}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-2.5 mb-2.5">
-          {audienceMore.map((a) => (
-            <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
-              style={{ borderColor: "hsl(36 28% 85%)" }}>
-              <span className="text-base">{a.emoji}</span>
-              {a.label}
+            <div className="flex flex-wrap justify-center gap-2">
+              {audienceMore.map((a) => (
+                <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
+                  style={{ borderColor: "hsl(36 28% 85%)" }}>
+                  <span className="text-base">{a.emoji}</span>
+                  {a.label}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-2.5">
-          {audienceExtra.map((a) => (
-            <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
-              style={{ borderColor: "hsl(36 28% 85%)" }}>
-              <span className="text-base">{a.emoji}</span>
-              {a.label}
+            <div className="flex flex-wrap justify-center gap-2">
+              {audienceExtra.map((a) => (
+                <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
+                  style={{ borderColor: "hsl(36 28% 85%)" }}>
+                  <span className="text-base">{a.emoji}</span>
+                  {a.label}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </section>
     </>
