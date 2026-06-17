@@ -143,6 +143,15 @@ export default function InvestorProblem() {
             </div>
           ))}
         </div>
+
+        <div className="mt-6 rounded-2xl px-6 py-5 border-l-4" style={{ background: "hsl(0 60% 50% / 0.05)", borderLeftColor: "hsl(0 60% 50% / 0.4)" }}>
+          <p className="font-cormorant text-xl font-semibold leading-snug mb-2" style={{ color: "hsl(24 20% 13%)" }}>
+            Итого: страх ошибиться — парализует
+          </p>
+          <p className="text-sm leading-relaxed text-foreground/70">
+            Изменения в законодательстве и повышенное внимание контролирующих органов последние пару лет создают атмосферу тревоги. Страх сделать что-то не так — или не сделать вовсе — становится причиной того, что специалист просто перестаёт вести свою деятельность.
+          </p>
+        </div>
       </section>
 
       {/* Нет аналогов */}
