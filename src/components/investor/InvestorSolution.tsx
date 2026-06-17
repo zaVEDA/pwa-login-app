@@ -115,7 +115,7 @@ export default function InvestorSolution() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {spendItems.map((s, i) => (
-            <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-white/60 border"
+            <div key={i} className="flex items-start gap-3 p-5 rounded-2xl bg-white/60 border"
               style={{ borderColor: "hsl(36 28% 82%)" }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: "hsl(35 72% 48% / 0.1)" }}>
