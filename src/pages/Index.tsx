@@ -36,7 +36,7 @@ export default function Index() {
   useEffect(() => {
     localStorage.setItem("colorTheme", colorTheme);
     const root = document.documentElement;
-    if (colorTheme === "honey" || colorTheme === "clay") {
+    if (colorTheme === "honey") {
       root.removeAttribute("data-theme");
     } else {
       root.setAttribute("data-theme", colorTheme);
@@ -45,7 +45,7 @@ export default function Index() {
 
   useEffect(() => {
     const saved = localStorage.getItem("colorTheme") as keyof typeof themes | null;
-    if (saved && saved !== "honey" && saved !== "clay") {
+    if (saved && saved !== "honey") {
       document.documentElement.setAttribute("data-theme", saved);
     }
   }, []);
