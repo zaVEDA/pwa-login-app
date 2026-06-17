@@ -57,7 +57,7 @@ export default function InvestorHero() {
               Открыть демо приложения
             </a>
             <a href="#invest"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm border transition-all hover:bg-white/60"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm border transition-all hover:bg-white hover:border-[hsl(35_72%_48%)] hover:text-[hsl(35_72%_38%)] hover:shadow-md hover:scale-[1.02]"
               style={{ borderColor: "hsl(36 28% 82%)", color: "hsl(24 20% 13%)" }}>
               <Icon name="TrendingUp" size={16} />
               Условия инвестирования
