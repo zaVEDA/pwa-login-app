@@ -84,7 +84,7 @@ export default function Index() {
   return (
     <div
       className="min-h-screen flex flex-col max-w-md mx-auto"
-      style={{ background: "linear-gradient(160deg, hsl(36 25% 96%) 0%, hsl(36 20% 91%) 100%)" }}
+      style={{ background: "linear-gradient(160deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%)" }}
     >
       {/* Header */}
       <header className="px-5 pt-12 pb-4">

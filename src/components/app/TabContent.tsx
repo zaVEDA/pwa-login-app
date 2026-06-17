@@ -107,10 +107,9 @@ export default function TabContent({
                 className="card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center active:scale-[0.98] transition-transform"
               >
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, hsl(38 65% 42% / 0.15), hsl(30 45% 35% / 0.1))" }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10"
                 >
-                  <Icon name="FileText" size={20} className="text-amber-700" />
+                  <Icon name="FileText" size={20} className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{doc.title}</p>
@@ -119,7 +118,7 @@ export default function TabContent({
                 <div className="flex flex-col items-end gap-1.5">
                   <span className={`doc-tag ${
                     doc.status === "signed" ? "bg-green-100 text-green-700" :
-                    doc.status === "pending" ? "bg-amber-100 text-amber-700" :
+                    doc.status === "pending" ? "bg-primary/15 text-primary" :
                     "bg-gray-100 text-gray-500"
                   }`}>
                     {doc.statusLabel}
@@ -158,17 +157,16 @@ export default function TabContent({
                 className="card-warm rounded-2xl p-4 flex gap-3 items-center text-left shadow-sm active:scale-[0.98] transition-transform"
               >
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, hsl(38 65% 42% / 0.15), hsl(30 45% 35% / 0.1))" }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10"
                 >
-                  <Icon name={t.icon} size={20} className="text-amber-700" />
+                  <Icon name={t.icon} size={20} className="text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{t.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <span className="doc-tag bg-amber-100/80 text-amber-700 text-[10px]">{t.tag}</span>
+                  <span className="doc-tag bg-primary/15 text-primary text-[10px]">{t.tag}</span>
                   <Icon name="ArrowRight" size={14} className="text-muted-foreground" />
                 </div>
               </button>
@@ -186,7 +184,7 @@ export default function TabContent({
 
           {/* Featured */}
           <div className="card-warm rounded-2xl p-5 shadow-sm">
-            <span className="doc-tag bg-amber-100/80 text-amber-700 text-[10px] mb-3 inline-block">Рекомендуем</span>
+            <span className="doc-tag bg-primary/15 text-primary text-[10px] mb-3 inline-block">Рекомендуем</span>
             <h3 className="font-cormorant text-xl font-semibold text-foreground mb-2">Старт самозанятого</h3>
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
               Полный гайд: регистрация, первый клиент, первый документ, первый налог
@@ -202,8 +200,8 @@ export default function TabContent({
                 key={a.title}
                 className="card-warm rounded-2xl p-4 flex gap-3 items-start w-full text-left shadow-sm active:scale-[0.98] transition-transform"
               >
-                <div className="w-9 h-9 rounded-xl bg-amber-700/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon name={a.icon} size={16} className="text-amber-700" />
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Icon name={a.icon} size={16} className="text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium leading-tight">{a.title}</p>
@@ -230,8 +228,8 @@ export default function TabContent({
                 <h3 className="font-cormorant text-xl font-semibold text-foreground">Анна Смирнова</h3>
                 <p className="text-sm text-muted-foreground">+7 (916) 000-00-00</p>
                 <div className="flex items-center gap-1.5 mt-1">
-                  <Icon name="Briefcase" size={11} className="text-amber-700" />
-                  <span className="text-xs text-amber-700">Психолог · Самозанятая</span>
+                  <Icon name="Briefcase" size={11} className="text-primary" />
+                  <span className="text-xs text-primary">Психолог · Самозанятая</span>
                 </div>
               </div>
             </div>
@@ -240,7 +238,7 @@ export default function TabContent({
           {/* Цветовая тема */}
           <div className="card-warm rounded-2xl p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
-              <Icon name="Palette" size={15} className="text-amber-700" />
+              <Icon name="Palette" size={15} className="text-primary" />
               <p className="text-sm font-medium">Оформление</p>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -264,7 +262,7 @@ export default function TabContent({
           {/* ИНН блок — только для самозанятых */}
           {isSelfEmployed && <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
             <div className="flex items-center gap-2 mb-1">
-              <Icon name="Hash" size={15} className="text-amber-700" />
+              <Icon name="Hash" size={15} className="text-primary" />
               <p className="text-sm font-medium">Данные самозанятого</p>
               {innSaved && <span className="ml-auto doc-tag bg-green-100 text-green-700 text-[10px]">Сохранено</span>}
             </div>
@@ -301,12 +299,12 @@ export default function TabContent({
 
           {/* Мой налог — только для самозанятых */}
           {isSelfEmployed && <div
-            className="rounded-2xl p-4 border border-amber-300/40"
-            style={{ background: "linear-gradient(135deg, hsl(43 72% 58% / 0.12), hsl(38 65% 42% / 0.08))" }}
+            className="rounded-2xl p-4 border border-primary/30"
+            style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.07))" }}
           >
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-600/15 flex items-center justify-center flex-shrink-0">
-                <Icon name="Receipt" size={16} className="text-amber-700" />
+              <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <Icon name="Receipt" size={16} className="text-primary" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">Выбить чек самозанятого</p>
@@ -340,8 +338,8 @@ export default function TabContent({
                 onClick={item.label === "Выйти" ? () => setIsLoggedIn(false) : undefined}
                 className={`w-full card-warm rounded-xl p-3.5 flex items-center gap-3 text-left shadow-sm active:scale-[0.98] transition-transform ${item.danger ? "border border-red-200/50" : ""}`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? "bg-red-50" : "bg-amber-700/10"}`}>
-                  <Icon name={item.icon} size={15} className={item.danger ? "text-red-500" : "text-amber-700"} />
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? "bg-red-50" : "bg-primary/10"}`}>
+                  <Icon name={item.icon} size={15} className={item.danger ? "text-red-500" : "text-primary"} />
                 </div>
                 <span className={`flex-1 text-sm ${item.danger ? "text-red-500" : "text-foreground"}`}>{item.label}</span>
                 {!item.danger && <Icon name="ChevronRight" size={15} className="text-muted-foreground" />}

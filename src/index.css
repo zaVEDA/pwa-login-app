@@ -120,12 +120,12 @@
     background-image:
       radial-gradient(
         ellipse at 20% 50%,
-        hsl(35 78% 50% / 0.06) 0%,
+        hsl(var(--primary) / 0.06) 0%,
         transparent 60%
       ),
       radial-gradient(
         ellipse at 80% 20%,
-        hsl(40 85% 62% / 0.05) 0%,
+        hsl(var(--accent) / 0.05) 0%,
         transparent 50%
       );
   }
@@ -156,13 +156,21 @@
   }
 
   .card-warm {
-    background: linear-gradient(145deg, hsl(38 45% 96%), hsl(37 35% 92%));
-    border: 1px solid hsl(36 30% 84%);
+    background: linear-gradient(
+      145deg,
+      hsl(var(--card)),
+      hsl(var(--secondary))
+    );
+    border: 1px solid hsl(var(--border));
   }
 
   .card-dark {
-    background: linear-gradient(145deg, hsl(35 55% 88%), hsl(36 45% 84%));
-    border: 1px solid hsl(35 40% 76%);
+    background: linear-gradient(
+      145deg,
+      hsl(var(--secondary)),
+      hsl(var(--muted))
+    );
+    border: 1px solid hsl(var(--border));
   }
 
   .shimmer {

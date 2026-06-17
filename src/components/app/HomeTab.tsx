@@ -85,8 +85,8 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
             onClick={() => setActiveTab("docs")}
             className="card-dark rounded-2xl p-4 text-left active:scale-[0.97] transition-transform"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-600/15 flex items-center justify-center mb-3">
-              <Icon name="FilePlus" size={18} className="text-amber-700" />
+            <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center mb-3">
+              <Icon name="FilePlus" size={18} className="text-primary" />
             </div>
             <p className="text-sm font-medium text-foreground">Создать документ</p>
             <p className="text-xs text-muted-foreground mt-0.5">Договор, акт, счёт</p>
@@ -95,8 +95,8 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
             onClick={() => setActiveTab("templates")}
             className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-700/10 flex items-center justify-center mb-3">
-              <Icon name="LayoutTemplate" size={18} className="text-amber-700" />
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <Icon name="LayoutTemplate" size={18} className="text-primary" />
             </div>
             <p className="text-sm font-medium text-foreground">Шаблоны</p>
             <p className="text-xs text-muted-foreground mt-0.5">Под вашу деятельность</p>
@@ -105,15 +105,15 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
             onClick={() => setActiveTab("knowledge")}
             className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-700/10 flex items-center justify-center mb-3">
-              <Icon name="GraduationCap" size={18} className="text-amber-700" />
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <Icon name="GraduationCap" size={18} className="text-primary" />
             </div>
             <p className="text-sm font-medium text-foreground">База знаний</p>
             <p className="text-xs text-muted-foreground mt-0.5">Законы и инструкции</p>
           </button>
           <button className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border">
-            <div className="w-9 h-9 rounded-xl bg-amber-700/10 flex items-center justify-center mb-3">
-              <Icon name="BarChart3" size={18} className="text-amber-700" />
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <Icon name="BarChart3" size={18} className="text-primary" />
             </div>
             <p className="text-sm font-medium text-foreground">Учёт доходов</p>
             <p className="text-xs text-muted-foreground mt-0.5">Доходы и налоги</p>
@@ -130,8 +130,8 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
         <div className="space-y-2.5">
           {recentDocs.map((doc) => (
             <div key={doc.title} className="card-warm rounded-xl p-3.5 flex items-center gap-3 shadow-sm">
-              <div className="w-9 h-9 rounded-xl bg-amber-700/10 flex items-center justify-center flex-shrink-0">
-                <Icon name="FileText" size={16} className="text-amber-700" />
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon name="FileText" size={16} className="text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{doc.title}</p>
@@ -139,7 +139,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
               </div>
               <span className={`doc-tag flex-shrink-0 ${
                 doc.status === "signed" ? "bg-green-100 text-green-700" :
-                doc.status === "pending" ? "bg-amber-100 text-amber-700" :
+                doc.status === "pending" ? "bg-primary/15 text-primary" :
                 "bg-gray-100 text-gray-500"
               }`}>
                 {doc.statusLabel}
@@ -151,11 +151,11 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
 
       {/* Tax reminder */}
       <div
-        className="rounded-2xl p-4 border border-amber-300/40"
-        style={{ background: "linear-gradient(135deg, hsl(43 72% 58% / 0.12), hsl(38 65% 42% / 0.08))" }}
+        className="rounded-2xl p-4 border border-primary/30"
+        style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.07))" }}
       >
         <div className="flex gap-3 items-start mb-3">
-          <Icon name="Bell" size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <Icon name="Bell" size={18} className="text-primary flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-foreground">Налог за май</p>
             <p className="text-xs text-muted-foreground mt-0.5">До 25 июня нужно оплатить ₽1 872 в приложении «Мой налог»</p>
@@ -164,7 +164,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
         <a
           href="#"
           onClick={(e) => { e.preventDefault(); window.open("https://lknpd.nalog.ru/", "_blank"); }}
-          className="w-full py-2 rounded-xl bg-amber-700/15 text-amber-800 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+          className="w-full py-2 rounded-xl bg-primary/15 text-primary text-xs font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
         >
           <Icon name="ExternalLink" size={12} />
           Открыть «Мой налог»
