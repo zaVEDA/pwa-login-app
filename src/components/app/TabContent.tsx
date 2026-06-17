@@ -239,7 +239,7 @@ export default function TabContent({
           <div className="card-warm rounded-2xl p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <Icon name="Palette" size={15} className="text-primary" />
-              <p className="text-sm font-medium">Оформление</p>
+              <p className="text-sm font-medium">Тема</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               {(Object.entries(themes) as [keyof typeof themes, typeof themes[keyof typeof themes]][]).map(([key, t]) => (
@@ -252,7 +252,7 @@ export default function TabContent({
                       : "bg-white/60 border-border text-muted-foreground hover:border-foreground/30"
                   }`}
                 >
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: t.dot }} />
+                  <Icon name={t.phraseIcon} size={11} />
                   {t.label}
                 </button>
               ))}
