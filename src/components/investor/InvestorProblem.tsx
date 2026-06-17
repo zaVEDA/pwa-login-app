@@ -31,7 +31,7 @@ const marketRows = [
   { label: "Весь рынок самозанятых", value: "16 629 553", pct: 100, color: "hsl(36 28% 82%)", textColor: "text-foreground/50" },
   { label: "Помогающие специалисты (≈15%)", value: "≈ 2 494 000", pct: 15, color: "hsl(35 72% 70%)", textColor: "text-foreground/60" },
   { label: "Целевая аудитория с болью (≈5%)", value: "≈ 831 000", pct: 5, color: "hsl(35 72% 55%)", textColor: "text-foreground/70" },
-  { label: "Цель через 12 мес.", value: "30 000", pct: 0.18, color: "hsl(35 72% 40%)", textColor: "font-semibold text-foreground", accent: true },
+  { label: "Цель через 12 мес.", value: "3 000", pct: 0.018, color: "hsl(35 72% 40%)", textColor: "font-semibold text-foreground", accent: true },
 ];
 
 export default function InvestorProblem() {
@@ -68,7 +68,7 @@ export default function InvestorProblem() {
               </div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Цель · 12 месяцев</p>
             </div>
-            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>30 000</p>
+            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>3 000</p>
             <p className="text-xs text-muted-foreground mt-1">активных пользователей</p>
           </div>
         </div>
@@ -91,7 +91,7 @@ export default function InvestorProblem() {
           <div className="mt-5 pt-4 border-t flex items-center gap-2" style={{ borderColor: "hsl(36 28% 82%)" }}>
             <Icon name="Info" size={13} className="text-muted-foreground flex-shrink-0" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Для достижения цели достаточно привлечь <strong>0,18% от общего рынка</strong> — или <strong>3,6% от целевой аудитории</strong> помогающих специалистов.
+              Для достижения цели достаточно привлечь <strong>0,018% от общего рынка</strong> — или <strong>0,36% от целевой аудитории</strong> помогающих специалистов.
             </p>
           </div>
         </div>
