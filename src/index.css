@@ -54,11 +54,11 @@
   }
 
   [data-theme="sage"] {
-    --background: 140 20% 95%;
+    --background: 138 25% 97%;
     --foreground: 150 20% 12%;
-    --card: 140 22% 92%;
+    --card: 138 28% 94%;
     --card-foreground: 150 20% 12%;
-    --popover: 140 22% 92%;
+    --popover: 138 28% 94%;
     --popover-foreground: 150 20% 12%;
     --primary: 150 45% 40%;
     --primary-foreground: 140 50% 97%;
