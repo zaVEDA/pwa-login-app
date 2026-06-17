@@ -246,9 +246,9 @@ export default function InvestorProblem() {
               Оплату и декларирование налогов специалист производит сам — это его ответственность и его выбор. Мы помогаем вести учёт, держать руку на пульсе и анализировать внесённые данные, чтобы ничего не упустить.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {socialItems.map((item, i) => (
-              <div key={i} className="flex flex-col gap-2 p-4 rounded-xl bg-white/60 border" style={{ borderColor: "hsl(36 28% 82%)" }}>
+              <div key={i} className="flex flex-col gap-2 p-3 rounded-xl bg-white/60 border" style={{ borderColor: "hsl(36 28% 82%)" }}>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(35 72% 42% / 0.1)" }}>
                   <Icon name={item.icon} size={15} style={{ color: "hsl(35 72% 42%)" }} />
                 </div>
