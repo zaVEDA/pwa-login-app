@@ -41,7 +41,7 @@ export default function InvestorHero() {
             Сервис мобильного документооборота<br />
             <span style={{ color: "hsl(35 72% 48%)" }}>для помогающих специалистов</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
             Психологи, консультанты и коучи теряют время и деньги на бумажную работу. 
             Мы решаем это одним приложением.
           </p>
