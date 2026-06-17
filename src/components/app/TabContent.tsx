@@ -37,10 +37,10 @@ const specialties = [
 ];
 
 const themes = {
-  honey: { label: "Янтарь", phraseIcon: "Leaf" },
-  sage:  { label: "Шалфей", phraseIcon: "Sprout" },
-  rose:  { label: "Роза",   phraseIcon: "Flower2" },
-  clay:  { label: "Глина",  phraseIcon: "TreePine" },
+  honey: { label: "Янтарь", phraseIcon: "Leaf",     dot: "#C8821A" },
+  sage:  { label: "Шалфей", phraseIcon: "Sprout",   dot: "#4A9067" },
+  rose:  { label: "Роза",   phraseIcon: "Flower2",  dot: "#C0486A" },
+  clay:  { label: "Глина",  phraseIcon: "TreePine", dot: "#A0602A" },
 } as const;
 
 interface Props {
@@ -248,13 +248,13 @@ export default function TabContent({
                 <button
                   key={key}
                   onClick={() => setColorTheme(key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                     colorTheme === key
-                      ? "gold-gradient text-white border-transparent shadow-sm"
-                      : "bg-white/60 border-border text-muted-foreground"
+                      ? "bg-foreground text-background border-transparent shadow-sm"
+                      : "bg-white/60 border-border text-muted-foreground hover:border-foreground/30"
                   }`}
                 >
-                  <Icon name={t.phraseIcon} size={11} />
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: t.dot }} />
                   {t.label}
                 </button>
               ))}

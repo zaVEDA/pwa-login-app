@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import LoginScreen from "@/components/app/LoginScreen";
 import HomeTab from "@/components/app/HomeTab";
@@ -29,7 +29,26 @@ const themes = {
 
 export default function Index() {
   const todayPhrase = motivationalPhrases[new Date().getDate() % motivationalPhrases.length];
-  const [colorTheme, setColorTheme] = useState<keyof typeof themes>("honey");
+  const [colorTheme, setColorTheme] = useState<keyof typeof themes>(
+    () => (localStorage.getItem("colorTheme") as keyof typeof themes) || "honey"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("colorTheme", colorTheme);
+    const root = document.documentElement;
+    if (colorTheme === "honey" || colorTheme === "clay") {
+      root.removeAttribute("data-theme");
+    } else {
+      root.setAttribute("data-theme", colorTheme);
+    }
+  }, [colorTheme]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("colorTheme") as keyof typeof themes | null;
+    if (saved && saved !== "honey" && saved !== "clay") {
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+  }, []);
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
