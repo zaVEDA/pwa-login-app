@@ -150,16 +150,18 @@ export default function InvestorProblem() {
             return (
               <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(36 28% 82%)" }}>
                 <button
-                  className="w-full flex items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-black/[0.02]"
+                  className="w-full flex items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-black/[0.02]"
                   onClick={() => setOpenIndex(isOpen ? null : i)}
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "hsl(0 60% 50% / 0.08)" }}>
-                    <Icon name={p.icon} size={15} className="text-rose-500" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: "hsl(35 72% 48% / 0.1)" }}>
+                    <Icon name={p.icon} size={18} style={{ color: "hsl(35 72% 42%)" }} />
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-widest text-rose-400 flex-shrink-0">{p.tag}</span>
-                  <p className="font-cormorant text-lg font-semibold flex-1" style={{ color: "hsl(24 20% 13%)" }}>{p.title}</p>
-                  <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{p.tag}</span>
+                    <p className="font-cormorant text-xl font-semibold mt-0.5" style={{ color: "hsl(24 20% 13%)" }}>{p.title}</p>
+                  </div>
+                  <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground flex-shrink-0 mt-1" />
                 </button>
                 {isOpen && (
                   <div className="px-4 pb-4 pt-0">
