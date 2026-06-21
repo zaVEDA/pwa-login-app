@@ -38,10 +38,14 @@
 
     --beige: 38 35% 96%;
     --gold: 35 72% 48%;
+    --gold-dark: 35 72% 42%;
+    --gold-metric: 35 72% 38%;
     --gold-light: 40 80% 62%;
     --amber: 34 85% 55%;
     --honey: 32 75% 45%;
     --dark-amber: 28 60% 22%;
+    --green-accent: 140 40% 45%;
+    --green-accent-bg: 140 40% 45% / 0.08;
 
     --sidebar-background: 38 30% 91%;
     --sidebar-foreground: 24 20% 13%;

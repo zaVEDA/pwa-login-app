@@ -77,7 +77,7 @@ export default function InvestorHero() {
             <div className="flex flex-wrap justify-center gap-2">
               {audienceMore.map((a) => (
                 <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
-                  style={{ borderColor: "hsl(36 28% 85%)" }}>
+                  style={{ borderColor: "hsl(36 28% 82%)" }}>
                   <span className="text-base">{a.emoji}</span>
                   {a.label}
                 </div>
@@ -86,7 +86,7 @@ export default function InvestorHero() {
             <div className="flex flex-wrap justify-center gap-2">
               {audienceExtra.map((a) => (
                 <div key={a.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 border text-xs font-medium text-foreground/70"
-                  style={{ borderColor: "hsl(36 28% 85%)" }}>
+                  style={{ borderColor: "hsl(36 28% 82%)" }}>
                   <span className="text-base">{a.emoji}</span>
                   {a.label}
                 </div>

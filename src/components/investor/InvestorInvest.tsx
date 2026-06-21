@@ -62,7 +62,7 @@ export default function InvestorInvest() {
 
         {/* 2 раунд */}
         <div className="p-5 rounded-2xl border"
-          style={{ background: "hsl(38 30% 93%)", borderColor: "hsl(36 28% 80%)" }}>
+          style={{ background: "hsl(38 30% 93%)", borderColor: "hsl(36 28% 82%)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Icon name="Repeat2" size={16} style={{ color: "hsl(35 72% 42%)" }} />
             <span className="text-sm font-semibold">Второй раунд — через 2,5–3 месяца</span>
@@ -160,7 +160,7 @@ export default function InvestorInvest() {
       </section>
 
       {/* Footer */}
-      <footer className="px-5 py-8 text-center border-t" style={{ borderColor: "hsl(36 28% 85%)" }}>
+      <footer className="px-5 py-8 text-center border-t" style={{ borderColor: "hsl(36 28% 82%)" }}>
         <p className="font-cormorant text-lg font-medium mb-1" style={{ color: "hsl(35 72% 42%)" }}>ООО «ЗаВедующая»</p>
         <p className="text-xs text-muted-foreground">Инвестиционное предложение · 2026</p>
       </footer>

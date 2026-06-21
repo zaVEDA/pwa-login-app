@@ -58,7 +58,7 @@ export default function InvestorSolution() {
       {/* Почему я */}
       <section className="px-5 py-12 max-w-3xl mx-auto">
         <div className="rounded-3xl p-8 border"
-          style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(140 25% 60% / 0.06))", borderColor: "hsl(35 72% 48% / 0.2)" }}>
+          style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(140 40% 45% / 0.06))", borderColor: "hsl(35 72% 48% / 0.2)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Основатель</p>
           <img
             src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cc689af7-8913-4f18-ba8d-3d2a03d04d0e.jpg"
@@ -116,11 +116,11 @@ export default function InvestorSolution() {
         <div className="space-y-2.5">
           {milestones.map((m, i) => (
             <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl"
-              style={{ background: m.done ? "hsl(140 30% 50% / 0.07)" : "hsl(38 30% 94%)" }}>
+              style={{ background: m.done ? "hsl(140 40% 45% / 0.07)" : "hsl(38 30% 94%)" }}>
               <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${m.done ? "" : "border-2"}`}
                 style={m.done
                   ? { background: "hsl(140 40% 45%)" }
-                  : { borderColor: "hsl(36 28% 78%)" }}>
+                  : { borderColor: "hsl(36 28% 82%)" }}>
                 {m.done && <Icon name="Check" size={11} className="text-white" />}
               </div>
               <p className={`text-sm leading-snug ${m.done ? "text-foreground/80" : "text-foreground/50"}`}>{m.text}</p>
