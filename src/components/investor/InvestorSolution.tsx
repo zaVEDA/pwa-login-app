@@ -40,14 +40,16 @@ export default function InvestorSolution() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {features.map((f, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-white/70 border shadow-sm"
+            <div key={i} className="flex items-start gap-4 p-5 rounded-2xl bg-white/70 border shadow-sm"
               style={{ borderColor: "hsl(36 28% 82%)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: "hsl(35 72% 48% / 0.1)" }}>
-                <Icon name={f.icon} size={18} style={{ color: "hsl(35 72% 42%)" }} />
+                <Icon name={f.icon} size={22} style={{ color: "hsl(35 72% 42%)" }} />
               </div>
-              <h3 className="font-semibold text-sm mb-1">{f.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+              <div>
+                <h3 className="font-semibold text-sm mb-1">{f.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+              </div>
             </div>
           ))}
         </div>
