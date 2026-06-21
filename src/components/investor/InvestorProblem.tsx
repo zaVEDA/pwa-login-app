@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
 const problems = [
@@ -48,6 +49,7 @@ const marketRows = [
 ];
 
 export default function InvestorProblem() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   return (
     <>
       {/* Рынок и показатели */}
@@ -142,22 +144,31 @@ export default function InvestorProblem() {
         <p className="text-sm leading-relaxed text-foreground/70 mb-8 -mt-4">
           Наш сервис документооборота даёт именно это — через доступную стоимость, логичный интерфейс, качественные ответы и готовые решения. Рынок до сих пор не предлагал ничего подобного.
         </p>
-        <div className="space-y-4">
-          {problems.map((p, i) => (
-            <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(36 28% 82%)" }}>
-              <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: "hsl(0 60% 50% / 0.08)" }}>
-                  <Icon name={p.icon} size={15} className="text-rose-500" />
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-rose-400">{p.tag}</span>
+        <div className="space-y-3">
+          {problems.map((p, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(36 28% 82%)" }}>
+                <button
+                  className="w-full flex items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-black/[0.02]"
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: "hsl(0 60% 50% / 0.08)" }}>
+                    <Icon name={p.icon} size={15} className="text-rose-500" />
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-rose-400 flex-shrink-0">{p.tag}</span>
+                  <p className="font-cormorant text-lg font-semibold flex-1" style={{ color: "hsl(24 20% 13%)" }}>{p.title}</p>
+                  <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground flex-shrink-0" />
+                </button>
+                {isOpen && (
+                  <div className="px-4 pb-4 pt-0">
+                    <p className="text-sm leading-relaxed text-foreground/70">{p.text}</p>
+                  </div>
+                )}
               </div>
-              <div className="px-4 pb-4">
-                <p className="font-cormorant text-xl font-semibold mb-1" style={{ color: "hsl(24 20% 13%)" }}>{p.title}</p>
-                <p className="text-sm leading-relaxed text-foreground/70">{p.text}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-6 rounded-2xl px-6 py-5 border-l-4" style={{ background: "hsl(0 60% 50% / 0.05)", borderLeftColor: "hsl(0 60% 50% / 0.4)" }}>
