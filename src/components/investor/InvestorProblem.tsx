@@ -216,27 +216,41 @@ export default function InvestorProblem() {
       <section className="px-5 pb-4 max-w-3xl mx-auto">
         <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.1))", borderColor: "hsl(35 72% 48% / 0.25)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "hsl(35 72% 42%)" }}>Наше отличие</p>
-          <h2 className="font-cormorant text-3xl font-semibold mb-4" style={{ color: "hsl(24 20% 13%)" }}>
+          <h2 className="font-cormorant text-3xl font-semibold mb-6" style={{ color: "hsl(24 20% 13%)" }}>
             Просто. Мобильно. Понятно.
           </h2>
-          <div className="space-y-3">
+          {/* Шапка таблицы */}
+          <div className="grid grid-cols-3 gap-2 mb-2 px-1">
+            <div />
+            <div className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">Конкуренты</div>
+            <div className="text-center text-xs font-semibold uppercase tracking-widest" style={{ color: "hsl(35 72% 42%)" }}>Мы</div>
+          </div>
+          <div className="space-y-2">
             {[
-              { icon: "Smartphone", text: "Разрабатываем с нуля под мобильный экран — всё крупно, удобно, попадёшь пальцем" },
-              { icon: "Repeat", text: "Данные вводятся один раз и автоматически подставляются во все документы" },
-              { icon: "PenLine", text: "Подписание по ЭДО встроено в процесс — без распечаток и сканов" },
-              { icon: "MessageCircle", text: "Язык живой, не бухгалтерский — понятен без специального образования" },
-              { icon: "Map", text: "Чёткая логика шагов — человек всегда знает, что делать дальше" },
-              { icon: "FileSpreadsheet", text: "Выгрузка в Excel — данные можно передать в бухгалтерскую программу для дальнейшей обработки" },
-              { icon: "ClipboardList", text: "Аналитика по недостающим документам — сразу видно, что не оформлено и что может создать риски" },
-              { icon: "Lightbulb", text: "Лёгкие подсказки, которые помогут не налететь на штрафы и не получить блокировку счёта по 115-ФЗ" },
-              { icon: "MessageSquare", text: "Ответ на вопрос — до того, как он стал проблемой: встроенные сценарии и пояснения по ситуациям" },
-              { icon: "GraduationCap", text: "Обучение и служба поддержки — рядом на каждом шаге, особенно для тех, кто сталкивается с документами впервые" },
+              { label: "Мобильный экран", icon: "Smartphone" },
+              { label: "Данные вводятся один раз", icon: "Repeat" },
+              { label: "Подписание по ЭДО", icon: "PenLine" },
+              { label: "Живой язык", icon: "MessageCircle" },
+              { label: "Чёткая логика шагов", icon: "Map" },
+              { label: "Выгрузка в Excel", icon: "FileSpreadsheet" },
+              { label: "Аналитика документов", icon: "ClipboardList" },
+              { label: "Подсказки по налогам", icon: "Lightbulb" },
+              { label: "Встроенные сценарии", icon: "MessageSquare" },
+              { label: "Обучение и поддержка", icon: "GraduationCap" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "hsl(35 72% 42% / 0.12)" }}>
-                  <Icon name={item.icon} size={14} style={{ color: "hsl(35 72% 42%)" }} />
+              <div key={i} className="grid grid-cols-3 gap-2 items-center p-2.5 rounded-xl bg-white/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "hsl(35 72% 42% / 0.12)" }}>
+                    <Icon name={item.icon} size={13} style={{ color: "hsl(35 72% 42%)" }} />
+                  </div>
+                  <span className="text-xs text-foreground/80 leading-snug">{item.label}</span>
                 </div>
-                <p className="text-sm leading-relaxed text-foreground/80">{item.text}</p>
+                <div className="flex justify-center">
+                  <Icon name="X" size={16} className="text-rose-300" />
+                </div>
+                <div className="flex justify-center">
+                  <Icon name="Check" size={16} style={{ color: "hsl(140 40% 45%)" }} />
+                </div>
               </div>
             ))}
           </div>
