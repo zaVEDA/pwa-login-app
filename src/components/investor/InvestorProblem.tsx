@@ -219,38 +219,24 @@ export default function InvestorProblem() {
           <h2 className="font-cormorant text-3xl font-semibold mb-6" style={{ color: "hsl(24 20% 13%)" }}>
             Просто. Мобильно. Понятно.
           </h2>
-          {/* Шапка таблицы */}
-          <div className="grid grid-cols-3 gap-2 mb-2 px-1">
-            <div />
-            <div className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">Конкуренты</div>
-            <div className="text-center text-xs font-semibold uppercase tracking-widest" style={{ color: "hsl(35 72% 42%)" }}>Мы</div>
-          </div>
-          <div className="space-y-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {[
               { label: "Мобильный экран", icon: "Smartphone" },
-              { label: "Данные вводятся один раз", icon: "Repeat" },
-              { label: "Подписание по ЭДО", icon: "PenLine" },
+              { label: "Данные один раз", icon: "Repeat" },
+              { label: "Подпись по ЭДО", icon: "PenLine" },
               { label: "Живой язык", icon: "MessageCircle" },
-              { label: "Чёткая логика шагов", icon: "Map" },
+              { label: "Логика шагов", icon: "Map" },
               { label: "Выгрузка в Excel", icon: "FileSpreadsheet" },
-              { label: "Аналитика документов", icon: "ClipboardList" },
+              { label: "Аналитика", icon: "ClipboardList" },
               { label: "Подсказки по налогам", icon: "Lightbulb" },
-              { label: "Встроенные сценарии", icon: "MessageSquare" },
+              { label: "Сценарии ответов", icon: "MessageSquare" },
               { label: "Обучение и поддержка", icon: "GraduationCap" },
             ].map((item, i) => (
-              <div key={i} className="grid grid-cols-3 gap-2 items-center p-2.5 rounded-xl bg-white/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "hsl(35 72% 42% / 0.12)" }}>
-                    <Icon name={item.icon} size={13} style={{ color: "hsl(35 72% 42%)" }} />
-                  </div>
-                  <span className="text-xs text-foreground/80 leading-snug">{item.label}</span>
+              <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/60 text-center">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "hsl(35 72% 48% / 0.12)" }}>
+                  <Icon name={item.icon} size={20} style={{ color: "hsl(35 72% 42%)" }} />
                 </div>
-                <div className="flex justify-center">
-                  <Icon name="X" size={16} className="text-rose-300" />
-                </div>
-                <div className="flex justify-center">
-                  <Icon name="Check" size={16} style={{ color: "hsl(140 40% 45%)" }} />
-                </div>
+                <span className="text-xs font-medium text-foreground/75 leading-snug">{item.label}</span>
               </div>
             ))}
           </div>
