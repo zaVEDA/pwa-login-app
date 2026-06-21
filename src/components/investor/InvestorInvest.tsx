@@ -47,7 +47,7 @@ export default function InvestorInvest() {
                   style={{ background: "hsl(35 72% 48%)", color: "white" }}>Приоритет</span>
               )}
               <h3 className="font-cormorant text-xl font-semibold mb-1">{opt.title}</h3>
-              <p className="text-2xl font-bold mb-4" style={{ color: "hsl(35 72% 38%)" }}>{opt.amount}</p>
+              <p className="font-cormorant text-4xl font-semibold mb-4" style={{ color: "hsl(35 72% 38%)" }}>{opt.amount}</p>
               <ul className="space-y-2">
                 {opt.items.map((item, j) => (
                   <li key={j} className="flex items-start gap-2 text-sm text-foreground/75">
