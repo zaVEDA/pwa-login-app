@@ -53,7 +53,7 @@ export default function InvestorProblem() {
   return (
     <>
       {/* Рынок и показатели */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Рынок и цели</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
           Огромный рынок — и мы знаем, как в него войти
@@ -136,7 +136,7 @@ export default function InvestorProblem() {
       </section>
 
       {/* Проблема */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Проблема</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-10" style={{ color: "hsl(24 20% 13%)" }}>
           Отсутствие безопасности, понятности, предсказуемости —<br />вот что мешает человеку в деятельности, которая кормит его семью
@@ -184,7 +184,7 @@ export default function InvestorProblem() {
       </section>
 
       {/* Нет аналогов */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Конкуренты</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-4" style={{ color: "hsl(24 20% 13%)" }}>
           Аналогов — нет
@@ -213,7 +213,7 @@ export default function InvestorProblem() {
       </section>
 
       {/* Социальная миссия */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(36 40% 96%) 0%, hsl(36 30% 92%) 100%)", borderColor: "hsl(36 40% 78%)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "hsl(35 72% 42%)" }}>Социальная задача</p>
           <h2 className="font-cormorant text-3xl font-semibold mb-4" style={{ color: "hsl(24 20% 13%)" }}>

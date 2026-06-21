@@ -33,7 +33,7 @@ export default function InvestorSolution() {
   return (
     <>
       {/* Решение */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Решение</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
           Всё в одном приложении
@@ -56,7 +56,7 @@ export default function InvestorSolution() {
       </section>
 
       {/* Почему я */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <div className="rounded-3xl p-8 border"
           style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(140 40% 45% / 0.06))", borderColor: "hsl(35 72% 48% / 0.2)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Основатель</p>
@@ -108,7 +108,7 @@ export default function InvestorSolution() {
       </section>
 
       {/* Дорожная карта */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Дорожная карта</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
           Что сделано и что впереди
@@ -130,7 +130,7 @@ export default function InvestorSolution() {
       </section>
 
       {/* На что деньги */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Использование средств</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
           На что направлены инвестиции

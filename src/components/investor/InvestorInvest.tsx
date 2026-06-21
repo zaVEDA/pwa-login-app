@@ -33,7 +33,7 @@ export default function InvestorInvest() {
   return (
     <>
       {/* Условия инвестирования */}
-      <section id="invest" className="px-5 py-12 max-w-3xl mx-auto">
+      <section id="invest" className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Инвестирование</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
           Условия участия · Раунд 1
@@ -77,7 +77,7 @@ export default function InvestorInvest() {
       </section>
 
       {/* Контакты */}
-      <section className="px-5 py-12 max-w-3xl mx-auto">
+      <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Связаться</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-8" style={{ color: "hsl(24 20% 13%)" }}>
           Готовы обсудить участие?
