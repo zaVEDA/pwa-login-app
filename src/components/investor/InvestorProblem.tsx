@@ -212,39 +212,6 @@ export default function InvestorProblem() {
         </div>
       </section>
 
-      {/* Наше отличие */}
-      <section className="px-5 pb-4 max-w-3xl mx-auto">
-        <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.1))", borderColor: "hsl(35 72% 48% / 0.25)" }}>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "hsl(35 72% 42%)" }}>Наше отличие</p>
-          <h2 className="font-cormorant text-3xl font-semibold mb-6" style={{ color: "hsl(24 20% 13%)" }}>
-            Просто. Мобильно. Понятно.
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: "Мобильный экран", icon: "Smartphone" },
-              { label: "Данные один раз", icon: "Repeat" },
-              { label: "Подпись по ЭДО", icon: "PenLine" },
-              { label: "Живой язык", icon: "MessageCircle" },
-              { label: "Логика шагов", icon: "Map" },
-              { label: "Выгрузка в Excel", icon: "FileSpreadsheet" },
-              { label: "Аналитика", icon: "ClipboardList" },
-              { label: "Подсказки по налогам", icon: "Lightbulb" },
-              { label: "Сценарии ответов", icon: "MessageSquare" },
-              { label: "Обучение и поддержка", icon: "GraduationCap" },
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-3 p-5 rounded-2xl text-center"
-                style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.13), hsl(40 80% 62% / 0.08))", border: "1px solid hsl(35 72% 48% / 0.15)" }}>
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.18), hsl(35 72% 48% / 0.08))" }}>
-                  <Icon name={item.icon} size={26} style={{ color: "hsl(35 72% 38%)" }} />
-                </div>
-                <span className="text-xs font-semibold text-foreground/80 leading-snug">{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Социальная миссия */}
       <section className="px-5 py-14 max-w-3xl mx-auto">
         <div className="rounded-2xl p-6 border" style={{ background: "linear-gradient(135deg, hsl(36 40% 96%) 0%, hsl(36 30% 92%) 100%)", borderColor: "hsl(36 40% 78%)" }}>
