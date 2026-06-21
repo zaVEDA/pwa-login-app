@@ -192,7 +192,7 @@ export default function InvestorProblem() {
         <p className="text-sm leading-relaxed text-foreground/70 mb-6">
           Существующие решения созданы для бухгалтеров и финансистов, но не для людей без финансового образования. Вот с чем сталкивается специалист, пытаясь найти альтернативу:
         </p>
-        <div className="space-y-3">
+        <div className="flex gap-3 overflow-x-auto pb-3 -mx-5 px-5 snap-x snap-mandatory">
           {[
             { icon: "MonitorX", text: "Слишком большие и сложные программы — перегружены функциями, которые никогда не понадобятся" },
             { icon: "FileWarning", text: "Требуют только официального учёта — не оставляют пространства для гибкости" },
@@ -202,11 +202,11 @@ export default function InvestorProblem() {
             { icon: "BookX", text: "Много умных слов — мало понятного для человека без финансового образования" },
             { icon: "Shuffle", text: "Нет простой логики — непонятно, с чего начать и что делать дальше" },
           ].map((item, i) => (
-            <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-white/60 border" style={{ borderColor: "hsl(36 28% 82%)" }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "hsl(0 60% 50% / 0.07)" }}>
-                <Icon name={item.icon} size={15} className="text-rose-400" />
+            <div key={i} className="flex flex-col gap-3 p-4 rounded-2xl bg-white/60 border flex-shrink-0 w-56 snap-start" style={{ borderColor: "hsl(36 28% 82%)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "hsl(35 72% 48% / 0.1)" }}>
+                <Icon name={item.icon} size={18} style={{ color: "hsl(35 72% 42%)" }} />
               </div>
-              <p className="text-sm leading-relaxed text-foreground/75 pt-1">{item.text}</p>
+              <p className="text-sm leading-relaxed text-foreground/75">{item.text}</p>
             </div>
           ))}
         </div>
