@@ -219,7 +219,7 @@ export default function InvestorProblem() {
           <h2 className="font-cormorant text-3xl font-semibold mb-6" style={{ color: "hsl(24 20% 13%)" }}>
             Просто. Мобильно. Понятно.
           </h2>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: "Мобильный экран", icon: "Smartphone" },
               { label: "Данные один раз", icon: "Repeat" },
@@ -232,11 +232,13 @@ export default function InvestorProblem() {
               { label: "Сценарии ответов", icon: "MessageSquare" },
               { label: "Обучение и поддержка", icon: "GraduationCap" },
             ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/60 text-center">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "hsl(35 72% 48% / 0.12)" }}>
-                  <Icon name={item.icon} size={20} style={{ color: "hsl(35 72% 42%)" }} />
+              <div key={i} className="flex flex-col items-center gap-3 p-5 rounded-2xl text-center"
+                style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.13), hsl(40 80% 62% / 0.08))", border: "1px solid hsl(35 72% 48% / 0.15)" }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.18), hsl(35 72% 48% / 0.08))" }}>
+                  <Icon name={item.icon} size={26} style={{ color: "hsl(35 72% 38%)" }} />
                 </div>
-                <span className="text-xs font-medium text-foreground/75 leading-snug">{item.label}</span>
+                <span className="text-xs font-semibold text-foreground/80 leading-snug">{item.label}</span>
               </div>
             ))}
           </div>
