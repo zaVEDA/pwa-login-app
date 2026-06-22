@@ -139,7 +139,7 @@ export default function InvestorProblem() {
       <section className="px-5 py-10 max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Проблема</p>
         <h2 className="font-cormorant text-3xl font-semibold mb-10" style={{ color: "hsl(24 20% 13%)" }}>
-          Отсутствие безопасности, понятности, предсказуемости —<br />вот что мешает человеку в деятельности, которая кормит его семью
+          Отсутствие безопасности, понятности, предсказуемости —<br />вот что мешает специалисту в его реализации
         </h2>
         <p className="text-sm leading-relaxed text-foreground/70 mb-8 -mt-4">
           Наш сервис документооборота даёт именно это — через доступную стоимость, логичный интерфейс, качественные ответы и готовые решения. Рынок до сих пор не предлагал ничего подобного.
