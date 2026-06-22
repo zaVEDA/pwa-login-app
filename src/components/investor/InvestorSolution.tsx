@@ -59,17 +59,21 @@ export default function InvestorSolution() {
       <section className="px-5 py-10 max-w-3xl mx-auto">
         <div className="rounded-3xl p-8 border"
           style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.07), hsl(140 40% 45% / 0.06))", borderColor: "hsl(35 72% 48% / 0.2)" }}>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Основатель</p>
-          <img
-            src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cc689af7-8913-4f18-ba8d-3d2a03d04d0e.jpg"
-            alt="Юлия Кузнецова"
-            className="float-right ml-6 mb-4 w-36 rounded-2xl object-cover object-top border-2"
-            style={{ borderColor: "hsl(35 72% 48% / 0.3)", aspectRatio: "3/4" }}
-          />
-          <h2 className="font-cormorant text-3xl font-semibold mb-1" style={{ color: "hsl(24 20% 13%)" }}>
-            Юлия Кузнецова
-          </h2>
-          <p className="text-sm text-muted-foreground mb-6">17 лет в бухгалтерском и налоговом учёте</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Основатель</p>
+          <div className="flex flex-col sm:flex-row sm:items-start gap-5 mb-6">
+            <img
+              src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cc689af7-8913-4f18-ba8d-3d2a03d04d0e.jpg"
+              alt="Юлия Кузнецова"
+              className="w-32 rounded-2xl object-cover object-top border-2 self-center sm:self-start flex-shrink-0"
+              style={{ borderColor: "hsl(35 72% 48% / 0.3)", aspectRatio: "3/4" }}
+            />
+            <div>
+              <h2 className="font-cormorant text-3xl font-semibold mb-1 text-center sm:text-left" style={{ color: "hsl(24 20% 13%)" }}>
+                Юлия Кузнецова
+              </h2>
+              <p className="text-sm text-muted-foreground text-center sm:text-left">17 лет в бухгалтерском и налоговом учёте</p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
             {[
               { num: "17+", label: "лет в бух. и налоговом учёте" },
