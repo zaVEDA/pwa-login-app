@@ -106,7 +106,7 @@ export default function InvestorProblem() {
               </div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Выручка · 12 месяцев</p>
             </div>
-            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>11,6 млн</p>
+            <p className="font-cormorant text-4xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>19,6 млн</p>
             <p className="text-xs text-muted-foreground mt-1">минимальный плановый объём</p>
           </div>
         </div>
