@@ -5,6 +5,7 @@ const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e
 const LS_KEY = "requisites";
 
 type EntityType = "ip" | "self_employed" | "individual" | "ooo";
+type IpDocType = "inn" | "ogrnip";
 
 const entityOptions: { value: EntityType; label: string; icon: string }[] = [
   { value: "self_employed", label: "Самозанятый", icon: "UserCheck" },
@@ -29,6 +30,7 @@ interface Props {
 export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [entityType, setEntityType] = useState<EntityType | null>(() => loadSaved().entityType ?? null);
+  const [ipDocType, setIpDocType] = useState<IpDocType>(() => loadSaved().ipDocType ?? "inn");
   const [inn, setInn] = useState<string>(() => loadSaved().inn ?? "");
   const [ogrnip, setOgrnip] = useState<string>(() => loadSaved().ogrnip ?? "");
   const [checking, setChecking] = useState(false);
@@ -36,18 +38,17 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, inn, ogrnip, saved }));
-  }, [entityType, inn, ogrnip, saved]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, ipDocType, inn, ogrnip, saved }));
+  }, [entityType, ipDocType, inn, ogrnip, saved]);
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
-  const showOgrnip = entityType === "ip";
-  const useOgrnip = showOgrnip && ogrnip.length > 0 && inn.length === 0;
 
-  const canCheck = entityType === "ip"
-    ? (inn.length === 12 || ogrnip.length === 15)
-    : entityType === "ooo"
-    ? inn.length === 10
-    : inn.length === 12;
+  const canCheck =
+    entityType === "ip"
+      ? (ipDocType === "inn" ? inn.length === 12 : ogrnip.length === 15)
+      : entityType === "ooo"
+      ? inn.length === 10
+      : inn.length === 12;
 
   const handleCheck = async () => {
     if (!canCheck) return;
@@ -59,8 +60,8 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          inn: useOgrnip ? "" : inn,
-          ogrnip: useOgrnip ? ogrnip : "",
+          inn: entityType === "ip" && ipDocType === "ogrnip" ? "" : inn,
+          ogrnip: entityType === "ip" && ipDocType === "ogrnip" ? ogrnip : "",
           entity_type: entityType,
         }),
       });
@@ -74,10 +75,20 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     }
   };
 
+  const handleSelectEntity = (type: EntityType) => {
+    setEntityType(type);
+    setInn("");
+    setOgrnip("");
+    setIpDocType("inn");
+    setCheckResult(null);
+    setSaved(false);
+  };
+
   const handleReset = () => {
     setEntityType(null);
     setInn("");
     setOgrnip("");
+    setIpDocType("inn");
     setCheckResult(null);
     setSaved(false);
   };
@@ -96,26 +107,15 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
 
       {isOpen && (
         <div className="mt-4 space-y-4">
-          {/* ФИО */}
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">ФИО</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => { setFullName(e.target.value); setSaved(false); localStorage.setItem("requisites_name", e.target.value); }}
-              placeholder="Иванова Анна Сергеевна"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-            />
-          </div>
 
-          {/* Тип субъекта */}
+          {/* Форма деятельности */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">Форма деятельности</label>
+            <label className="text-xs text-muted-foreground mb-2 block">Форма деятельности <span className="text-red-400">*</span></label>
             <div className="grid grid-cols-2 gap-2">
               {entityOptions.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => { setEntityType(opt.value); setInn(""); setOgrnip(""); setCheckResult(null); setSaved(false); }}
+                  onClick={() => handleSelectEntity(opt.value)}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                     entityType === opt.value
                       ? "gold-gradient text-white border-transparent shadow-sm"
@@ -127,36 +127,59 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                 </button>
               ))}
             </div>
+            {!entityType && (
+              <p className="text-xs text-muted-foreground mt-2">Выберите форму деятельности, чтобы продолжить</p>
+            )}
           </div>
 
           {/* Поля для ИП */}
           {entityType === "ip" && (
             <div className="space-y-3">
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">ИНН (12 цифр)</label>
-                <input
-                  type="number"
-                  value={inn}
-                  onChange={(e) => { setInn(e.target.value.slice(0, 12)); setCheckResult(null); setSaved(false); }}
-                  placeholder="123456789012"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                />
+              {/* Переключатель ИНН / ОГРНИП */}
+              <div className="flex rounded-xl overflow-hidden border border-border bg-white/40">
+                <button
+                  onClick={() => { setIpDocType("inn"); setInn(""); setOgrnip(""); setCheckResult(null); setSaved(false); }}
+                  className={`flex-1 py-2 text-sm font-medium transition-all ${
+                    ipDocType === "inn" ? "gold-gradient text-white" : "text-muted-foreground"
+                  }`}
+                >
+                  ИНН
+                </button>
+                <button
+                  onClick={() => { setIpDocType("ogrnip"); setInn(""); setOgrnip(""); setCheckResult(null); setSaved(false); }}
+                  className={`flex-1 py-2 text-sm font-medium transition-all ${
+                    ipDocType === "ogrnip" ? "gold-gradient text-white" : "text-muted-foreground"
+                  }`}
+                >
+                  ОГРНИП
+                </button>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-muted-foreground">или</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">ОГРНИП (15 цифр)</label>
-                <input
-                  type="number"
-                  value={ogrnip}
-                  onChange={(e) => { setOgrnip(e.target.value.slice(0, 15)); setCheckResult(null); setSaved(false); }}
-                  placeholder="315774600123456"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                />
-              </div>
+
+              {ipDocType === "inn" && (
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">ИНН (12 цифр)</label>
+                  <input
+                    type="number"
+                    value={inn}
+                    onChange={(e) => { setInn(e.target.value.slice(0, 12)); setCheckResult(null); setSaved(false); }}
+                    placeholder="123456789012"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              )}
+
+              {ipDocType === "ogrnip" && (
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">ОГРНИП (15 цифр)</label>
+                  <input
+                    type="number"
+                    value={ogrnip}
+                    onChange={(e) => { setOgrnip(e.target.value.slice(0, 15)); setCheckResult(null); setSaved(false); }}
+                    placeholder="315774600123456"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -191,9 +214,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
           {/* Результат проверки */}
           {checkResult && (
             <div className={`rounded-xl px-3 py-2.5 text-sm flex items-start gap-2 ${
-              checkResult.valid
-                ? "bg-green-50 text-green-700"
-                : "bg-red-50 text-red-600"
+              checkResult.valid ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
             }`}>
               <Icon name={checkResult.valid ? "CheckCircle" : "AlertCircle"} size={15} className="flex-shrink-0 mt-0.5" />
               <span>{checkResult.valid ? `Данные подтверждены${checkResult.name ? `: ${checkResult.name}` : ""}` : checkResult.message}</span>
@@ -226,7 +247,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
               </button>
               <button
                 onClick={handleReset}
-                className="px-3 py-2.5 rounded-xl border border-border bg-white/60 text-sm text-muted-foreground"
+                className="px-3 py-2.5 rounded-xl border border-border bg-white/60 text-muted-foreground"
               >
                 <Icon name="RotateCcw" size={14} />
               </button>
