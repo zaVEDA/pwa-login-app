@@ -57,7 +57,7 @@ export default function Index() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [inn, setInn] = useState("");
-  const [fullName, setFullName] = useState("Анна Смирнова");
+  const [fullName, setFullName] = useState(() => localStorage.getItem("requisites_name") || "Анна Смирнова");
   const [innSaved, setInnSaved] = useState(false);
   const [isSelfEmployed, setIsSelfEmployed] = useState<boolean | null>(null);
   const [userStatus, setUserStatus] = useState<"self_employed" | "ip" | "ooo" | "individual" | null>(null);

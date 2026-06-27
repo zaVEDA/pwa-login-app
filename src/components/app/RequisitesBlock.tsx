@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e94cb8888c";
+const LS_KEY = "requisites";
 
 type EntityType = "ip" | "self_employed" | "individual" | "ooo";
 
@@ -12,6 +13,14 @@ const entityOptions: { value: EntityType; label: string; icon: string }[] = [
   { value: "ooo", label: "ООО", icon: "Building2" },
 ];
 
+function loadSaved() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
 interface Props {
   fullName: string;
   setFullName: (v: string) => void;
@@ -19,12 +28,16 @@ interface Props {
 
 export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const [entityType, setEntityType] = useState<EntityType | null>(null);
-  const [inn, setInn] = useState("");
-  const [ogrnip, setOgrnip] = useState("");
+  const [entityType, setEntityType] = useState<EntityType | null>(() => loadSaved().entityType ?? null);
+  const [inn, setInn] = useState<string>(() => loadSaved().inn ?? "");
+  const [ogrnip, setOgrnip] = useState<string>(() => loadSaved().ogrnip ?? "");
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string } | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
+
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, inn, ogrnip, saved }));
+  }, [entityType, inn, ogrnip, saved]);
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
   const showOgrnip = entityType === "ip";
@@ -89,7 +102,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
             <input
               type="text"
               value={fullName}
-              onChange={(e) => { setFullName(e.target.value); setSaved(false); }}
+              onChange={(e) => { setFullName(e.target.value); setSaved(false); localStorage.setItem("requisites_name", e.target.value); }}
               placeholder="Иванова Анна Сергеевна"
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
             />
