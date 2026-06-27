@@ -5,7 +5,7 @@ const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e
 const LS_KEY = "requisites";
 
 type EntityType = "ip" | "self_employed" | "individual" | "ooo";
-type IpDocType = "inn" | "ogrnip";
+
 
 const entityOptions: { value: EntityType; label: string; icon: string }[] = [
   { value: "self_employed", label: "Самозанятый", icon: "UserCheck" },
@@ -30,24 +30,28 @@ interface Props {
 export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [entityType, setEntityType] = useState<EntityType | null>(() => loadSaved().entityType ?? null);
-  const [ipDocType, setIpDocType] = useState<IpDocType>(() => loadSaved().ipDocType ?? "inn");
+  const [innOgrnip, setInnOgrnip] = useState<string>(() => loadSaved().innOgrnip ?? "");
   const [inn, setInn] = useState<string>(() => loadSaved().inn ?? "");
   const [ogrnip, setOgrnip] = useState<string>(() => loadSaved().ogrnip ?? "");
   const [checking, setChecking] = useState(false);
-  const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string } | null>(null);
+  const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string; inn?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
   const [offerFill, setOfferFill] = useState(false);
   const [showManualFill, setShowManualFill] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, ipDocType, inn, ogrnip, saved }));
-  }, [entityType, ipDocType, inn, ogrnip, saved]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, saved }));
+  }, [entityType, innOgrnip, inn, ogrnip, saved]);
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
 
+  // Определяем тип введённого значения для ИП
+  const ipInputIsOgrnip = entityType === "ip" && innOgrnip.length === 15;
+  const ipInputIsInn = entityType === "ip" && innOgrnip.length === 12;
+
   const canCheck =
     entityType === "ip"
-      ? (ipDocType === "inn" ? inn.length === 12 : ogrnip.length === 15)
+      ? (ipInputIsInn || ipInputIsOgrnip)
       : entityType === "ooo"
       ? inn.length === 10
       : inn.length === 12;
@@ -62,8 +66,8 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          inn: entityType === "ip" && ipDocType === "ogrnip" ? "" : inn,
-          ogrnip: entityType === "ip" && ipDocType === "ogrnip" ? ogrnip : "",
+          inn: entityType === "ip" ? (ipInputIsOgrnip ? "" : innOgrnip) : inn,
+          ogrnip: entityType === "ip" && ipInputIsOgrnip ? innOgrnip : "",
           entity_type: entityType,
         }),
       });
@@ -74,6 +78,8 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
         if (entityType === "ip") {
           if (data.name) setFullName(data.name);
           if (data.ogrnip) setOgrnip(data.ogrnip);
+          if (data.inn) setInn(data.inn);
+          else if (!ipInputIsOgrnip) setInn(innOgrnip);
           setShowManualFill(true);
         }
       }
@@ -84,29 +90,24 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     }
   };
 
-  const handleFillFromFns = () => {
-    if (checkResult?.name) setFullName(checkResult.name);
-    setOfferFill(false);
-    setShowManualFill(true);
-  };
-
   const handleSelectEntity = (type: EntityType) => {
     setEntityType(type);
     setInn("");
     setOgrnip("");
-    setIpDocType("inn");
+    setInnOgrnip("");
     setCheckResult(null);
     setSaved(false);
-    setOfferFill(false);
+    setShowManualFill(false);
   };
 
   const handleReset = () => {
     setEntityType(null);
     setInn("");
     setOgrnip("");
-    setIpDocType("inn");
+    setInnOgrnip("");
     setCheckResult(null);
     setSaved(false);
+    setShowManualFill(false);
   };
 
   return (
@@ -149,53 +150,30 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
           </div>
 
           {/* Поля для ИП */}
-          {entityType === "ip" && (
-            <div className="space-y-3">
-              {/* Переключатель ИНН / ОГРНИП */}
-              <div className="flex rounded-xl overflow-hidden border border-border bg-white/40">
-                <button
-                  onClick={() => { setIpDocType("inn"); setInn(""); setOgrnip(""); setCheckResult(null); setSaved(false); }}
-                  className={`flex-1 py-2 text-sm font-medium transition-all ${
-                    ipDocType === "inn" ? "gold-gradient text-white" : "text-muted-foreground"
-                  }`}
-                >
-                  ИНН
-                </button>
-                <button
-                  onClick={() => { setIpDocType("ogrnip"); setInn(""); setOgrnip(""); setCheckResult(null); setSaved(false); }}
-                  className={`flex-1 py-2 text-sm font-medium transition-all ${
-                    ipDocType === "ogrnip" ? "gold-gradient text-white" : "text-muted-foreground"
-                  }`}
-                >
-                  ОГРНИП
-                </button>
-              </div>
-
-              {ipDocType === "inn" && (
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">ИНН (12 цифр)</label>
-                  <input
-                    type="number"
-                    value={inn}
-                    onChange={(e) => { setInn(e.target.value.slice(0, 12)); setCheckResult(null); setSaved(false); }}
-                    placeholder="123456789012"
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                  />
-                </div>
-              )}
-
-              {ipDocType === "ogrnip" && (
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">ОГРНИП (15 цифр)</label>
-                  <input
-                    type="number"
-                    value={ogrnip}
-                    onChange={(e) => { setOgrnip(e.target.value.slice(0, 15)); setCheckResult(null); setSaved(false); }}
-                    placeholder="315774600123456"
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                  />
-                </div>
-              )}
+          {entityType === "ip" && !showManualFill && (
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                ИНН / ОГРНИП
+                {innOgrnip.length > 0 && (
+                  <span className="ml-2 text-primary font-medium">
+                    {ipInputIsInn ? "— ИНН" : ipInputIsOgrnip ? "— ОГРНИП" : ""}
+                  </span>
+                )}
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={innOgrnip}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 15);
+                  setInnOgrnip(val);
+                  setCheckResult(null);
+                  setSaved(false);
+                  setShowManualFill(false);
+                }}
+                placeholder="Введите ИНН (12 цифр) или ОГРНИП (15 цифр)"
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+              />
             </div>
           )}
 
@@ -239,20 +217,46 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
 
 
 
-          {/* Ручное заполнение после отказа от автозаполнения */}
+          {/* Заполненные поля после проверки ФНС */}
           {showManualFill && entityType === "ip" && (
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground mb-1 block">ФИО предпринимателя</label>
-              <div className="flex items-center gap-2 p-3 rounded-xl border border-border bg-white/70">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">ИП</span>
-                <div className="w-px h-4 bg-border flex-shrink-0" />
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => { setFullName(e.target.value); localStorage.setItem("requisites_name", e.target.value); setSaved(false); }}
-                  placeholder="Иванова Анна Сергеевна"
-                  className="flex-1 text-sm outline-none bg-transparent"
-                />
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">ФИО предпринимателя</label>
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-white/70">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">ИП</span>
+                  <div className="w-px h-4 bg-border flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => { setFullName(e.target.value); setSaved(false); }}
+                    placeholder="Иванова Анна Сергеевна"
+                    className="flex-1 text-sm outline-none bg-transparent"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">ИНН</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={inn}
+                    onChange={(e) => { setInn(e.target.value.replace(/\D/g, "").slice(0, 12)); setSaved(false); }}
+                    placeholder="123456789012"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">ОГРНИП</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={ogrnip}
+                    onChange={(e) => { setOgrnip(e.target.value.replace(/\D/g, "").slice(0, 15)); setSaved(false); }}
+                    placeholder="315774600123456"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                </div>
               </div>
             </div>
           )}
