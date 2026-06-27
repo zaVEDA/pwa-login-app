@@ -56,6 +56,7 @@ interface Props {
   setIsLoggedIn: (v: boolean) => void;
   colorTheme: keyof typeof themes;
   setColorTheme: (t: keyof typeof themes) => void;
+  phone: string;
 }
 
 export default function TabContent({
@@ -70,6 +71,7 @@ export default function TabContent({
   setIsLoggedIn,
   colorTheme,
   setColorTheme,
+  phone,
 }: Props) {
   return (
     <>
@@ -262,7 +264,7 @@ export default function TabContent({
           </div>
 
           {/* Реквизиты */}
-          <RequisitesBlock fullName={fullName} setFullName={setFullName} />
+          <RequisitesBlock fullName={fullName} setFullName={setFullName} phone={phone} />
 
           {/* Мой налог — только для самозанятых */}
           {isSelfEmployed && <div

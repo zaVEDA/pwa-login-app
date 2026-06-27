@@ -1,0 +1,35 @@
+{
+  "tests": [
+    {
+      "name": "GET requisites without phone",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST requisites",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "entity_type": "ip",
+        "full_name": "Иванов Иван Иванович",
+        "inn": "123456789012",
+        "ogrnip": "315774600123456",
+        "address": "105066, г. Москва, ул. Примерная, д. 1, кв. 1",
+        "bik": "044525225",
+        "bank_name": "Сбербанк",
+        "corr_account": "30101810400000000225",
+        "checking_account": "40802810000000000000"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET requisites with phone",
+      "method": "GET",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
+    }
+  ]
+}

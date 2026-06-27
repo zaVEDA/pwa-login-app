@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e94cb8888c";
+const REQUISITES_URL = "https://functions.poehali.dev/2829317d-bede-423b-a3e3-96d2eb06c843";
 const LS_KEY = "requisites";
 
 type EntityType = "ip" | "self_employed" | "individual" | "ooo";
@@ -25,9 +26,10 @@ function loadSaved() {
 interface Props {
   fullName: string;
   setFullName: (v: string) => void;
+  phone: string;
 }
 
-export default function RequisitesBlock({ fullName, setFullName }: Props) {
+export default function RequisitesBlock({ fullName, setFullName, phone }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [entityType, setEntityType] = useState<EntityType | null>(() => loadSaved().entityType ?? null);
   const [innOgrnip, setInnOgrnip] = useState<string>(() => loadSaved().innOgrnip ?? "");
@@ -43,12 +45,57 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string; inn?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
+  const [saving, setSaving] = useState(false);
   const [offerFill, setOfferFill] = useState(false);
   const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
+
+  // Загружаем реквизиты из БД при монтировании
+  useEffect(() => {
+    if (!phone) return;
+    fetch(REQUISITES_URL, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const r = data.requisites;
+        if (!r) return;
+        if (r.entity_type) setEntityType(r.entity_type as EntityType);
+        if (r.full_name) { setFullName(r.full_name); }
+        if (r.inn) setInn(r.inn);
+        if (r.ogrnip) { setOgrnip(r.ogrnip); setShowManualFill(true); }
+        if (r.address) setAddress(r.address);
+        if (r.bik) setBik(r.bik);
+        if (r.bank_name) setBankName(r.bank_name);
+        if (r.corr_account) setCorrAccount(r.corr_account);
+        if (r.checking_account) setCheckingAccount(r.checking_account);
+        setSaved(true);
+      })
+      .catch(() => {});
+  }, [phone]);
 
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, saved, showManualFill, fullName }));
   }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, saved, showManualFill, fullName]);
+
+  const saveToDb = async () => {
+    if (!phone) return;
+    setSaving(true);
+    try {
+      await fetch(REQUISITES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({
+          entity_type: entityType,
+          full_name: fullName,
+          inn, ogrnip, address, bik,
+          bank_name: bankName,
+          corr_account: corrAccount,
+          checking_account: checkingAccount,
+        }),
+      });
+      setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
 
@@ -403,15 +450,26 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
             </div>
           )}
 
-          {/* Сброс */}
+          {/* Кнопки */}
           {entityType && (
-            <div className="flex justify-end">
+            <div className="flex justify-between gap-2">
               <button
                 onClick={handleReset}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
               >
                 <Icon name="RotateCcw" size={12} />
                 Сбросить
+              </button>
+              <button
+                onClick={saveToDb}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm disabled:opacity-60"
+              >
+                {saving
+                  ? <Icon name="Loader" size={12} className="animate-spin" />
+                  : <Icon name="Save" size={12} />
+                }
+                {saving ? "Сохраняю..." : "Сохранить"}
               </button>
             </div>
           )}

@@ -126,6 +126,7 @@ export default function Index() {
           setIsLoggedIn={setIsLoggedIn}
           colorTheme={colorTheme}
           setColorTheme={setColorTheme}
+          phone={phone}
         />
       </main>
 
