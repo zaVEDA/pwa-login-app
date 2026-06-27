@@ -83,6 +83,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const handleFillFromFns = () => {
     if (checkResult?.name) setFullName(checkResult.name);
     setOfferFill(false);
+    setShowManualFill(true);
   };
 
   const handleSelectEntity = (type: EntityType) => {
