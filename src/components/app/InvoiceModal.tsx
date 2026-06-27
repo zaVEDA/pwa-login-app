@@ -6,6 +6,7 @@ interface Props {
 }
 
 export default function InvoiceModal({ onClose }: Props) {
+  const [minimized, setMinimized] = useState(false);
   const [clientName, setClientName] = useState("");
   const [clientInn, setClientInn] = useState("");
   const [items, setItems] = useState([{ name: "", qty: "1", price: "" }]);
@@ -23,38 +24,71 @@ export default function InvoiceModal({ onClose }: Props) {
     return sum + qty * price;
   }, 0);
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={onClose}>
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-      />
-      <div
-        className="relative bg-background rounded-t-3xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-border" />
+  if (minimized) {
+    return (
+      <div className="fixed bottom-24 left-4 right-4 z-50 max-w-md mx-auto">
+        <div
+          className="card-warm rounded-2xl px-4 py-3 shadow-lg border flex items-center gap-3"
+          style={{ borderColor: "hsl(var(--primary) / 0.3)" }}
+        >
+          <div className="w-8 h-8 rounded-xl gold-gradient flex items-center justify-center flex-shrink-0">
+            <Icon name="Receipt" size={15} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">Счёт на оплату</p>
+            <p className="text-xs text-muted-foreground">{total > 0 ? `${total.toLocaleString("ru-RU")} ₽` : "Черновик"}</p>
+          </div>
+          <button
+            onClick={() => setMinimized(false)}
+            className="w-8 h-8 rounded-xl border border-border bg-white/60 flex items-center justify-center"
+          >
+            <Icon name="ChevronUp" size={14} className="text-muted-foreground" />
+          </button>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-xl border border-border bg-white/60 flex items-center justify-center"
+          >
+            <Icon name="X" size={14} className="text-muted-foreground" />
+          </button>
         </div>
+      </div>
+    );
+  }
 
-        <div className="px-5 pb-8 space-y-5">
-          {/* Header */}
-          <div className="flex items-center justify-between pt-1">
-            <div>
-              <h2 className="font-cormorant text-2xl font-semibold">Счёт на оплату</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Заполните данные клиента и услуги</p>
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
+      {/* Фон */}
+      <div className="absolute inset-0 bg-background" />
+
+      <div className="relative flex flex-col h-full">
+        {/* Header */}
+        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMinimized(true)}
+              className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center"
+            >
+              <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
+            </button>
+            <div className="flex-1">
+              <h2 className="font-cormorant text-2xl font-semibold leading-tight">Счёт на оплату</h2>
+              <p className="text-xs text-muted-foreground">Новый документ</p>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-xl border border-border bg-white/60 flex items-center justify-center"
+              className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center"
             >
-              <Icon name="X" size={14} className="text-muted-foreground" />
+              <Icon name="X" size={16} className="text-muted-foreground" />
             </button>
           </div>
+        </div>
+
+        {/* Scroll content */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5 pb-32">
 
           {/* Клиент */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-foreground">Кому выставляем</p>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Кому выставляем</p>
             <input
               type="text"
               value={clientName}
@@ -74,7 +108,7 @@ export default function InvoiceModal({ onClose }: Props) {
 
           {/* Услуги */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-foreground">Услуги / товары</p>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Услуги / товары</p>
             {items.map((item, i) => (
               <div key={i} className="card-warm rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
@@ -128,7 +162,7 @@ export default function InvoiceModal({ onClose }: Props) {
 
           {/* Срок оплаты */}
           <div>
-            <p className="text-xs font-medium text-foreground mb-2">Срок оплаты</p>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Срок оплаты</p>
             <input
               type="date"
               value={dueDate}
@@ -139,27 +173,27 @@ export default function InvoiceModal({ onClose }: Props) {
 
           {/* Комментарий */}
           <div>
-            <p className="text-xs font-medium text-foreground mb-2">Комментарий</p>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Комментарий</p>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Дополнительные условия или реквизиты..."
-              rows={2}
+              placeholder="Дополнительные условия..."
+              rows={3}
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors resize-none"
             />
           </div>
+        </div>
 
-          {/* Итого + кнопка */}
-          <div className="card-warm rounded-2xl p-4 flex items-center justify-between">
+        {/* Footer — итого + кнопка */}
+        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4 bg-background border-t border-border/50">
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">Итого к оплате</p>
-              <p className="font-cormorant text-2xl font-semibold text-foreground">
+              <p className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
                 {total.toLocaleString("ru-RU")} ₽
               </p>
             </div>
-            <button
-              className="px-5 py-2.5 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2"
-            >
+            <button className="px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2">
               <Icon name="FileDown" size={15} />
               Создать счёт
             </button>
