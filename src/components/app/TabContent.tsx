@@ -1,7 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import InvoiceModal from "@/components/app/InvoiceModal";
+
+const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
+
+interface Invoice {
+  id: number;
+  invoice_number: string;
+  invoice_date: string;
+  client_name: string;
+  total: number | null;
+  status: string;
+}
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -76,6 +87,21 @@ export default function TabContent({
   phone,
 }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "docs" || !phone) return;
+    setInvoicesLoading(true);
+    fetch(INVOICES_URL, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        setInvoices(parsed.invoices || []);
+      })
+      .catch(() => {})
+      .finally(() => setInvoicesLoading(false));
+  }, [activeTab, phone, showInvoice]); // перезагружаем после закрытия модалки
 
   return (
     <>
@@ -108,38 +134,56 @@ export default function TabContent({
             ))}
           </div>
 
-          <div className="space-y-3">
-            {[
-              ...recentDocs,
-              { title: "Договор на фотосессию", client: "Дмитрий К.", date: "01 июн", status: "signed", statusLabel: "Подписан" },
-              { title: "Счёт на консультацию", client: "Елена Ф.", date: "28 май", status: "pending", statusLabel: "Ожидает" },
-            ].map((doc, i) => (
-              <div
-                key={i}
-                className="card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center active:scale-[0.98] transition-transform"
-              >
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10"
-                >
-                  <Icon name="FileText" size={20} className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{doc.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{doc.client} · {doc.date}</p>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <span className={`doc-tag ${
-                    doc.status === "signed" ? "bg-green-100 text-green-700" :
-                    doc.status === "pending" ? "bg-primary/15 text-primary" :
-                    "bg-gray-100 text-gray-500"
-                  }`}>
-                    {doc.statusLabel}
-                  </span>
-                  <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
-                </div>
+          {invoicesLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Icon name="Loader" size={20} className="animate-spin text-muted-foreground" />
+            </div>
+          )}
+
+          {!invoicesLoading && invoices.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
+                <Icon name="FileText" size={24} className="text-primary/50" />
               </div>
-            ))}
-          </div>
+              <p className="text-sm font-medium text-foreground">Счетов пока нет</p>
+              <p className="text-xs text-muted-foreground mt-1">Нажмите + чтобы создать первый счёт</p>
+            </div>
+          )}
+
+          {!invoicesLoading && invoices.length > 0 && (
+            <div className="space-y-3">
+              {invoices.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center active:scale-[0.98] transition-transform"
+                >
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10">
+                    <Icon name="Receipt" size={20} className="text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">Счёт № {inv.invoice_number}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {inv.client_name || "Без клиента"} · {inv.invoice_date}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5">
+                    {inv.total != null && (
+                      <p className="text-sm font-semibold text-foreground">
+                        {inv.total.toLocaleString("ru-RU")} ₽
+                      </p>
+                    )}
+                    <span className={`doc-tag ${
+                      inv.status === "created" ? "bg-primary/15 text-primary" :
+                      inv.status === "paid" ? "bg-green-100 text-green-700" :
+                      "bg-gray-100 text-gray-500"
+                    }`}>
+                      {inv.status === "created" ? "Выставлен" : inv.status === "paid" ? "Оплачен" : "Черновик"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
