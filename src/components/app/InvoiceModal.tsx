@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 
 const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e94cb8888c";
 const CLIENTS_URL = "https://functions.poehali.dev/f20320e8-6fc3-47b0-b7a3-ef74f5e1c1d5";
+const SERVICES_URL = "https://functions.poehali.dev/0b2cb816-5a7a-45c0-9659-94294105e94f";
 
 type ClientType = "ip" | "ooo" | "individual" | null;
 
@@ -27,6 +28,10 @@ export default function InvoiceModal({ onClose, phone }: Props) {
   const [savedClients, setSavedClients] = useState<ClientInfo[]>([]);
   const [showClientList, setShowClientList] = useState(false);
 
+  // Справочник услуг
+  const [savedServices, setSavedServices] = useState<{ id: number; name: string; price: number | null; unit: string }[]>([]);
+  const [showServiceList, setShowServiceList] = useState<number | null>(null); // индекс позиции
+
   // Клиент
   const [clientType, setClientType] = useState<ClientType>(null);
   const [clientInn, setClientInn] = useState("");
@@ -40,7 +45,7 @@ export default function InvoiceModal({ onClose, phone }: Props) {
 
   const innMaxLen = clientType === "ooo" ? 10 : 12;
 
-  // Загружаем справочник клиентов
+  // Загружаем справочники
   useEffect(() => {
     if (!phone) return;
     fetch(CLIENTS_URL, { headers: { "X-Phone": phone } })
@@ -50,7 +55,36 @@ export default function InvoiceModal({ onClose, phone }: Props) {
         setSavedClients(parsed.clients || []);
       })
       .catch(() => {});
+    fetch(SERVICES_URL, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        setSavedServices(parsed.services || []);
+      })
+      .catch(() => {});
   }, [phone]);
+
+  const saveService = (name: string, price: string, unit = "шт") => {
+    if (!phone || !name.trim()) return;
+    fetch(SERVICES_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Phone": phone },
+      body: JSON.stringify({ name: name.trim(), price: parseFloat(price) || null, unit }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        if (parsed.ok) {
+          setSavedServices(prev => {
+            const exists = prev.find(s => s.name === name.trim());
+            const entry = { id: parsed.id, name: name.trim(), price: parseFloat(price) || null, unit };
+            if (exists) return prev.map(s => s.name === name.trim() ? entry : s);
+            return [entry, ...prev];
+          });
+        }
+      })
+      .catch(() => {});
+  };
 
   const saveClient = async (info: ClientInfo) => {
     if (!phone) return;
@@ -322,16 +356,49 @@ export default function InvoiceModal({ onClose, phone }: Props) {
               <div key={i} className="card-warm rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">Позиция {i + 1}</p>
-                  {items.length > 1 && (
-                    <button onClick={() => removeItem(i)}>
-                      <Icon name="Trash2" size={13} className="text-red-400" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {savedServices.length > 0 && (
+                      <button
+                        onClick={() => setShowServiceList(showServiceList === i ? null : i)}
+                        className="flex items-center gap-1 text-[11px] text-primary"
+                      >
+                        <Icon name="BookOpen" size={11} />
+                        Из справочника
+                      </button>
+                    )}
+                    {items.length > 1 && (
+                      <button onClick={() => removeItem(i)}>
+                        <Icon name="Trash2" size={13} className="text-red-400" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {/* Выпадающий список услуг */}
+                {showServiceList === i && (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {savedServices.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => {
+                          updateItem(i, "name", s.name);
+                          if (s.price) updateItem(i, "price", String(s.price));
+                          setShowServiceList(null);
+                        }}
+                        className="w-full text-left px-2.5 py-2 rounded-lg border border-border bg-white/80 hover:border-primary transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-sm truncate">{s.name}</span>
+                        {s.price && <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">{s.price.toLocaleString("ru-RU")} ₽</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <input
                   type="text"
                   value={item.name}
                   onChange={(e) => updateItem(i, "name", e.target.value)}
+                  onBlur={() => { if (item.name.trim()) saveService(item.name, item.price); }}
                   placeholder="Название услуги или товара"
                   className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
@@ -353,6 +420,7 @@ export default function InvoiceModal({ onClose, phone }: Props) {
                       inputMode="decimal"
                       value={item.price}
                       onChange={(e) => updateItem(i, "price", e.target.value)}
+                      onBlur={() => { if (item.name.trim()) saveService(item.name, item.price); }}
                       placeholder="0"
                       className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                     />

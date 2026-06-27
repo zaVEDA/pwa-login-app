@@ -1,0 +1,25 @@
+{
+  "tests": [
+    {
+      "name": "GET без phone",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST услуга",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": { "name": "Консультация 60 мин", "price": 3000, "unit": "сеанс" },
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET услуги",
+      "method": "GET",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
+    }
+  ]
+}
