@@ -279,7 +279,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                   type="text"
                   value={address}
                   onChange={(e) => { setAddress(e.target.value); setSaved(false); }}
-                  placeholder="г. Москва, ул. Примерная, д. 1, кв. 1"
+                  placeholder="105066, г. Москва, ул. Примерная, д. 1, кв. 1"
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">Используется в документах как юридический адрес ИП</p>
