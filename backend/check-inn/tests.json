@@ -4,7 +4,7 @@
       "name": "Проверка валидного ИНН ИП",
       "method": "POST",
       "path": "/",
-      "body": {"inn": "500100732259", "entity_type": "ip"},
+      "body": {"inn": "784806113663", "entity_type": "ip"},
       "expectedStatus": 200,
       "expectedBody": {"valid": true},
       "bodyMatcher": "partial"

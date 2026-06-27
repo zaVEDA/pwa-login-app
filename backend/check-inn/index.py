@@ -1,7 +1,7 @@
 import json
+import os
 import re
 import urllib.request
-import urllib.parse
 
 
 def validate_inn_format(inn: str, entity_type: str) -> tuple[bool, str]:
@@ -22,69 +22,36 @@ def validate_ogrnip_format(ogrnip: str) -> tuple[bool, str]:
     return True, ""
 
 
-def check_fns_egrul(query: str) -> dict:
-    """Поиск юрлица (ООО) через egrul.nalog.ru"""
-    try:
-        url = f"https://egrul.nalog.ru/search-json?query={urllib.parse.quote(query)}&page=1&cnt=10"
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            rows = data.get("rows", [])
-            if not rows:
-                return {"found": False}
-            row = rows[0]
-            status = str(row.get("status", "")).lower()
-            is_closed = (
-                "ликвид" in status or
-                "прекращ" in status or
-                bool(row.get("liquidation_date")) or
-                bool(row.get("stopDate"))
-            )
-            return {
-                "found": True,
-                "closed": is_closed,
-                "name": row.get("n") or row.get("name", ""),
-            }
-    except Exception:
-        return {"found": None, "error": True}
-
-
-def check_fns_egrip(query: str) -> dict:
-    """Поиск ИП через egrip.nalog.ru"""
-    try:
-        url = f"https://egrul.nalog.ru/search-json?query={urllib.parse.quote(query)}&page=1&cnt=10&mode=EGRIP"
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            rows = data.get("rows", [])
-            if not rows:
-                return {"found": False}
-            row = rows[0]
-            status = str(row.get("status", "")).lower()
-            is_closed = (
-                "прекращ" in status or
-                "ликвид" in status or
-                bool(row.get("liquidation_date")) or
-                bool(row.get("stopDate"))
-            )
-            name = row.get("n") or row.get("name", "")
-            return {
-                "found": True,
-                "closed": is_closed,
-                "name": name,
-            }
-    except Exception:
-        return {"found": None, "error": True}
+def check_dadata(query: str) -> dict:
+    """Проверка ИНН/ОГРНИП через Dadata (реестр ФНС)"""
+    api_key = os.environ.get("DADATA_API_KEY", "")
+    url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party"
+    payload = json.dumps({"query": query, "count": 1}).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Token {api_key}",
+        },
+        method="POST"
+    )
+    with urllib.request.urlopen(req, timeout=10) as response:
+        data = json.loads(response.read().decode("utf-8"))
+        suggestions = data.get("suggestions", [])
+        if not suggestions:
+            return {"found": False}
+        item = suggestions[0]
+        d = item.get("data", {})
+        status = d.get("state", {}).get("status", "")
+        is_closed = status in ("LIQUIDATED", "REORGANIZED")
+        name = item.get("value", "") or d.get("name", {}).get("full_with_opf", "")
+        return {"found": True, "closed": is_closed, "name": name}
 
 
 def handler(event: dict, context) -> dict:
-    """Проверка ИНН или ОГРНИП через данные ФНС"""
+    """Проверка ИНН или ОГРНИП через Dadata (реестр ФНС)"""
     cors_headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -109,26 +76,18 @@ def handler(event: dict, context) -> dict:
             return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": err})}
         if not ogrnip.startswith("3"):
             return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": "ОГРНИП должен начинаться с цифры 3"})}
-        result = check_fns_egrip(ogrnip)
-
+        query = ogrnip
     elif inn:
         valid, err = validate_inn_format(inn, entity_type)
         if not valid:
             return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": err})}
-
-        if entity_type in ("ip", "self_employed", "individual"):
-            result = check_fns_egrip(inn)
-            # Если в ЕГРИП не нашли — попробуем ЕГРЮЛ
-            if not result.get("found"):
-                result_egrul = check_fns_egrul(inn)
-                if result_egrul.get("found"):
-                    result = result_egrul
-        else:
-            result = check_fns_egrul(inn)
+        query = inn
     else:
         return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": "Укажите ИНН или ОГРНИП"})}
 
-    if result.get("error") or result.get("found") is None:
+    try:
+        result = check_dadata(query)
+    except Exception:
         return {
             "statusCode": 200,
             "headers": cors_headers,
