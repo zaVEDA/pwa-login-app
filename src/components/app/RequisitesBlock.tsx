@@ -45,19 +45,11 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
 
-  // Определяем тип введённого значения для ИП
-  const ipInputIsOgrnip = entityType === "ip" && innOgrnip.length === 15;
   const ipInputIsInn = entityType === "ip" && innOgrnip.length === 12;
+  const ipInputIsOgrnip = entityType === "ip" && innOgrnip.length === 15;
 
-  const canCheck =
-    entityType === "ip"
-      ? showManualFill ? (inn.length === 12 || ogrnip.length === 15) : (ipInputIsInn || ipInputIsOgrnip)
-      : entityType === "ooo"
-      ? inn.length === 10
-      : inn.length === 12;
-
-  const handleCheck = async () => {
-    if (!canCheck) return;
+  const handleCheckAuto = async (value: string) => {
+    const isOgrnip = value.length === 15;
     setChecking(true);
     setCheckResult(null);
     setSaved(false);
@@ -66,22 +58,20 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          inn: entityType === "ip" ? (showManualFill ? inn : (ipInputIsOgrnip ? "" : innOgrnip)) : inn,
-          ogrnip: entityType === "ip" ? (showManualFill ? ogrnip : (ipInputIsOgrnip ? innOgrnip : "")) : "",
+          inn: isOgrnip ? "" : value,
+          ogrnip: isOgrnip ? value : "",
           entity_type: entityType,
         }),
       });
       const data = await res.json();
       setCheckResult(data);
-      if (data.valid) {
+      if (data.valid && entityType === "ip") {
         setSaved(true);
-        if (entityType === "ip") {
-          if (data.name) setFullName(data.name);
-          if (data.ogrnip) setOgrnip(data.ogrnip);
-          if (data.inn) setInn(data.inn);
-          else if (!ipInputIsOgrnip) setInn(innOgrnip);
-          setShowManualFill(true);
-        }
+        if (data.name) setFullName(data.name);
+        if (data.ogrnip) setOgrnip(data.ogrnip);
+        if (data.inn) setInn(data.inn);
+        else if (!isOgrnip) setInn(value);
+        setShowManualFill(true);
       }
     } catch {
       setCheckResult({ valid: false, message: "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные" });
@@ -160,20 +150,30 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                   </span>
                 )}
               </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={innOgrnip}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "").slice(0, 15);
-                  setInnOgrnip(val);
-                  setCheckResult(null);
-                  setSaved(false);
-                  setShowManualFill(false);
-                }}
-                placeholder="Введите ИНН (12 цифр) или ОГРНИП (15 цифр)"
-                className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={innOgrnip}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 15);
+                    setInnOgrnip(val);
+                    setCheckResult(null);
+                    setSaved(false);
+                    setShowManualFill(false);
+                    if (val.length === 12 || val.length === 15) {
+                      setTimeout(() => handleCheckAuto(val), 0);
+                    }
+                  }}
+                  placeholder="Введите ИНН (12 цифр) или ОГРНИП (15 цифр)"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+                {checking && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Icon name="Loader" size={14} className="animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -261,35 +261,15 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
             </div>
           )}
 
-          {/* Кнопки */}
+          {/* Сброс */}
           {entityType && (
-            <div className="flex gap-2">
-              <button
-                onClick={handleCheck}
-                disabled={!canCheck || checking}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  canCheck && !checking
-                    ? "gold-gradient text-white shadow-sm"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
-                }`}
-              >
-                {checking ? (
-                  <>
-                    <Icon name="Loader" size={14} className="animate-spin" />
-                    Проверка...
-                  </>
-                ) : (
-                  <>
-                    <Icon name="ShieldCheck" size={14} />
-                    Проверить в ФНС
-                  </>
-                )}
-              </button>
+            <div className="flex justify-end">
               <button
                 onClick={handleReset}
-                className="px-3 py-2.5 rounded-xl border border-border bg-white/60 text-muted-foreground"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
               >
-                <Icon name="RotateCcw" size={14} />
+                <Icon name="RotateCcw" size={12} />
+                Сбросить
               </button>
             </div>
           )}
