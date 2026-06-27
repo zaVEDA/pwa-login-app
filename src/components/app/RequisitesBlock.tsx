@@ -198,7 +198,10 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     <div className="card-warm rounded-2xl p-4 shadow-sm">
       <button
         className="w-full flex items-center gap-2"
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={() => {
+          if (isOpen && entityType && !saved) saveToDb();
+          setIsOpen((v) => !v);
+        }}
       >
         <Icon name="FileText" size={15} className="text-primary" />
         <p className="text-sm font-medium flex-1 text-left">Мои реквизиты</p>
@@ -452,7 +455,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
 
           {/* Кнопки */}
           {entityType && (
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-between gap-2 items-center">
               <button
                 onClick={handleReset}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
@@ -460,17 +463,12 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 <Icon name="RotateCcw" size={12} />
                 Сбросить
               </button>
-              <button
-                onClick={saveToDb}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm disabled:opacity-60"
-              >
-                {saving
-                  ? <Icon name="Loader" size={12} className="animate-spin" />
-                  : <Icon name="Save" size={12} />
-                }
-                {saving ? "Сохраняю..." : "Сохранить"}
-              </button>
+              {saving && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Icon name="Loader" size={12} className="animate-spin" />
+                  Сохраняю...
+                </div>
+              )}
             </div>
           )}
 
