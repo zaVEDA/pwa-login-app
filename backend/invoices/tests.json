@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "name": "GET следующий номер",
+      "method": "GET",
+      "path": "/?next_number=1",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST сохранить счёт",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "action": "save",
+        "invoice_number": "2026-0001",
+        "invoice_date": "2026-06-27",
+        "client_type": "ip",
+        "client_name": "ИП Иванов Иван Иванович",
+        "client_inn": "123456789012",
+        "items": [{ "name": "Консультация", "qty": "1", "price": "3000" }],
+        "due_date": "2026-07-10",
+        "comment": "Тестовый счёт"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET список счетов",
+      "method": "GET",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
+    }
+  ]
+}

@@ -4,6 +4,9 @@ import Icon from "@/components/ui/icon";
 const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e94cb8888c";
 const CLIENTS_URL = "https://functions.poehali.dev/f20320e8-6fc3-47b0-b7a3-ef74f5e1c1d5";
 const SERVICES_URL = "https://functions.poehali.dev/0b2cb816-5a7a-45c0-9659-94294105e94f";
+const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
 type ClientType = "ip" | "ooo" | "individual" | null;
 
@@ -32,6 +35,11 @@ export default function InvoiceModal({ onClose, phone }: Props) {
   const [savedServices, setSavedServices] = useState<{ id: number; name: string; price: number | null; unit: string }[]>([]);
   const [showServiceList, setShowServiceList] = useState<number | null>(null); // индекс позиции
 
+  // Номер и дата счёта
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState(todayStr());
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Клиент
   const [clientType, setClientType] = useState<ClientType>(null);
   const [clientInn, setClientInn] = useState("");
@@ -44,6 +52,57 @@ export default function InvoiceModal({ onClose, phone }: Props) {
   const [comment, setComment] = useState("");
 
   const innMaxLen = clientType === "ooo" ? 10 : 12;
+
+  // Загружаем следующий номер счёта
+  useEffect(() => {
+    if (!phone) return;
+    fetch(`${INVOICES_URL}?next_number=1`, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        if (parsed.invoice_number) setInvoiceNumber(parsed.invoice_number);
+      })
+      .catch(() => {});
+  }, [phone]);
+
+  const handleCreatePdf = async () => {
+    setPdfLoading(true);
+    try {
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({
+          action: "pdf",
+          invoice_number: invoiceNumber,
+          invoice_date: invoiceDate,
+          client_type: clientType,
+          client_name: clientInfo?.name || "",
+          client_inn: clientInfo?.inn || "",
+          client_ogrnip: clientInfo?.ogrnip || "",
+          client_address: clientInfo?.address || "",
+          items,
+          due_date: dueDate,
+          comment,
+        }),
+      });
+      const data = await res.json();
+      const parsed = typeof data === "string" ? JSON.parse(data) : data;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Счёт_${invoiceNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   // Загружаем справочники
   useEffect(() => {
@@ -198,7 +257,22 @@ export default function InvoiceModal({ onClose, phone }: Props) {
             </button>
             <div className="flex-1">
               <h2 className="font-cormorant text-2xl font-semibold leading-tight">Счёт на оплату</h2>
-              <p className="text-xs text-muted-foreground">Новый документ</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs text-muted-foreground">№</span>
+                <input
+                  type="text"
+                  value={invoiceNumber}
+                  onChange={(e) => setInvoiceNumber(e.target.value)}
+                  className="text-xs font-medium text-primary bg-transparent outline-none border-b border-dashed border-primary/40 focus:border-primary w-24"
+                />
+                <span className="text-xs text-muted-foreground">от</span>
+                <input
+                  type="date"
+                  value={invoiceDate}
+                  onChange={(e) => setInvoiceDate(e.target.value)}
+                  className="text-xs text-foreground bg-transparent outline-none border-b border-dashed border-border focus:border-primary"
+                />
+              </div>
             </div>
             <button
               onClick={onClose}
@@ -470,9 +544,16 @@ export default function InvoiceModal({ onClose, phone }: Props) {
                 {total.toLocaleString("ru-RU")} ₽
               </p>
             </div>
-            <button className="px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2">
-              <Icon name="FileDown" size={15} />
-              Создать счёт
+            <button
+              onClick={handleCreatePdf}
+              disabled={pdfLoading}
+              className="px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2 disabled:opacity-60"
+            >
+              {pdfLoading
+                ? <Icon name="Loader" size={15} className="animate-spin" />
+                : <Icon name="FileDown" size={15} />
+              }
+              {pdfLoading ? "Генерирую..." : "Скачать PDF"}
             </button>
           </div>
         </div>
