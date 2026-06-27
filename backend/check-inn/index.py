@@ -6,7 +6,7 @@ import urllib.parse
 
 def validate_inn_format(inn: str, entity_type: str) -> tuple[bool, str]:
     """Проверка формата ИНН"""
-    if entity_type == "ip" or entity_type == "self_employed" or entity_type == "individual":
+    if entity_type in ("ip", "self_employed", "individual"):
         if not re.match(r'^\d{12}$', inn):
             return False, "ИНН физлица/ИП должен содержать ровно 12 цифр"
     elif entity_type == "ooo":
@@ -22,10 +22,10 @@ def validate_ogrnip_format(ogrnip: str) -> tuple[bool, str]:
     return True, ""
 
 
-def check_inn_fns(inn: str) -> dict:
-    """Запрос к открытому API ФНС для проверки ИНН"""
+def check_fns_egrul(query: str) -> dict:
+    """Поиск юрлица (ООО) через egrul.nalog.ru"""
     try:
-        url = f"https://egrul.nalog.ru/search-json?query={inn}&page=1&cnt=10"
+        url = f"https://egrul.nalog.ru/search-json?query={urllib.parse.quote(query)}&page=1&cnt=10"
         req = urllib.request.Request(
             url,
             headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
@@ -34,11 +34,8 @@ def check_inn_fns(inn: str) -> dict:
             data = json.loads(response.read().decode("utf-8"))
             rows = data.get("rows", [])
             if not rows:
-                return {"found": False, "closed": False}
+                return {"found": False}
             row = rows[0]
-            # Проверяем, есть ли дата прекращения деятельности
-            liquidation_date = row.get("liquidation_date") or row.get("stopDate") or row.get("КПП")
-            # Более надёжная проверка закрытия через статус
             status = str(row.get("status", "")).lower()
             is_closed = (
                 "ликвид" in status or
@@ -52,7 +49,38 @@ def check_inn_fns(inn: str) -> dict:
                 "name": row.get("n") or row.get("name", ""),
             }
     except Exception:
-        return {"found": None, "closed": False, "error": True}
+        return {"found": None, "error": True}
+
+
+def check_fns_egrip(query: str) -> dict:
+    """Поиск ИП через egrip.nalog.ru"""
+    try:
+        url = f"https://egrul.nalog.ru/search-json?query={urllib.parse.quote(query)}&page=1&cnt=10&mode=EGRIP"
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            rows = data.get("rows", [])
+            if not rows:
+                return {"found": False}
+            row = rows[0]
+            status = str(row.get("status", "")).lower()
+            is_closed = (
+                "прекращ" in status or
+                "ликвид" in status or
+                bool(row.get("liquidation_date")) or
+                bool(row.get("stopDate"))
+            )
+            name = row.get("n") or row.get("name", "")
+            return {
+                "found": True,
+                "closed": is_closed,
+                "name": name,
+            }
+    except Exception:
+        return {"found": None, "error": True}
 
 
 def handler(event: dict, context) -> dict:
@@ -75,58 +103,50 @@ def handler(event: dict, context) -> dict:
     ogrnip = (body.get("ogrnip") or "").strip()
     entity_type = (body.get("entity_type") or "ip").strip()
 
-    # Проверяем ОГРНИП если передан
     if ogrnip:
         valid, err = validate_ogrnip_format(ogrnip)
         if not valid:
-            return {
-                "statusCode": 200,
-                "headers": cors_headers,
-                "body": json.dumps({"valid": False, "message": err})
-            }
-        # ОГРНИП начинается с 3
+            return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": err})}
         if not ogrnip.startswith("3"):
-            return {
-                "statusCode": 200,
-                "headers": cors_headers,
-                "body": json.dumps({"valid": False, "message": "ОГРНИП должен начинаться с цифры 3"})
-            }
-        result = check_inn_fns(ogrnip)
+            return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": "ОГРНИП должен начинаться с цифры 3"})}
+        result = check_fns_egrip(ogrnip)
+
     elif inn:
         valid, err = validate_inn_format(inn, entity_type)
         if not valid:
-            return {
-                "statusCode": 200,
-                "headers": cors_headers,
-                "body": json.dumps({"valid": False, "message": err})
-            }
-        result = check_inn_fns(inn)
-    else:
-        return {
-            "statusCode": 200,
-            "headers": cors_headers,
-            "body": json.dumps({"valid": False, "message": "Укажите ИНН или ОГРНИП"})
-        }
+            return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": err})}
 
-    if result.get("error"):
+        if entity_type in ("ip", "self_employed", "individual"):
+            result = check_fns_egrip(inn)
+            # Если в ЕГРИП не нашли — попробуем ЕГРЮЛ
+            if not result.get("found"):
+                result_egrul = check_fns_egrul(inn)
+                if result_egrul.get("found"):
+                    result = result_egrul
+        else:
+            result = check_fns_egrul(inn)
+    else:
+        return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": "Укажите ИНН или ОГРНИП"})}
+
+    if result.get("error") or result.get("found") is None:
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps({"valid": False, "message": "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные"})
+            "body": json.dumps({"valid": False, "message": "Не удалось получить ответ от ФНС. Попробуйте ещё раз"})
         }
 
     if not result["found"]:
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps({"valid": False, "message": "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные"})
+            "body": json.dumps({"valid": False, "message": "ИНН не найден в реестре ФНС"})
         }
 
     if result["closed"]:
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps({"valid": False, "message": "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные"})
+            "body": json.dumps({"valid": False, "message": "Деятельность по данному ИНН прекращена"})
         }
 
     return {
