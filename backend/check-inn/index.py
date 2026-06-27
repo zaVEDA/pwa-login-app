@@ -49,7 +49,9 @@ def check_dadata(query: str) -> dict:
         name = item.get("value", "") or d.get("name", {}).get("full_with_opf", "")
         ogrnip = d.get("ogrn", "") or ""
         inn = d.get("inn", "") or ""
-        return {"found": True, "closed": is_closed, "name": name, "ogrnip": ogrnip, "inn": inn}
+        address_data = d.get("address", {}) or {}
+        address = address_data.get("value", "") or ""
+        return {"found": True, "closed": is_closed, "name": name, "ogrnip": ogrnip, "inn": inn, "address": address}
 
 
 def handler(event: dict, context) -> dict:
@@ -113,5 +115,5 @@ def handler(event: dict, context) -> dict:
     return {
         "statusCode": 200,
         "headers": cors_headers,
-        "body": json.dumps({"valid": True, "name": result.get("name", ""), "ogrnip": result.get("ogrnip", ""), "inn": result.get("inn", "")})
+        "body": json.dumps({"valid": True, "name": result.get("name", ""), "ogrnip": result.get("ogrnip", ""), "inn": result.get("inn", ""), "address": result.get("address", "")})
     }
