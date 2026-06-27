@@ -37,6 +37,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
   const [offerFill, setOfferFill] = useState(false);
+  const [showManualFill, setShowManualFill] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify({ entityType, ipDocType, inn, ogrnip, saved }));
@@ -252,11 +253,29 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                   Да, заполнить
                 </button>
                 <button
-                  onClick={() => setOfferFill(false)}
+                  onClick={() => { setOfferFill(false); setShowManualFill(true); }}
                   className="px-4 py-2 rounded-xl border border-border bg-white/60 text-sm text-muted-foreground"
                 >
                   Нет
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Ручное заполнение после отказа от автозаполнения */}
+          {showManualFill && entityType === "ip" && (
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground mb-1 block">ФИО предпринимателя</label>
+              <div className="flex items-center gap-2 p-3 rounded-xl border border-border bg-white/70">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">ИП</span>
+                <div className="w-px h-4 bg-border flex-shrink-0" />
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => { setFullName(e.target.value); localStorage.setItem("requisites_name", e.target.value); setSaved(false); }}
+                  placeholder="Иванова Анна Сергеевна"
+                  className="flex-1 text-sm outline-none bg-transparent"
+                />
               </div>
             </div>
           )}
