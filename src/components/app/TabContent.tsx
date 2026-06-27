@@ -1,5 +1,7 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
+import InvoiceModal from "@/components/app/InvoiceModal";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -73,13 +75,20 @@ export default function TabContent({
   setColorTheme,
   phone,
 }: Props) {
+  const [showInvoice, setShowInvoice] = useState(false);
+
   return (
     <>
+      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} />}
+
       {activeTab === "docs" && (
         <div className="space-y-5 animate-slide-up">
           <div className="flex items-center justify-between">
             <h2 className="font-cormorant text-2xl font-semibold">Мои документы</h2>
-            <button className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center shadow-sm">
+            <button
+              onClick={() => setShowInvoice(true)}
+              className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center shadow-sm"
+            >
               <Icon name="Plus" size={16} className="text-white" />
             </button>
           </div>

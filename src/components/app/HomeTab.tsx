@@ -1,4 +1,6 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import InvoiceModal from "@/components/app/InvoiceModal";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -59,9 +61,11 @@ interface Props {
 
 export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props) {
   const theme = themes[colorTheme];
+  const [showInvoice, setShowInvoice] = useState(false);
 
   return (
     <div className="space-y-6 animate-slide-up">
+      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} />}
       {/* Мотивирующая фраза дня */}
       <div className="rounded-2xl p-4 relative overflow-hidden"
         style={{ background: theme.phraseBg, border: `1px solid ${theme.phraseBorder}` }}>
@@ -82,7 +86,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab }: Props
         <h2 className="font-cormorant text-xl font-semibold mb-3">Быстрые действия</h2>
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setActiveTab("docs")}
+            onClick={() => setShowInvoice(true)}
             className="card-dark rounded-2xl p-4 text-left active:scale-[0.97] transition-transform"
           >
             <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center mb-3">
