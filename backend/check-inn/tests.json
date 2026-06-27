@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "Проверка валидного ИНН ИП",
+      "method": "POST",
+      "path": "/",
+      "body": {"inn": "500100732259", "entity_type": "ip"},
+      "expectedStatus": 200,
+      "expectedBody": {"valid": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Проверка неверного формата ИНН",
+      "method": "POST",
+      "path": "/",
+      "body": {"inn": "123", "entity_type": "ip"},
+      "expectedStatus": 200,
+      "expectedBody": {"valid": false},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import RequisitesBlock from "@/components/app/RequisitesBlock";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -260,43 +261,8 @@ export default function TabContent({
             </div>
           </div>
 
-          {/* ИНН блок — только для самозанятых */}
-          {isSelfEmployed && <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Icon name="Hash" size={15} className="text-primary" />
-              <p className="text-sm font-medium">Данные самозанятого</p>
-              {innSaved && <span className="ml-auto doc-tag bg-green-100 text-green-700 text-[10px]">Сохранено</span>}
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">ФИО</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => { setFullName(e.target.value); setInnSaved(false); }}
-                placeholder="Иванова Анна Сергеевна"
-                className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">ИНН</label>
-              <input
-                type="number"
-                value={inn}
-                onChange={(e) => { setInn(e.target.value.slice(0, 12)); setInnSaved(false); }}
-                placeholder="123456789012"
-                className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-              />
-            </div>
-            <button
-              onClick={() => inn.length === 12 && setInnSaved(true)}
-              className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all ${inn.length === 12 ? "gold-gradient text-white shadow-sm" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
-            >
-              Сохранить данные
-            </button>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              ИНН и ФИО будут автоматически подставляться во все документы
-            </p>
-          </div>}
+          {/* Реквизиты */}
+          <RequisitesBlock fullName={fullName} setFullName={setFullName} />
 
           {/* Мой налог — только для самозанятых */}
           {isSelfEmployed && <div
