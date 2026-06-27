@@ -37,11 +37,11 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string; inn?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
   const [offerFill, setOfferFill] = useState(false);
-  const [showManualFill, setShowManualFill] = useState(false);
+  const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, saved }));
-  }, [entityType, innOgrnip, inn, ogrnip, saved]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, saved, showManualFill, fullName }));
+  }, [entityType, innOgrnip, inn, ogrnip, saved, showManualFill, fullName]);
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
 
