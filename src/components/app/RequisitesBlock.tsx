@@ -36,6 +36,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
+  const [offerFill, setOfferFill] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify({ entityType, ipDocType, inn, ogrnip, saved }));
@@ -67,12 +68,20 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
       });
       const data = await res.json();
       setCheckResult(data);
-      if (data.valid) setSaved(true);
+      if (data.valid) {
+        setSaved(true);
+        if (entityType === "ip" && data.name) setOfferFill(true);
+      }
     } catch {
       setCheckResult({ valid: false, message: "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные" });
     } finally {
       setChecking(false);
     }
+  };
+
+  const handleFillFromFns = () => {
+    if (checkResult?.name) setFullName(checkResult.name);
+    setOfferFill(false);
   };
 
   const handleSelectEntity = (type: EntityType) => {
@@ -82,6 +91,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     setIpDocType("inn");
     setCheckResult(null);
     setSaved(false);
+    setOfferFill(false);
   };
 
   const handleReset = () => {
@@ -217,7 +227,37 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
               checkResult.valid ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
             }`}>
               <Icon name={checkResult.valid ? "CheckCircle" : "AlertCircle"} size={15} className="flex-shrink-0 mt-0.5" />
-              <span>{checkResult.valid ? `Данные подтверждены${checkResult.name ? `: ${checkResult.name}` : ""}` : checkResult.message}</span>
+              <span>{checkResult.valid ? "Данные подтверждены в реестре ФНС" : checkResult.message}</span>
+            </div>
+          )}
+
+          {/* Предложение заполнить данными из ФНС */}
+          {offerFill && checkResult?.name && (
+            <div className="rounded-2xl border-2 p-4 space-y-3" style={{ borderColor: "hsl(35 72% 48% / 0.3)", background: "hsl(35 72% 48% / 0.05)" }}>
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-xl gold-gradient flex items-center justify-center flex-shrink-0">
+                  <Icon name="Download" size={14} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Заполнить данными из ФНС?</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">ФИО и статус ИП будут подставлены из реестра</p>
+                  <p className="text-xs font-medium mt-1.5" style={{ color: "hsl(35 72% 42%)" }}>{checkResult.name}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleFillFromFns}
+                  className="flex-1 py-2 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm"
+                >
+                  Да, заполнить
+                </button>
+                <button
+                  onClick={() => setOfferFill(false)}
+                  className="px-4 py-2 rounded-xl border border-border bg-white/60 text-sm text-muted-foreground"
+                >
+                  Нет
+                </button>
+              </div>
             </div>
           )}
 
