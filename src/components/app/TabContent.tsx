@@ -79,7 +79,7 @@ export default function TabContent({
 
   return (
     <>
-      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} />}
+      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} />}
 
       {activeTab === "docs" && (
         <div className="space-y-5 animate-slide-up">

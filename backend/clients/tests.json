@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "GET без phone",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST клиент",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "client_type": "ip",
+        "name": "ИП Иванов Иван Иванович",
+        "inn": "123456789012",
+        "ogrnip": "315774600123456",
+        "address": "г. Москва, ул. Тестовая, д. 1"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET клиенты",
+      "method": "GET",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
+    }
+  ]
+}

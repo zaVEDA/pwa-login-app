@@ -1,23 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e94cb8888c";
+const CLIENTS_URL = "https://functions.poehali.dev/f20320e8-6fc3-47b0-b7a3-ef74f5e1c1d5";
 
 type ClientType = "ip" | "ooo" | "individual" | null;
 
 interface ClientInfo {
+  id?: number;
   name: string;
   inn: string;
   ogrnip: string;
   address: string;
+  client_type?: string;
 }
 
 interface Props {
   onClose: () => void;
+  phone: string;
 }
 
-export default function InvoiceModal({ onClose }: Props) {
+export default function InvoiceModal({ onClose, phone }: Props) {
   const [minimized, setMinimized] = useState(false);
+
+  // Справочник клиентов
+  const [savedClients, setSavedClients] = useState<ClientInfo[]>([]);
+  const [showClientList, setShowClientList] = useState(false);
 
   // Клиент
   const [clientType, setClientType] = useState<ClientType>(null);
@@ -32,6 +40,45 @@ export default function InvoiceModal({ onClose }: Props) {
 
   const innMaxLen = clientType === "ooo" ? 10 : 12;
 
+  // Загружаем справочник клиентов
+  useEffect(() => {
+    if (!phone) return;
+    fetch(CLIENTS_URL, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        setSavedClients(parsed.clients || []);
+      })
+      .catch(() => {});
+  }, [phone]);
+
+  const saveClient = async (info: ClientInfo) => {
+    if (!phone) return;
+    fetch(CLIENTS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Phone": phone },
+      body: JSON.stringify({
+        client_type: clientType,
+        name: info.name,
+        inn: info.inn,
+        ogrnip: info.ogrnip,
+        address: info.address,
+      }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        if (parsed.ok) {
+          setSavedClients(prev => {
+            const exists = prev.find(c => c.inn === info.inn);
+            if (exists) return prev.map(c => c.inn === info.inn ? { ...info, id: parsed.id } : c);
+            return [{ ...info, id: parsed.id }, ...prev];
+          });
+        }
+      })
+      .catch(() => {});
+  };
+
   const handleInnCheck = async (val: string) => {
     setClientChecking(true);
     setClientError("");
@@ -45,7 +92,9 @@ export default function InvoiceModal({ onClose }: Props) {
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       if (parsed.valid) {
-        setClientInfo({ name: parsed.name, inn: parsed.inn || val, ogrnip: parsed.ogrnip, address: parsed.address });
+        const info: ClientInfo = { name: parsed.name, inn: parsed.inn || val, ogrnip: parsed.ogrnip, address: parsed.address };
+        setClientInfo(info);
+        saveClient(info);
       } else {
         setClientError(parsed.message || "Не найден в реестре ФНС");
       }
@@ -155,8 +204,41 @@ export default function InvoiceModal({ onClose }: Props) {
               ))}
             </div>
 
+            {/* Быстрый выбор из справочника */}
+            {savedClients.length > 0 && !clientInfo && (
+              <div>
+                <button
+                  onClick={() => setShowClientList(v => !v)}
+                  className="flex items-center gap-1.5 text-xs text-primary font-medium"
+                >
+                  <Icon name="Users" size={13} />
+                  Выбрать из справочника ({savedClients.length})
+                  <Icon name={showClientList ? "ChevronUp" : "ChevronDown"} size={12} />
+                </button>
+                {showClientList && (
+                  <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto">
+                    {savedClients.map((c) => (
+                      <button
+                        key={c.id ?? c.inn}
+                        onClick={() => {
+                          setClientInfo(c);
+                          setClientInn(c.inn || "");
+                          setClientType((c.client_type as ClientType) || "ip");
+                          setShowClientList(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 rounded-xl border border-border bg-white/70 hover:border-primary transition-colors"
+                      >
+                        <p className="text-sm font-medium truncate">{c.name}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">ИНН {c.inn}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ИНН для ИП / ООО / физ. лица */}
-            {clientType && (
+            {clientType && !clientInfo && (
               <div>
                 <div className="relative">
                   <input
@@ -175,7 +257,6 @@ export default function InvoiceModal({ onClose }: Props) {
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {clientChecking && <Icon name="Loader" size={14} className="animate-spin text-muted-foreground" />}
-                    {clientInfo && <Icon name="CheckCircle" size={14} className="text-green-500" />}
                   </div>
                 </div>
                 {clientError && <p className="text-[11px] text-red-500 mt-1">{clientError}</p>}
@@ -185,9 +266,18 @@ export default function InvoiceModal({ onClose }: Props) {
             {/* Данные из ФНС */}
             {clientInfo && (
               <div className="rounded-xl border border-green-200 bg-green-50/60 p-3 space-y-2">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Icon name="CheckCircle" size={13} className="text-green-600" />
-                  <p className="text-[11px] font-medium text-green-700">Найден в реестре ФНС</p>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <Icon name="CheckCircle" size={13} className="text-green-600" />
+                    <p className="text-[11px] font-medium text-green-700">Найден в реестре ФНС</p>
+                  </div>
+                  <button
+                    onClick={() => { setClientInfo(null); setClientInn(""); setClientError(""); }}
+                    className="text-[11px] text-muted-foreground flex items-center gap-1"
+                  >
+                    <Icon name="Pencil" size={11} />
+                    Изменить
+                  </button>
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Клиент</p>

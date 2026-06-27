@@ -112,6 +112,7 @@ export default function Index() {
             colorTheme={colorTheme}
             todayPhrase={todayPhrase}
             setActiveTab={setActiveTab}
+            phone={phone}
           />
         )}
         <TabContent
