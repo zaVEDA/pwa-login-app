@@ -241,7 +241,13 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                     type="text"
                     inputMode="numeric"
                     value={inn}
-                    onChange={(e) => { setInn(e.target.value.replace(/\D/g, "").slice(0, 12)); setSaved(false); }}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 12);
+                      setInn(val);
+                      setSaved(false);
+                      setCheckResult(null);
+                      if (val.length === 12) setTimeout(() => handleCheckAuto(val), 0);
+                    }}
                     placeholder="123456789012"
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                   />
@@ -252,7 +258,13 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                     type="text"
                     inputMode="numeric"
                     value={ogrnip}
-                    onChange={(e) => { setOgrnip(e.target.value.replace(/\D/g, "").slice(0, 15)); setSaved(false); }}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 15);
+                      setOgrnip(val);
+                      setSaved(false);
+                      setCheckResult(null);
+                      if (val.length === 15) setTimeout(() => handleCheckAuto(val), 0);
+                    }}
                     placeholder="315774600123456"
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                   />
