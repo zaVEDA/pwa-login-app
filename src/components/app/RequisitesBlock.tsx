@@ -51,7 +51,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
 
   const canCheck =
     entityType === "ip"
-      ? (ipInputIsInn || ipInputIsOgrnip)
+      ? showManualFill ? (inn.length === 12 || ogrnip.length === 15) : (ipInputIsInn || ipInputIsOgrnip)
       : entityType === "ooo"
       ? inn.length === 10
       : inn.length === 12;
@@ -66,8 +66,8 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          inn: entityType === "ip" ? (ipInputIsOgrnip ? "" : innOgrnip) : inn,
-          ogrnip: entityType === "ip" && ipInputIsOgrnip ? innOgrnip : "",
+          inn: entityType === "ip" ? (showManualFill ? inn : (ipInputIsOgrnip ? "" : innOgrnip)) : inn,
+          ogrnip: entityType === "ip" ? (showManualFill ? ogrnip : (ipInputIsOgrnip ? innOgrnip : "")) : "",
           entity_type: entityType,
         }),
       });
