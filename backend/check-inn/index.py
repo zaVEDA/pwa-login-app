@@ -47,7 +47,8 @@ def check_dadata(query: str) -> dict:
         status = d.get("state", {}).get("status", "")
         is_closed = status in ("LIQUIDATED", "REORGANIZED")
         name = item.get("value", "") or d.get("name", {}).get("full_with_opf", "")
-        return {"found": True, "closed": is_closed, "name": name}
+        ogrnip = d.get("ogrn", "") or ""
+        return {"found": True, "closed": is_closed, "name": name, "ogrnip": ogrnip}
 
 
 def handler(event: dict, context) -> dict:
@@ -111,5 +112,5 @@ def handler(event: dict, context) -> dict:
     return {
         "statusCode": 200,
         "headers": cors_headers,
-        "body": json.dumps({"valid": True, "name": result.get("name", "")})
+        "body": json.dumps({"valid": True, "name": result.get("name", ""), "ogrnip": result.get("ogrnip", "")})
     }
