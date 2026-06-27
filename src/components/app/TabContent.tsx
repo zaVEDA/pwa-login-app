@@ -27,13 +27,13 @@ const knowledgeArticles = [
 ];
 
 const specialties = [
-  { icon: "Brain", label: "Психолог" },
-  { icon: "Star", label: "Астролог" },
-  { icon: "Hash", label: "Нумеролог" },
-  { icon: "Target", label: "Коуч" },
-  { icon: "BookOpen", label: "Репетитор" },
-  { icon: "Baby", label: "Няня" },
-  { icon: "Camera", label: "Фотограф" },
+  { emoji: "🧠", label: "Психолог" },
+  { emoji: "✨", label: "Астролог" },
+  { emoji: "🔢", label: "Нумеролог" },
+  { emoji: "🎯", label: "Коуч" },
+  { emoji: "📚", label: "Репетитор" },
+  { emoji: "👶", label: "Няня" },
+  { emoji: "📸", label: "Фотограф" },
 ];
 
 const themes = {
@@ -142,9 +142,10 @@ export default function TabContent({
             {specialties.map((s) => (
               <button
                 key={s.label}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/60 border border-border"
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70 border shadow-sm"
+                style={{ borderColor: "hsl(36 28% 82%)" }}
               >
-                <Icon name={s.icon} size={11} />
+                <span className="text-base">{s.emoji}</span>
                 {s.label}
               </button>
             ))}
