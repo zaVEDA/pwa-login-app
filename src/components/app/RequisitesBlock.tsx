@@ -33,6 +33,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [innOgrnip, setInnOgrnip] = useState<string>(() => loadSaved().innOgrnip ?? "");
   const [inn, setInn] = useState<string>(() => loadSaved().inn ?? "");
   const [ogrnip, setOgrnip] = useState<string>(() => loadSaved().ogrnip ?? "");
+  const [address, setAddress] = useState<string>(() => loadSaved().address ?? "");
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string; inn?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
@@ -40,8 +41,8 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, saved, showManualFill, fullName }));
-  }, [entityType, innOgrnip, inn, ogrnip, saved, showManualFill, fullName]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, saved, showManualFill, fullName }));
+  }, [entityType, innOgrnip, inn, ogrnip, address, saved, showManualFill, fullName]);
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
 
@@ -85,6 +86,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     setInn("");
     setOgrnip("");
     setInnOgrnip("");
+    setAddress("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -95,6 +97,7 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     setInn("");
     setOgrnip("");
     setInnOgrnip("");
+    setAddress("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -269,6 +272,17 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Адрес регистрации (по прописке)</label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => { setAddress(e.target.value); setSaved(false); }}
+                  placeholder="г. Москва, ул. Примерная, д. 1, кв. 1"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">Используется в документах как юридический адрес ИП</p>
               </div>
             </div>
           )}
