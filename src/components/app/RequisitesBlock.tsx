@@ -34,6 +34,12 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [inn, setInn] = useState<string>(() => loadSaved().inn ?? "");
   const [ogrnip, setOgrnip] = useState<string>(() => loadSaved().ogrnip ?? "");
   const [address, setAddress] = useState<string>(() => loadSaved().address ?? "");
+  const [bik, setBik] = useState<string>(() => loadSaved().bik ?? "");
+  const [bankName, setBankName] = useState<string>(() => loadSaved().bankName ?? "");
+  const [corrAccount, setCorrAccount] = useState<string>(() => loadSaved().corrAccount ?? "");
+  const [checkingAccount, setCheckingAccount] = useState<string>(() => loadSaved().checkingAccount ?? "");
+  const [bikChecking, setBikChecking] = useState(false);
+  const [bikError, setBikError] = useState<string>("");
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string; inn?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
@@ -41,8 +47,8 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
   const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, saved, showManualFill, fullName }));
-  }, [entityType, innOgrnip, inn, ogrnip, address, saved, showManualFill, fullName]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, saved, showManualFill, fullName }));
+  }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, saved, showManualFill, fullName]);
 
   const innMaxLen = entityType === "ooo" ? 10 : 12;
 
@@ -81,12 +87,46 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     }
   };
 
+  const handleBikCheck = async (value: string) => {
+    setBikChecking(true);
+    setBikError("");
+    setBankName("");
+    setCorrAccount("");
+    try {
+      const res = await fetch("https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/bank", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Token 32d3311132a01e28fb77b87dd83b9452f3c7b353",
+        },
+        body: JSON.stringify({ query: value, count: 1 }),
+      });
+      const data = await res.json();
+      const item = data.suggestions?.[0];
+      if (item) {
+        setBankName(item.value || "");
+        setCorrAccount(item.data?.correspondent_account || "");
+      } else {
+        setBikError("Банк не найден. Проверьте БИК");
+      }
+    } catch {
+      setBikError("Ошибка при проверке БИК");
+    } finally {
+      setBikChecking(false);
+    }
+  };
+
   const handleSelectEntity = (type: EntityType) => {
     setEntityType(type);
     setInn("");
     setOgrnip("");
     setInnOgrnip("");
     setAddress("");
+    setBik("");
+    setBankName("");
+    setCorrAccount("");
+    setCheckingAccount("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -98,6 +138,10 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
     setOgrnip("");
     setInnOgrnip("");
     setAddress("");
+    setBik("");
+    setBankName("");
+    setCorrAccount("");
+    setCheckingAccount("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -283,6 +327,78 @@ export default function RequisitesBlock({ fullName, setFullName }: Props) {
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">Используется в документах как юридический адрес ИП</p>
+              </div>
+
+              {/* Банковские реквизиты */}
+              <div className="pt-1">
+                <p className="text-xs font-medium text-foreground mb-2">Банковские реквизиты</p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">БИК</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={bik}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 9);
+                          setBik(val);
+                          setBankName("");
+                          setCorrAccount("");
+                          setBikError("");
+                          setSaved(false);
+                          if (val.length === 9) setTimeout(() => handleBikCheck(val), 0);
+                        }}
+                        placeholder="044525225"
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      />
+                      {bikChecking && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Icon name="Loader" size={14} className="animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    {bikError && <p className="text-[11px] text-red-500 mt-1">{bikError}</p>}
+                  </div>
+
+                  {bankName && (
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Банк</label>
+                      <input
+                        type="text"
+                        value={bankName}
+                        onChange={(e) => { setBankName(e.target.value); setSaved(false); }}
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+                  )}
+
+                  {corrAccount && (
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Корр. счёт</label>
+                      <input
+                        type="text"
+                        value={corrAccount}
+                        onChange={(e) => { setCorrAccount(e.target.value); setSaved(false); }}
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+                  )}
+
+                  {bankName && (
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Расчётный счёт</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={checkingAccount}
+                        onChange={(e) => { setCheckingAccount(e.target.value.replace(/\D/g, "").slice(0, 20)); setSaved(false); }}
+                        placeholder="40802810000000000000"
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
