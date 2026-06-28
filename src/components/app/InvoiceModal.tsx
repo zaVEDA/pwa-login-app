@@ -335,7 +335,7 @@ export default function InvoiceModal({ onClose, phone }: Props) {
         </div>
 
         {/* Scroll content */}
-        <div className={`flex-1 overflow-y-auto px-5 py-5 space-y-5 ${saved ? "pb-44" : "pb-32"}`}>
+        <div className={`flex-1 overflow-y-auto px-5 py-5 space-y-5 ${saved ? "pb-56" : "pb-40"}`}>
 
           {/* Клиент */}
           <div className="space-y-3">
@@ -623,7 +623,7 @@ export default function InvoiceModal({ onClose, phone }: Props) {
         )}
 
         {/* Footer */}
-        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4 bg-background border-t border-border/50">
+        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pb-20 pt-4 bg-background border-t border-border/50">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-muted-foreground">Итого к оплате</p>
