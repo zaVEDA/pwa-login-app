@@ -49,12 +49,18 @@ export default function Index() {
       document.documentElement.setAttribute("data-theme", saved);
     }
   }, []);
+
+  useEffect(() => {
+    if (phone) localStorage.setItem("userPhone", phone);
+  }, [phone]);
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
   const [isLoggedIn, setIsLoggedIn] = useState(isDemo);
   const [loginStep, setLoginStep] = useState<"phone" | "code" | "status">("phone");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(
+    () => localStorage.getItem("userPhone") || (isDemo ? "+70000000000" : "")
+  );
   const [code, setCode] = useState("");
   const [inn, setInn] = useState("");
   const [fullName, setFullName] = useState(() => {

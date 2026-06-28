@@ -44,6 +44,7 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
   const [saved, setSaved] = useState(false);        // счёт сохранён (номер зафиксирован)
   const [savedId, setSavedId] = useState<number | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
 
@@ -87,6 +88,11 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
   });
 
   const handleSave = async () => {
+    setSaveError("");
+    if (!phone) {
+      setSaveError("Не удалось определить аккаунт. Войдите заново.");
+      return;
+    }
     setSaveLoading(true);
     try {
       const res = await fetch(INVOICES_URL, {
@@ -101,9 +107,12 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
         setSavedId(parsed.id);
         if (parsed.invoice_number) setInvoiceNumber(parsed.invoice_number);
         onSaved?.();
+      } else {
+        setSaveError("Не удалось сохранить счёт. Попробуйте ещё раз.");
       }
     } catch (e) {
       console.error(e);
+      setSaveError("Ошибка соединения. Проверьте интернет.");
     } finally {
       setSaveLoading(false);
     }
@@ -650,6 +659,12 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
 
         {/* Footer */}
         <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pb-20 pt-4 bg-background border-t border-border/50">
+          {saveError && (
+            <div className="mb-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+              <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
+              <p className="text-[11px] text-red-600">{saveError}</p>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-muted-foreground">Итого к оплате</p>
