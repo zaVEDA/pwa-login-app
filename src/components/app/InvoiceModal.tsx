@@ -396,8 +396,27 @@ export default function InvoiceModal({ onClose, phone }: Props) {
               </div>
             )}
 
-            {/* ИНН для ИП / ООО / физ. лица */}
-            {clientType && !clientInfo && (
+            {/* Физ. лицо — просто ФИО */}
+            {clientType === "individual" && !clientInfo && (
+              <div>
+                <input
+                  type="text"
+                  value={clientInn}
+                  onChange={(e) => setClientInn(e.target.value)}
+                  onBlur={() => {
+                    if (clientInn.trim()) {
+                      const info: ClientInfo = { name: clientInn.trim(), inn: "", ogrnip: "", address: "" };
+                      setClientInfo(info);
+                    }
+                  }}
+                  placeholder="ФИО или любое название"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
+            )}
+
+            {/* ИНН для ИП / ООО */}
+            {(clientType === "ip" || clientType === "ooo") && !clientInfo && (
               <div>
                 <div className="relative">
                   <input
@@ -422,13 +441,15 @@ export default function InvoiceModal({ onClose, phone }: Props) {
               </div>
             )}
 
-            {/* Данные из ФНС */}
+            {/* Данные клиента */}
             {clientInfo && (
-              <div className="rounded-xl border border-green-200 bg-green-50/60 p-3 space-y-2">
+              <div className={`rounded-xl border p-3 space-y-2 ${clientType === "individual" ? "border-border bg-white/60" : "border-green-200 bg-green-50/60"}`}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5">
-                    <Icon name="CheckCircle" size={13} className="text-green-600" />
-                    <p className="text-[11px] font-medium text-green-700">Найден в реестре ФНС</p>
+                    {clientType !== "individual" && <Icon name="CheckCircle" size={13} className="text-green-600" />}
+                    <p className={`text-[11px] font-medium ${clientType === "individual" ? "text-foreground" : "text-green-700"}`}>
+                      {clientType === "individual" ? "Физическое лицо" : "Найден в реестре ФНС"}
+                    </p>
                   </div>
                   <button
                     onClick={() => { setClientInfo(null); setClientInn(""); setClientError(""); }}
