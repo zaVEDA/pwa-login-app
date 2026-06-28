@@ -1,0 +1,43 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Запрос SMS-кода для входа",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Device-Id": "test-device-1" },
+      "body": { "action": "request_code", "purpose": "login", "channel": "sms", "phone": "+79991112233" },
+      "expectedStatus": 200,
+      "expectedBody": { "ok": true },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Проверка устройства",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Device-Id": "test-device-1" },
+      "body": { "action": "check_device", "phone": "+79991112233" },
+      "expectedStatus": 200
+    },
+    {
+      "name": "Неверный код",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Device-Id": "test-device-1" },
+      "body": { "action": "verify_code", "purpose": "login", "channel": "sms", "phone": "+79991112233", "code": "0000" },
+      "expectedStatus": 400
+    },
+    {
+      "name": "Вход по неверному паролю",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "login_password", "login": "nouser", "password": "wrong" },
+      "expectedStatus": 404
+    }
+  ]
+}
