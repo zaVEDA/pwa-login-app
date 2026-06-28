@@ -50,9 +50,6 @@ export default function Index() {
     }
   }, []);
 
-  useEffect(() => {
-    if (phone) localStorage.setItem("userPhone", phone);
-  }, [phone]);
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
@@ -61,6 +58,11 @@ export default function Index() {
   const [phone, setPhone] = useState(
     () => localStorage.getItem("userPhone") || (isDemo ? "+70000000000" : "")
   );
+
+  useEffect(() => {
+    if (phone) localStorage.setItem("userPhone", phone);
+  }, [phone]);
+
   const [code, setCode] = useState("");
   const [inn, setInn] = useState("");
   const [fullName, setFullName] = useState(() => {
