@@ -22,9 +22,10 @@ interface ClientInfo {
 interface Props {
   onClose: () => void;
   phone: string;
+  onSaved?: () => void;
 }
 
-export default function InvoiceModal({ onClose, phone }: Props) {
+export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
   const [minimized, setMinimized] = useState(false);
 
   // Справочник клиентов
@@ -98,6 +99,7 @@ export default function InvoiceModal({ onClose, phone }: Props) {
         setSaved(true);
         setSavedId(parsed.id);
         if (parsed.invoice_number) setInvoiceNumber(parsed.invoice_number);
+        onSaved?.();
       }
     } catch (e) {
       console.error(e);

@@ -90,8 +90,8 @@ export default function TabContent({
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
 
-  useEffect(() => {
-    if (activeTab !== "docs" || !phone) return;
+  const loadInvoices = () => {
+    if (!phone) return;
     setInvoicesLoading(true);
     fetch(INVOICES_URL, { headers: { "X-Phone": phone } })
       .then(r => r.json())
@@ -101,11 +101,16 @@ export default function TabContent({
       })
       .catch(() => {})
       .finally(() => setInvoicesLoading(false));
-  }, [activeTab, phone, showInvoice]); // перезагружаем после закрытия модалки
+  };
+
+  useEffect(() => {
+    if (activeTab !== "docs") return;
+    loadInvoices();
+  }, [activeTab, phone]);
 
   return (
     <>
-      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} />}
+      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} onSaved={loadInvoices} />}
 
       {activeTab === "docs" && (
         <div className="space-y-5 animate-slide-up">
