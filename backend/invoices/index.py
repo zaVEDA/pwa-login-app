@@ -230,6 +230,29 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"invoice_number": num})}
 
+        # GET ?id= — полные данные одного счёта
+        if qs.get("id"):
+            cur.execute(
+                """SELECT id, invoice_number, invoice_date, client_type, client_name, client_inn,
+                    client_ogrnip, client_address, items, total, due_date, comment, status
+                   FROM invoices WHERE id = %s AND user_id = %s""",
+                (qs.get("id"), user_id)
+            )
+            row = cur.fetchone()
+            cur.close(); conn.close()
+            if not row:
+                return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
+            keys = ["id", "invoice_number", "invoice_date", "client_type", "client_name", "client_inn",
+                    "client_ogrnip", "client_address", "items", "total", "due_date", "comment", "status"]
+            inv = dict(zip(keys, row))
+            if inv["invoice_date"]: inv["invoice_date"] = str(inv["invoice_date"])
+            if inv["due_date"]: inv["due_date"] = str(inv["due_date"])
+            if inv["total"] is not None: inv["total"] = float(inv["total"])
+            if isinstance(inv["items"], str):
+                try: inv["items"] = json.loads(inv["items"])
+                except (ValueError, TypeError): inv["items"] = []
+            return {"statusCode": 200, "headers": cors, "body": json.dumps({"invoice": inv}, ensure_ascii=False)}
+
         cur.execute(
             "SELECT id, invoice_number, invoice_date, client_name, total, status FROM invoices WHERE user_id = %s ORDER BY created_at DESC",
             (user_id,)

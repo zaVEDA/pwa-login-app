@@ -23,9 +23,10 @@ interface Props {
   onClose: () => void;
   phone: string;
   onSaved?: () => void;
+  invoiceId?: number | null;
 }
 
-export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
+export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Props) {
   const [minimized, setMinimized] = useState(false);
 
   // Справочник клиентов
@@ -59,11 +60,46 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
 
+  const [loadingExisting, setLoadingExisting] = useState(!!invoiceId);
+
   const innMaxLen = clientType === "ooo" ? 10 : 12;
 
-  // Загружаем следующий номер счёта
+  // Загружаем существующий счёт по id
   useEffect(() => {
-    if (!phone) return;
+    if (!phone || !invoiceId) return;
+    setLoadingExisting(true);
+    fetch(`${INVOICES_URL}?id=${invoiceId}`, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        const inv = parsed.invoice;
+        if (inv) {
+          setInvoiceNumber(inv.invoice_number || "");
+          setInvoiceDate(inv.invoice_date || todayStr());
+          setClientType((inv.client_type as ClientType) || null);
+          if (inv.client_name) {
+            setClientInfo({
+              name: inv.client_name,
+              inn: inv.client_inn || "",
+              ogrnip: inv.client_ogrnip || "",
+              address: inv.client_address || "",
+            });
+            setClientInn(inv.client_inn || inv.client_name || "");
+          }
+          setItems(Array.isArray(inv.items) && inv.items.length ? inv.items : [{ name: "", qty: "1", price: "" }]);
+          setDueDate(inv.due_date || "");
+          setComment(inv.comment || "");
+          setSaved(true);
+          setSavedId(inv.id);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingExisting(false));
+  }, [phone, invoiceId]);
+
+  // Загружаем следующий номер счёта (только для нового счёта)
+  useEffect(() => {
+    if (!phone || invoiceId) return;
     fetch(`${INVOICES_URL}?next_number=1`, { headers: { "X-Phone": phone } })
       .then(r => r.json())
       .then(data => {
@@ -310,6 +346,11 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
       <div className="absolute inset-0 bg-background" />
 
       <div className="relative flex flex-col h-full">
+        {loadingExisting && (
+          <div className="absolute inset-0 z-20 bg-background/80 flex items-center justify-center">
+            <Icon name="Loader" size={24} className="animate-spin text-primary" />
+          </div>
+        )}
         {/* Header */}
         <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
           <div className="flex items-center gap-3">

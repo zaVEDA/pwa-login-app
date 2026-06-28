@@ -87,6 +87,7 @@ export default function TabContent({
   phone,
 }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
+  const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
 
@@ -110,7 +111,14 @@ export default function TabContent({
 
   return (
     <>
-      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} onSaved={loadInvoices} />}
+      {showInvoice && (
+        <InvoiceModal
+          onClose={() => { setShowInvoice(false); setOpenInvoiceId(null); }}
+          phone={phone}
+          onSaved={loadInvoices}
+          invoiceId={openInvoiceId}
+        />
+      )}
 
       {activeTab === "docs" && (
         <div className="space-y-5 animate-slide-up">
@@ -158,9 +166,10 @@ export default function TabContent({
           {!invoicesLoading && invoices.length > 0 && (
             <div className="space-y-3">
               {invoices.map((inv) => (
-                <div
+                <button
                   key={inv.id}
-                  className="card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center active:scale-[0.98] transition-transform"
+                  onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
+                  className="w-full text-left card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center active:scale-[0.98] transition-transform"
                 >
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10">
                     <Icon name="Receipt" size={20} className="text-primary" />
@@ -185,7 +194,7 @@ export default function TabContent({
                       {inv.status === "created" ? "Выставлен" : inv.status === "paid" ? "Оплачен" : "Черновик"}
                     </span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
