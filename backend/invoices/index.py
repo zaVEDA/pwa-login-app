@@ -28,10 +28,21 @@ def get_or_create_user(cur, phone: str) -> int:
 
 
 def next_invoice_number(cur, user_id: int) -> str:
-    cur.execute("SELECT COUNT(*) FROM invoices WHERE user_id = %s", (user_id,))
-    count = cur.fetchone()[0]
     year = datetime.date.today().year
-    return f"{year}-{count + 1:04d}"
+    prefix = f"{year}-"
+    cur.execute(
+        "SELECT invoice_number FROM invoices WHERE user_id = %s AND invoice_number LIKE %s",
+        (user_id, prefix + "%")
+    )
+    max_seq = 0
+    for (num,) in cur.fetchall():
+        try:
+            seq = int(str(num).split("-")[-1])
+            if seq > max_seq:
+                max_seq = seq
+        except (ValueError, AttributeError):
+            pass
+    return f"{year}-{max_seq + 1:04d}"
 
 
 def make_qr(data: str) -> io.BytesIO:
@@ -250,27 +261,45 @@ def handler(event: dict, context) -> dict:
             keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account"]
             seller = dict(zip(keys, row))
 
-        inv_number = body.get("invoice_number") or next_invoice_number(cur, user_id)
         inv_date = body.get("invoice_date") or str(datetime.date.today())
         items = body.get("items", [])
         total = sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items)
+        existing_id = body.get("id")
 
-        # Сохраняем счёт
-        cur.execute("""
-            INSERT INTO invoices (user_id, invoice_number, invoice_date, client_type, client_name, client_inn,
-                client_ogrnip, client_address, items, total, due_date, comment, status, updated_at)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'created',NOW())
-            ON CONFLICT DO NOTHING
-            RETURNING id
-        """, (
-            user_id, inv_number, inv_date,
-            body.get("client_type"), body.get("client_name"), body.get("client_inn"),
-            body.get("client_ogrnip"), body.get("client_address"),
-            json.dumps(items, ensure_ascii=False), total,
-            body.get("due_date") or None, body.get("comment"),
-        ))
+        if existing_id:
+            # Обновляем уже сохранённый счёт (номер не меняем)
+            cur.execute("SELECT invoice_number FROM invoices WHERE id = %s AND user_id = %s", (existing_id, user_id))
+            row_num = cur.fetchone()
+            inv_number = row_num[0] if row_num else next_invoice_number(cur, user_id)
+            cur.execute("""
+                UPDATE invoices SET invoice_date=%s, client_type=%s, client_name=%s, client_inn=%s,
+                    client_ogrnip=%s, client_address=%s, items=%s, total=%s, due_date=%s, comment=%s, updated_at=NOW()
+                WHERE id=%s AND user_id=%s
+                RETURNING id
+            """, (
+                inv_date, body.get("client_type"), body.get("client_name"), body.get("client_inn"),
+                body.get("client_ogrnip"), body.get("client_address"),
+                json.dumps(items, ensure_ascii=False), total,
+                body.get("due_date") or None, body.get("comment"),
+                existing_id, user_id,
+            ))
+        else:
+            # Новый счёт — присваиваем свежий порядковый номер
+            inv_number = next_invoice_number(cur, user_id)
+            cur.execute("""
+                INSERT INTO invoices (user_id, invoice_number, invoice_date, client_type, client_name, client_inn,
+                    client_ogrnip, client_address, items, total, due_date, comment, status, updated_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'created',NOW())
+                RETURNING id
+            """, (
+                user_id, inv_number, inv_date,
+                body.get("client_type"), body.get("client_name"), body.get("client_inn"),
+                body.get("client_ogrnip"), body.get("client_address"),
+                json.dumps(items, ensure_ascii=False), total,
+                body.get("due_date") or None, body.get("comment"),
+            ))
         result = cur.fetchone()
-        invoice_id = result[0] if result else None
+        invoice_id = result[0] if result else existing_id
         conn.commit()
 
         if action == "pdf":

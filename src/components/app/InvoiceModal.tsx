@@ -73,6 +73,7 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
   }, [phone]);
 
   const invoicePayload = () => ({
+    id: savedId,
     invoice_number: invoiceNumber,
     invoice_date: invoiceDate,
     client_type: clientType,
@@ -119,7 +120,9 @@ export default function InvoiceModal({ onClose, phone, onSaved }: Props) {
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       if (parsed.pdf_base64) {
-        if (!saved) { setSaved(true); if (parsed.id) setSavedId(parsed.id); }
+        if (!saved) { setSaved(true); onSaved?.(); }
+        if (parsed.id) setSavedId(parsed.id);
+        if (parsed.invoice_number) setInvoiceNumber(parsed.invoice_number);
         const bytes = Uint8Array.from(atob(parsed.pdf_base64), c => c.charCodeAt(0));
         const blob = new Blob([bytes], { type: "application/pdf" });
         const url = URL.createObjectURL(blob);
