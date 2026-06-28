@@ -38,7 +38,13 @@ export default function InvoiceModal({ onClose, phone }: Props) {
   // Номер и дата счёта
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(todayStr());
+
+  // Состояния сохранения и действий
+  const [saved, setSaved] = useState(false);        // счёт сохранён (номер зафиксирован)
+  const [savedId, setSavedId] = useState<number | null>(null);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   // Клиент
   const [clientType, setClientType] = useState<ClientType>(null);
@@ -65,29 +71,53 @@ export default function InvoiceModal({ onClose, phone }: Props) {
       .catch(() => {});
   }, [phone]);
 
+  const invoicePayload = () => ({
+    invoice_number: invoiceNumber,
+    invoice_date: invoiceDate,
+    client_type: clientType,
+    client_name: clientInfo?.name || "",
+    client_inn: clientInfo?.inn || "",
+    client_ogrnip: clientInfo?.ogrnip || "",
+    client_address: clientInfo?.address || "",
+    items,
+    due_date: dueDate,
+    comment,
+  });
+
+  const handleSave = async () => {
+    setSaveLoading(true);
+    try {
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "save", ...invoicePayload() }),
+      });
+      const data = await res.json();
+      const parsed = typeof data === "string" ? JSON.parse(data) : data;
+      if (parsed.ok) {
+        setSaved(true);
+        setSavedId(parsed.id);
+        if (parsed.invoice_number) setInvoiceNumber(parsed.invoice_number);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   const handleCreatePdf = async () => {
     setPdfLoading(true);
     try {
       const res = await fetch(INVOICES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({
-          action: "pdf",
-          invoice_number: invoiceNumber,
-          invoice_date: invoiceDate,
-          client_type: clientType,
-          client_name: clientInfo?.name || "",
-          client_inn: clientInfo?.inn || "",
-          client_ogrnip: clientInfo?.ogrnip || "",
-          client_address: clientInfo?.address || "",
-          items,
-          due_date: dueDate,
-          comment,
-        }),
+        body: JSON.stringify({ action: "pdf", ...invoicePayload() }),
       });
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       if (parsed.pdf_base64) {
+        if (!saved) { setSaved(true); if (parsed.id) setSavedId(parsed.id); }
         const bytes = Uint8Array.from(atob(parsed.pdf_base64), c => c.charCodeAt(0));
         const blob = new Blob([bytes], { type: "application/pdf" });
         const url = URL.createObjectURL(blob);
@@ -102,6 +132,26 @@ export default function InvoiceModal({ onClose, phone }: Props) {
     } finally {
       setPdfLoading(false);
     }
+  };
+
+  const shareText = () => {
+    const who = clientInfo?.name ? ` для ${clientInfo.name}` : "";
+    const sum = total > 0 ? ` на сумму ${total.toLocaleString("ru-RU")} ₽` : "";
+    return `Счёт № ${invoiceNumber}${who}${sum}`;
+  };
+
+  const handleShare = (channel: "email" | "telegram" | "whatsapp" | "sms") => {
+    const text = shareText();
+    const note = "Для оплаты скачайте PDF из приложения.";
+    const msg = encodeURIComponent(`${text}\n${note}`);
+    const urls: Record<string, string> = {
+      telegram: `https://t.me/share/url?url=&text=${msg}`,
+      whatsapp: `https://wa.me/?text=${msg}`,
+      sms: `sms:?body=${msg}`,
+      email: `mailto:?subject=${encodeURIComponent(`Счёт № ${invoiceNumber}`)}&body=${msg}`,
+    };
+    window.open(urls[channel], "_blank");
+    setShowShareSheet(false);
   };
 
   // Загружаем справочники
@@ -262,8 +312,9 @@ export default function InvoiceModal({ onClose, phone }: Props) {
                 <input
                   type="text"
                   value={invoiceNumber}
-                  onChange={(e) => setInvoiceNumber(e.target.value)}
-                  className="text-xs font-medium text-primary bg-transparent outline-none border-b border-dashed border-primary/40 focus:border-primary w-24"
+                  onChange={(e) => !saved && setInvoiceNumber(e.target.value)}
+                  readOnly={saved}
+                  className={`text-xs font-medium text-primary bg-transparent outline-none border-b border-dashed w-24 ${saved ? "border-transparent cursor-default" : "border-primary/40 focus:border-primary"}`}
                 />
                 <span className="text-xs text-muted-foreground">от</span>
                 <input
@@ -284,7 +335,7 @@ export default function InvoiceModal({ onClose, phone }: Props) {
         </div>
 
         {/* Scroll content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5 pb-32">
+        <div className={`flex-1 overflow-y-auto px-5 py-5 space-y-5 ${saved ? "pb-44" : "pb-32"}`}>
 
           {/* Клиент */}
           <div className="space-y-3">
@@ -535,27 +586,95 @@ export default function InvoiceModal({ onClose, phone }: Props) {
           </div>
         </div>
 
-        {/* Footer — итого + кнопка */}
+        {/* Share sheet */}
+        {showShareSheet && (
+          <div
+            className="absolute inset-0 z-10 flex flex-col justify-end"
+            onClick={() => setShowShareSheet(false)}
+          >
+            <div
+              className="bg-background rounded-t-3xl p-5 pb-10 space-y-3 shadow-2xl border-t border-border/50"
+              onClick={e => e.stopPropagation()}
+            >
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Отправить счёт через</p>
+              {[
+                { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
+                { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
+                { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
+                { id: "email" as const, icon: "Mail", label: "Электронная почта", color: "text-orange-500" },
+              ].map(ch => (
+                <button
+                  key={ch.id}
+                  onClick={() => handleShare(ch.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform"
+                >
+                  <Icon name={ch.icon} size={18} className={ch.color} />
+                  <span className="text-sm font-medium">{ch.label}</span>
+                </button>
+              ))}
+              <button
+                onClick={() => setShowShareSheet(false)}
+                className="w-full py-3 text-sm text-muted-foreground"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
         <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4 bg-background border-t border-border/50">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-muted-foreground">Итого к оплате</p>
               <p className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
                 {total.toLocaleString("ru-RU")} ₽
               </p>
             </div>
-            <button
-              onClick={handleCreatePdf}
-              disabled={pdfLoading}
-              className="px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2 disabled:opacity-60"
-            >
-              {pdfLoading
-                ? <Icon name="Loader" size={15} className="animate-spin" />
-                : <Icon name="FileDown" size={15} />
-              }
-              {pdfLoading ? "Генерирую..." : "Скачать PDF"}
-            </button>
+            {/* Кнопка Сохранить */}
+            {!saved ? (
+              <button
+                onClick={handleSave}
+                disabled={saveLoading}
+                className="px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2 disabled:opacity-60"
+              >
+                {saveLoading
+                  ? <Icon name="Loader" size={15} className="animate-spin" />
+                  : <Icon name="Save" size={15} />
+                }
+                {saveLoading ? "Сохраняю..." : "Сохранить"}
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 text-green-600">
+                <Icon name="CheckCircle" size={15} />
+                <span className="text-xs font-medium">№ {invoiceNumber} сохранён</span>
+              </div>
+            )}
           </div>
+
+          {/* Кнопки действий — появляются после сохранения */}
+          {saved && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleCreatePdf}
+                disabled={pdfLoading}
+                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60"
+              >
+                {pdfLoading
+                  ? <Icon name="Loader" size={14} className="animate-spin" />
+                  : <Icon name="FileDown" size={14} />
+                }
+                {pdfLoading ? "Генерирую..." : "Скачать PDF"}
+              </button>
+              <button
+                onClick={() => setShowShareSheet(true)}
+                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+              >
+                <Icon name="Share2" size={14} />
+                Отправить
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
