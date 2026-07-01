@@ -189,6 +189,7 @@ export default function TabContent({
         URL.revokeObjectURL(url);
       }
       loadDocuments();
+      setDocFilter(docType === "act" ? "Акты" : "Накладные");
     } catch { /* ignore */ }
     finally { setDocLoadingId(null); }
   };
