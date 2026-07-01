@@ -15,23 +15,23 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
 
-FONT_PATH = "/tmp/DejaVuSans.ttf"
-FONT_BOLD_PATH = "/tmp/DejaVuSans-Bold.ttf"
+FONT_PATH = "/tmp/PTSans.ttf"
+FONT_BOLD_PATH = "/tmp/PTSans-Bold.ttf"
 
 def ensure_fonts():
     if not os.path.exists(FONT_PATH):
         urllib.request.urlretrieve(
-            "https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans.ttf",
+            "https://fonts.gstatic.com/s/ptsans/v17/jizaRExUiTo99u79D0KExQ.ttf",
             FONT_PATH
         )
     if not os.path.exists(FONT_BOLD_PATH):
         urllib.request.urlretrieve(
-            "https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans-Bold.ttf",
+            "https://fonts.gstatic.com/s/ptsans/v17/jizfRExUiTo99u79B_mh0OOtLQ0Z.ttf",
             FONT_BOLD_PATH
         )
-    if "DejaVuSans" not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont("DejaVuSans", FONT_PATH))
-        pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", FONT_BOLD_PATH))
+    if "PTSans" not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(TTFont("PTSans", FONT_PATH))
+        pdfmetrics.registerFont(TTFont("PTSans-Bold", FONT_BOLD_PATH))
 
 
 def get_conn():
@@ -94,11 +94,11 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
 
     # Стили
     styles = getSampleStyleSheet()
-    normal = ParagraphStyle("N", fontName="DejaVuSans", fontSize=9, leading=12)
-    bold = ParagraphStyle("B", fontName="DejaVuSans-Bold", fontSize=9, leading=12)
-    title_style = ParagraphStyle("T", fontName="DejaVuSans-Bold", fontSize=14, leading=18, alignment=TA_CENTER)
-    small = ParagraphStyle("S", fontName="DejaVuSans", fontSize=8, leading=10, textColor=colors.grey)
-    right = ParagraphStyle("R", fontName="DejaVuSans", fontSize=9, leading=12, alignment=TA_RIGHT)
+    normal = ParagraphStyle("N", fontName="PTSans", fontSize=9, leading=12)
+    bold = ParagraphStyle("B", fontName="PTSans-Bold", fontSize=9, leading=12)
+    title_style = ParagraphStyle("T", fontName="PTSans-Bold", fontSize=14, leading=18, alignment=TA_CENTER)
+    small = ParagraphStyle("S", fontName="PTSans", fontSize=8, leading=10, textColor=colors.grey)
+    right = ParagraphStyle("R", fontName="PTSans", fontSize=9, leading=12, alignment=TA_RIGHT)
 
     items = invoice.get("items", [])
     total = invoice.get("total", 0)
@@ -126,7 +126,7 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
     # Заголовок
     story.append(Paragraph(f"СЧЁТ НА ОПЛАТУ № {inv_num}", title_style))
     story.append(Spacer(1, 2*mm))
-    story.append(Paragraph(f"от {fmt_date(inv_date)}", ParagraphStyle("DC", fontName="DejaVuSans", fontSize=10, alignment=TA_CENTER, textColor=colors.grey)))
+    story.append(Paragraph(f"от {fmt_date(inv_date)}", ParagraphStyle("DC", fontName="PTSans", fontSize=10, alignment=TA_CENTER, textColor=colors.grey)))
     story.append(Spacer(1, 5*mm))
 
     # Продавец / Покупатель
@@ -194,7 +194,7 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F5F0E8")),
         ("GRID", (0, 0), (-1, -2), 0.5, colors.HexColor("#E0D8CC")),
         ("LINEABOVE", (0, -1), (-1, -1), 1, colors.HexColor("#C8A96E")),
-        ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans-Bold"),
+        ("FONTNAME", (0, 0), (-1, 0), "PTSans-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 4),
