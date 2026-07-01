@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import AdminUsers from "@/components/admin/AdminUsers";
+import { formatDate } from "@/lib/date";
 
 const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
 
@@ -18,9 +19,9 @@ interface Invoice {
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
 const recentDocs = [
-  { title: "Договор об оказании услуг", client: "Анна М.", date: "09 июн", status: "signed", statusLabel: "Подписан" },
-  { title: "Акт выполненных работ", client: "Игорь С.", date: "07 июн", status: "pending", statusLabel: "Ожидает" },
-  { title: "Счёт на оплату", client: "Мария В.", date: "05 июн", status: "draft", statusLabel: "Черновик" },
+  { title: "Договор об оказании услуг", client: "Анна М.", date: "09.06.2026", status: "signed", statusLabel: "Подписан" },
+  { title: "Акт выполненных работ", client: "Игорь С.", date: "07.06.2026", status: "pending", statusLabel: "Ожидает" },
+  { title: "Счёт на оплату", client: "Мария В.", date: "05.06.2026", status: "draft", statusLabel: "Черновик" },
 ];
 
 const templates = [
@@ -202,7 +203,7 @@ export default function TabContent({
                         Счёт № {inv.invoice_number}
                       </p>
                       <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
-                        {inv.client_name || "Без клиента"} · {inv.invoice_date}
+                        {inv.client_name || "Без клиента"} · {formatDate(inv.invoice_date)}
                       </p>
                     </div>
                   </button>

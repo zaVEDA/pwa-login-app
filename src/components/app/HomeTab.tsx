@@ -5,9 +5,9 @@ import InvoiceModal from "@/components/app/InvoiceModal";
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
 const recentDocs = [
-  { title: "Договор об оказании услуг", client: "Анна М.", date: "09 июн", status: "signed", statusLabel: "Подписан" },
-  { title: "Акт выполненных работ", client: "Игорь С.", date: "07 июн", status: "pending", statusLabel: "Ожидает" },
-  { title: "Счёт на оплату", client: "Мария В.", date: "05 июн", status: "draft", statusLabel: "Черновик" },
+  { title: "Договор об оказании услуг", client: "Анна М.", date: "09.06.2026", status: "signed", statusLabel: "Подписан" },
+  { title: "Акт выполненных работ", client: "Игорь С.", date: "07.06.2026", status: "pending", statusLabel: "Ожидает" },
+  { title: "Счёт на оплату", client: "Мария В.", date: "05.06.2026", status: "draft", statusLabel: "Черновик" },
 ];
 
 const themes = {

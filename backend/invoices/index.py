@@ -45,6 +45,16 @@ def next_invoice_number(cur, user_id: int) -> str:
     return f"{year}-{max_seq + 1:04d}"
 
 
+def fmt_date(value) -> str:
+    if not value:
+        return ""
+    s = str(value).strip()
+    try:
+        return datetime.datetime.strptime(s[:10], "%Y-%m-%d").strftime("%d.%m.%Y")
+    except ValueError:
+        return s
+
+
 def make_qr(data: str) -> io.BytesIO:
     qr = qrcode.QRCode(version=1, box_size=4, border=2)
     qr.add_data(data)
@@ -96,7 +106,7 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
     # Заголовок
     story.append(Paragraph(f"СЧЁТ НА ОПЛАТУ № {inv_num}", title_style))
     story.append(Spacer(1, 2*mm))
-    story.append(Paragraph(f"от {inv_date}", ParagraphStyle("DC", fontName="Helvetica", fontSize=10, alignment=TA_CENTER, textColor=colors.grey)))
+    story.append(Paragraph(f"от {fmt_date(inv_date)}", ParagraphStyle("DC", fontName="Helvetica", fontSize=10, alignment=TA_CENTER, textColor=colors.grey)))
     story.append(Spacer(1, 5*mm))
 
     # Продавец / Покупатель
@@ -183,7 +193,7 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
         qr_img,
         Paragraph(
             f"<b>Оплата по QR-коду</b><br/>Сканируйте приложением банка<br/><br/>"
-            + (f"Срок оплаты: {due_date}<br/>" if due_date else "")
+            + (f"Срок оплаты: {fmt_date(due_date)}<br/>" if due_date else "")
             + (f"{comment}" if comment else ""),
             normal
         )
