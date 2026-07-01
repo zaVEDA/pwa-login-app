@@ -19,6 +19,17 @@ interface Invoice {
   status: string;
 }
 
+interface RealizationDoc {
+  id: number;
+  doc_type: string;
+  doc_number: string;
+  doc_date: string;
+  invoice_number: string;
+  client_name: string;
+  total: number | null;
+  status: string;
+}
+
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
 const recentDocs = [
@@ -162,7 +173,7 @@ export default function TabContent({
       const res = await fetch(INVOICES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "document", doc_type: docType, ...full }),
+        body: JSON.stringify({ action: "document", doc_type: docType, invoice_id: inv.id, ...full }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -173,10 +184,11 @@ export default function TabContent({
         const a = document.createElement("a");
         const label = docType === "act" ? "Акт" : "Накладная";
         a.href = url;
-        a.download = `${label}_${inv.invoice_number}.pdf`;
+        a.download = `${label}_${parsed.doc_number || inv.invoice_number}.pdf`;
         a.click();
         URL.revokeObjectURL(url);
       }
+      loadDocuments();
     } catch { /* ignore */ }
     finally { setDocLoadingId(null); }
   };
@@ -225,9 +237,66 @@ export default function TabContent({
       .finally(() => setInvoicesLoading(false));
   };
 
+  const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
+
+  const loadDocuments = () => {
+    if (!phone) return;
+    fetch(`${INVOICES_URL}?documents=1`, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(data => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        setRealizationDocs(parsed.documents || []);
+      })
+      .catch(() => {});
+  };
+
+  const changeDocStatus = async (id: number, status: string) => {
+    setStatusMenuId(null);
+    setRealizationDocs((prev) => prev.map((d) => d.id === id ? { ...d, status } : d));
+    try {
+      await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "set_document_status", id, status }),
+      });
+    } catch { loadDocuments(); }
+  };
+
+  const downloadDocPdf = async (doc: RealizationDoc) => {
+    if (docLoadingId) return;
+    setDocLoadingId(doc.id);
+    try {
+      const infoRes = await fetch(`${INVOICES_URL}?document_id=${doc.id}`, { headers: { "X-Phone": phone } });
+      const infoRaw = await infoRes.json();
+      const info = typeof infoRaw === "string" ? JSON.parse(infoRaw) : infoRaw;
+      const full = info.document;
+      if (!full) return;
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "document", doc_id: doc.id, ...full }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (c) => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const label = doc.doc_type === "act" ? "Акт" : "Накладная";
+        a.href = url;
+        a.download = `${label}_${doc.doc_number}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ }
+    finally { setDocLoadingId(null); }
+  };
+
   useEffect(() => {
     if (activeTab !== "docs") return;
     loadInvoices();
+    loadDocuments();
   }, [activeTab, phone]);
 
   return (
@@ -453,6 +522,105 @@ export default function TabContent({
                         ) : (
                           <button
                             onClick={() => deleteInvoice(inv.id)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
+                          >
+                            <Icon name="Trash2" size={15} />
+                            Удалить
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Документы реализации: акты и накладные */}
+          {realizationDocs.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <h3 className="font-cormorant text-lg font-semibold flex items-center gap-2">
+                <Icon name="FileCheck" size={17} className="text-primary" />
+                Акты и накладные
+              </h3>
+              {realizationDocs.map((doc) => (
+                <div
+                  key={`doc-${doc.id}`}
+                  className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${doc.status === "deleted" ? "opacity-50" : ""}`}
+                >
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${doc.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
+                    <Icon name={doc.doc_type === "act" ? "FileCheck" : "Package"} size={19} className={doc.status === "deleted" ? "text-gray-400" : "text-primary"} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${doc.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
+                      {doc.doc_type === "act" ? "Акт" : "Накладная"} № {doc.doc_number}
+                    </p>
+                    <p className={`text-xs text-muted-foreground mt-0.5 truncate ${doc.status === "deleted" ? "line-through" : ""}`}>
+                      {doc.client_name || "Без клиента"} · {formatDate(doc.doc_date)}
+                      {doc.invoice_number ? ` · счёт ${doc.invoice_number}` : ""}
+                    </p>
+                  </div>
+
+                  <p className={`font-cormorant text-xl font-semibold leading-none tabular-nums flex-shrink-0 self-center ${doc.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                    {doc.total != null ? doc.total.toLocaleString("ru-RU") : "—"}
+                  </p>
+
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => downloadDocPdf(doc)}
+                      disabled={docLoadingId === doc.id || doc.status === "deleted"}
+                      aria-label="Скачать PDF"
+                      className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                    >
+                      <Icon name={docLoadingId === doc.id ? "Loader" : "FileDown"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
+                    </button>
+                    <button
+                      onClick={() => setStatusMenuId(statusMenuId === -doc.id ? null : -doc.id)}
+                      className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
+                        doc.status === "deleted" ? "bg-red-100 text-red-600" :
+                        doc.status === "issued" ? "bg-blue-100 text-blue-700" :
+                        doc.status === "signed" ? "bg-green-100 text-green-700" :
+                        "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {doc.status === "deleted" ? "Удалён" :
+                        doc.status === "issued" ? "Выдан" :
+                        doc.status === "signed" ? "Подписан" : "Создан"}
+                      <Icon name="ChevronDown" size={11} />
+                    </button>
+                  </div>
+
+                  {statusMenuId === -doc.id && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setStatusMenuId(null)} />
+                      <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                        {([
+                          { key: "created", label: "Создан", icon: "FileText" },
+                          { key: "issued", label: "Выдан", icon: "Send" },
+                          { key: "signed", label: "Подписан", icon: "CheckCircle" },
+                        ] as const).map((s) => (
+                          <button
+                            key={s.key}
+                            onClick={() => changeDocStatus(doc.id, s.key)}
+                            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${doc.status === s.key ? "text-primary font-medium" : "text-foreground"}`}
+                          >
+                            <Icon name={s.icon} size={15} className={doc.status === s.key ? "text-primary" : "text-muted-foreground"} />
+                            {s.label}
+                            {doc.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
+                          </button>
+                        ))}
+                        {doc.status === "deleted" ? (
+                          <button
+                            onClick={() => changeDocStatus(doc.id, "created")}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary hover:bg-amber-50 transition-colors border-t border-border"
+                          >
+                            <Icon name="RotateCcw" size={15} />
+                            Восстановить
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => changeDocStatus(doc.id, "deleted")}
                             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
                           >
                             <Icon name="Trash2" size={15} />

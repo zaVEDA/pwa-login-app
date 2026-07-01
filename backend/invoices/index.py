@@ -67,6 +67,25 @@ def next_invoice_number(cur, user_id: int) -> str:
     return f"{year}-{max_seq + 1:04d}"
 
 
+def next_document_number(cur, user_id: int) -> str:
+    """Общая сквозная нумерация для актов и накладных (документы реализации)."""
+    year = datetime.date.today().year
+    prefix = f"{year}-"
+    cur.execute(
+        "SELECT doc_number FROM documents WHERE user_id = %s AND doc_number LIKE %s",
+        (user_id, prefix + "%")
+    )
+    max_seq = 0
+    for (num,) in cur.fetchall():
+        try:
+            seq = int(str(num).split("-")[-1])
+            if seq > max_seq:
+                max_seq = seq
+        except (ValueError, AttributeError):
+            pass
+    return f"{year}-{max_seq + 1:04d}"
+
+
 def fmt_date(value) -> str:
     if not value:
         return ""
@@ -281,8 +300,10 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
 
     items = invoice.get("items", [])
     total = invoice.get("total", 0)
-    inv_num = invoice.get("invoice_number", "—")
-    inv_date = invoice.get("invoice_date", str(datetime.date.today()))
+    doc_num = invoice.get("doc_number") or invoice.get("invoice_number", "—")
+    doc_date = invoice.get("doc_date") or invoice.get("invoice_date", str(datetime.date.today()))
+    basis_num = invoice.get("invoice_number", "")
+    basis_date = invoice.get("invoice_date", "")
 
     client_name = invoice.get("client_name", "")
     client_inn = invoice.get("client_inn", "")
@@ -296,11 +317,11 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
 
     is_act = doc_type == "act"
     if is_act:
-        head = f"АКТ № {inv_num}"
+        head = f"АКТ № {doc_num}"
         subhead = "выполненных работ (оказанных услуг)"
         col_name = "Наименование работы, услуги"
     else:
-        head = f"ТОВАРНАЯ НАКЛАДНАЯ № {inv_num}"
+        head = f"ТОВАРНАЯ НАКЛАДНАЯ № {doc_num}"
         subhead = "на отпуск товаров"
         col_name = "Наименование товара"
 
@@ -309,7 +330,7 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
     story.append(Spacer(1, 1*mm))
     story.append(Paragraph(subhead, ParagraphStyle("SH", fontName="DejaVuSans", fontSize=10, alignment=TA_CENTER, textColor=colors.grey)))
     story.append(Spacer(1, 1*mm))
-    story.append(Paragraph(f"от {fmt_date(inv_date)}", ParagraphStyle("DC", fontName="DejaVuSans", fontSize=9, alignment=TA_CENTER, textColor=colors.grey)))
+    story.append(Paragraph(f"от {fmt_date(doc_date)}", ParagraphStyle("DC", fontName="DejaVuSans", fontSize=9, alignment=TA_CENTER, textColor=colors.grey)))
     story.append(Spacer(1, 5*mm))
 
     party_data = [
@@ -324,7 +345,8 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
         party_data.append([Paragraph("ОГРНИП:", small), Paragraph(client_ogrnip, normal)])
     if client_address:
         party_data.append([Paragraph("Адрес:", small), Paragraph(client_address, normal)])
-    party_data.append([Paragraph("Основание:", small), Paragraph(f"Счёт № {inv_num} от {fmt_date(inv_date)}", normal)])
+    if basis_num:
+        party_data.append([Paragraph("Основание:", small), Paragraph(f"Счёт № {basis_num} от {fmt_date(basis_date)}", normal)])
 
     party_table = Table(party_data, colWidths=[30*mm, 130*mm])
     party_table.setStyle(TableStyle([
@@ -435,6 +457,45 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"invoice_number": num})}
 
+        # Список документов реализации (акты и накладные)
+        if qs.get("documents"):
+            cur.execute(
+                "SELECT id, doc_type, doc_number, doc_date, invoice_number, client_name, total, status FROM documents WHERE user_id = %s ORDER BY created_at DESC",
+                (user_id,)
+            )
+            rows = cur.fetchall()
+            cur.close(); conn.close()
+            keys = ["id", "doc_type", "doc_number", "doc_date", "invoice_number", "client_name", "total", "status"]
+            docs = []
+            for row in rows:
+                d = dict(zip(keys, row))
+                if d["doc_date"]: d["doc_date"] = str(d["doc_date"])
+                if d["total"] is not None: d["total"] = float(d["total"])
+                docs.append(d)
+            return {"statusCode": 200, "headers": cors, "body": json.dumps({"documents": docs}, ensure_ascii=False)}
+
+        # Полные данные одного документа реализации
+        if qs.get("document_id"):
+            cur.execute(
+                """SELECT id, doc_type, doc_number, doc_date, invoice_number, client_type, client_name,
+                    client_inn, client_ogrnip, client_address, items, total, status
+                   FROM documents WHERE id = %s AND user_id = %s""",
+                (qs.get("document_id"), user_id)
+            )
+            row = cur.fetchone()
+            cur.close(); conn.close()
+            if not row:
+                return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
+            keys = ["id", "doc_type", "doc_number", "doc_date", "invoice_number", "client_type", "client_name",
+                    "client_inn", "client_ogrnip", "client_address", "items", "total", "status"]
+            d = dict(zip(keys, row))
+            if d["doc_date"]: d["doc_date"] = str(d["doc_date"])
+            if d["total"] is not None: d["total"] = float(d["total"])
+            if isinstance(d["items"], str):
+                try: d["items"] = json.loads(d["items"])
+                except (ValueError, TypeError): d["items"] = []
+            return {"statusCode": 200, "headers": cors, "body": json.dumps({"document": d}, ensure_ascii=False)}
+
         # GET ?id= — полные данные одного счёта
         if qs.get("id"):
             cur.execute(
@@ -494,6 +555,22 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok, "status": new_status})}
 
+        # Смена статуса документа реализации (акт/накладная)
+        if action == "set_document_status":
+            new_status = body.get("status")
+            d_id = body.get("id")
+            if new_status not in ("created", "issued", "signed", "deleted"):
+                cur.close(); conn.close()
+                return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "bad status"})}
+            cur.execute(
+                "UPDATE documents SET status=%s, updated_at=NOW() WHERE id=%s AND user_id=%s RETURNING id",
+                (new_status, d_id, user_id)
+            )
+            ok = cur.fetchone() is not None
+            conn.commit()
+            cur.close(); conn.close()
+            return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok, "status": new_status})}
+
         # Получаем реквизиты продавца
         cur.execute(
             "SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account FROM requisites WHERE user_id = %s",
@@ -505,15 +582,45 @@ def handler(event: dict, context) -> dict:
             keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account"]
             seller = dict(zip(keys, row))
 
-        # Создать документ на основании счёта: акт или накладную
+        # Создать документ реализации (акт/накладную): сохранить в БД и вернуть PDF
         if action == "document":
             doc_type = body.get("doc_type", "act")  # act | invoice_note
             items = body.get("items", [])
+            total = sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items)
+            doc_id = body.get("doc_id")
+
+            if doc_id:
+                # Уже сохранённый документ — берём его номер/дату
+                cur.execute("SELECT doc_number, doc_date FROM documents WHERE id = %s AND user_id = %s", (doc_id, user_id))
+                r = cur.fetchone()
+                doc_number = r[0] if r else next_document_number(cur, user_id)
+                doc_date_val = str(r[1]) if r and r[1] else str(datetime.date.today())
+            else:
+                # Новый документ — сквозной номер (общий для актов и накладных)
+                doc_number = next_document_number(cur, user_id)
+                doc_date_val = str(datetime.date.today())
+                cur.execute("""
+                    INSERT INTO documents (user_id, doc_type, doc_number, doc_date, invoice_id, invoice_number,
+                        client_type, client_name, client_inn, client_ogrnip, client_address, items, total, updated_at)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+                    RETURNING id
+                """, (
+                    user_id, doc_type, doc_number, doc_date_val,
+                    body.get("invoice_id") or body.get("id"), body.get("invoice_number", ""),
+                    body.get("client_type"), body.get("client_name", ""), body.get("client_inn", ""),
+                    body.get("client_ogrnip", ""), body.get("client_address", ""),
+                    json.dumps(items, ensure_ascii=False), total,
+                ))
+                doc_id = cur.fetchone()[0]
+                conn.commit()
+
             doc_data = {
+                "doc_number": doc_number,
+                "doc_date": doc_date_val,
                 "invoice_number": body.get("invoice_number", ""),
-                "invoice_date": body.get("invoice_date") or str(datetime.date.today()),
+                "invoice_date": body.get("invoice_date") or "",
                 "items": items,
-                "total": sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items),
+                "total": total,
                 "client_name": body.get("client_name", ""),
                 "client_inn": body.get("client_inn", ""),
                 "client_ogrnip": body.get("client_ogrnip", ""),
@@ -525,7 +632,7 @@ def handler(event: dict, context) -> dict:
             return {
                 "statusCode": 200,
                 "headers": {**cors, "Content-Type": "application/json"},
-                "body": json.dumps({"ok": True, "doc_type": doc_type, "pdf_base64": pdf_b64})
+                "body": json.dumps({"ok": True, "id": doc_id, "doc_type": doc_type, "doc_number": doc_number, "pdf_base64": pdf_b64})
             }
 
         inv_date = body.get("invoice_date") or str(datetime.date.today())
