@@ -4,6 +4,8 @@ import LoginScreen from "@/components/app/LoginScreen";
 import HomeTab from "@/components/app/HomeTab";
 import TabContent from "@/components/app/TabContent";
 import BottomNav from "@/components/app/BottomNav";
+import ProfileSetup from "@/components/app/ProfileSetup";
+import { authApi, getToken, clearAuth, AuthUser } from "@/lib/auth";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -53,42 +55,70 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
-  const [isLoggedIn, setIsLoggedIn] = useState(isDemo);
-  const [loginStep, setLoginStep] = useState<"phone" | "code" | "status">("phone");
-  const [phone, setPhone] = useState(
-    () => localStorage.getItem("userPhone") || (isDemo ? "+70000000000" : "")
-  );
 
-  useEffect(() => {
-    if (phone) localStorage.setItem("userPhone", phone);
-  }, [phone]);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [demoMode, setDemoMode] = useState(isDemo);
 
-  const [code, setCode] = useState("");
+  const phone = user?.phone || (demoMode ? "+70000000000" : "");
+
   const [inn, setInn] = useState("");
   const [fullName, setFullName] = useState(() => {
     try { return JSON.parse(localStorage.getItem("requisites") || "{}").fullName || ""; } catch { return ""; }
   });
   const [innSaved, setInnSaved] = useState(false);
   const [isSelfEmployed, setIsSelfEmployed] = useState<boolean | null>(null);
-  const [userStatus, setUserStatus] = useState<"self_employed" | "ip" | "ooo" | "individual" | null>(null);
 
-  if (!isLoggedIn) {
+  useEffect(() => {
+    const token = getToken();
+    if (!token) { setAuthChecked(true); return; }
+    authApi.me().then(({ status, data }) => {
+      if (status === 200 && data.user) {
+        setUser(data.user);
+        if (data.user.phone) localStorage.setItem("userPhone", data.user.phone);
+      } else {
+        clearAuth();
+      }
+      setAuthChecked(true);
+    }).catch(() => setAuthChecked(true));
+  }, []);
+
+  const handleAuth = (u: AuthUser) => {
+    setUser(u);
+    setDemoMode(false);
+    if (u.phone) localStorage.setItem("userPhone", u.phone);
+  };
+
+  const handleLogout = () => {
+    authApi.logout().catch(() => {});
+    clearAuth();
+    setUser(null);
+    setDemoMode(false);
+    setActiveTab("home");
+  };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(36 25% 96%)" }}>
+        <Icon name="Loader" size={28} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user && !demoMode) {
     return (
       <LoginScreen
         selectedSpecialty={selectedSpecialty}
         setSelectedSpecialty={setSelectedSpecialty}
-        loginStep={loginStep}
-        setLoginStep={setLoginStep}
-        phone={phone}
-        setPhone={setPhone}
-        code={code}
-        setCode={setCode}
-        userStatus={userStatus}
-        setUserStatus={setUserStatus}
-        setIsSelfEmployed={setIsSelfEmployed}
-        setIsLoggedIn={setIsLoggedIn}
+        onAuth={handleAuth}
+        onDemo={() => setDemoMode(true)}
       />
     );
+  }
+
+  // Дозаполнение профиля после первого входа по телефону
+  if (user && !user.profile_completed && !demoMode) {
+    return <ProfileSetup user={user} onDone={(u) => setUser(u)} onSkip={() => setUser({ ...user, profile_completed: true })} />;
   }
 
   return (
@@ -100,12 +130,18 @@ export default function Index() {
       <header className="px-5 pt-12 pb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Добро пожаловать</p>
-            <h1 className="font-cormorant text-2xl font-semibold text-foreground">Анна Смирнова</h1>
+            <p className="text-xs text-muted-foreground mb-0.5">
+              {user?.role === "admin" ? "Панель администратора" : "Добро пожаловать"}
+            </p>
+            <h1 className="font-cormorant text-2xl font-semibold text-foreground">
+              {user?.full_name || (demoMode ? "Гость" : "Пользователь")}
+            </h1>
           </div>
-          <button className="relative">
+          <button className="relative" onClick={() => setActiveTab("account")}>
             <div className="w-10 h-10 rounded-2xl gold-gradient flex items-center justify-center shadow-sm">
-              <span className="font-cormorant text-lg font-bold text-white">АС</span>
+              <span className="font-cormorant text-lg font-bold text-white">
+                {(user?.full_name || "Г").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "Г"}
+              </span>
             </div>
             <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></span>
           </button>
@@ -132,10 +168,12 @@ export default function Index() {
           setFullName={setFullName}
           innSaved={innSaved}
           setInnSaved={setInnSaved}
-          setIsLoggedIn={setIsLoggedIn}
+          onLogout={demoMode ? () => setDemoMode(false) : handleLogout}
           colorTheme={colorTheme}
           setColorTheme={setColorTheme}
           phone={phone}
+          userName={user?.full_name}
+          userRole={user?.role}
         />
       </main>
 

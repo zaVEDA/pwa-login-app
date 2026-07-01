@@ -199,9 +199,14 @@ def handler(event: dict, context) -> dict:
                 return resp(404, {"error": "Пользователь не найден"})
             keys = USER_KEYS + ["password_hash"]
             d = dict(zip(keys, urow))
-            if not verify_password(password, d.get("password_hash") or ""):
-                return resp(401, {"error": "Неверный логин или пароль"})
             uid = d["id"]
+            # Первый вход (пароль ещё не задан) — назначаем введённый пароль
+            if not (d.get("password_hash") or ""):
+                if len(password) < 6:
+                    return resp(400, {"error": "Придумайте пароль не короче 6 символов"})
+                cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hash_password(password), uid))
+            elif not verify_password(password, d.get("password_hash") or ""):
+                return resp(401, {"error": "Неверный логин или пароль"})
             cur.execute("UPDATE users SET last_login_at = NOW() WHERE id = %s", (uid,))
             if device_id:
                 cur.execute(

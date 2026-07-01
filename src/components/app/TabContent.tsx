@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import InvoiceModal from "@/components/app/InvoiceModal";
+import AdminUsers from "@/components/admin/AdminUsers";
 
 const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
 
@@ -66,10 +67,12 @@ interface Props {
   setFullName: (v: string) => void;
   innSaved: boolean;
   setInnSaved: (v: boolean) => void;
-  setIsLoggedIn: (v: boolean) => void;
+  onLogout: () => void;
   colorTheme: keyof typeof themes;
   setColorTheme: (t: keyof typeof themes) => void;
   phone: string;
+  userName?: string | null;
+  userRole?: string;
 }
 
 export default function TabContent({
@@ -81,10 +84,12 @@ export default function TabContent({
   setFullName,
   innSaved,
   setInnSaved,
-  setIsLoggedIn,
+  onLogout,
   colorTheme,
   setColorTheme,
   phone,
+  userName,
+  userRole,
 }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
@@ -286,21 +291,35 @@ export default function TabContent({
         </div>
       )}
 
-      {activeTab === "account" && (
+      {activeTab === "account" && userRole === "admin" && (
+        <div className="space-y-5 animate-slide-up">
+          <div className="flex items-center justify-between">
+            <h2 className="font-cormorant text-2xl font-semibold">Пользователи</h2>
+            <button onClick={onLogout} className="text-xs text-red-500 flex items-center gap-1">
+              <Icon name="LogOut" size={13} /> Выйти
+            </button>
+          </div>
+          <AdminUsers />
+        </div>
+      )}
+
+      {activeTab === "account" && userRole !== "admin" && (
         <div className="space-y-5 animate-slide-up">
           {/* Profile card */}
           <div className="card-dark rounded-2xl p-5 relative overflow-hidden">
             <div className="absolute inset-0 opacity-5 shimmer" />
             <div className="flex gap-4 items-center">
               <div className="w-16 h-16 rounded-2xl gold-gradient flex items-center justify-center shadow-lg">
-                <span className="font-cormorant text-2xl font-bold text-white">АС</span>
+                <span className="font-cormorant text-2xl font-bold text-white">
+                  {(userName || "Г").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "Г"}
+                </span>
               </div>
               <div>
-                <h3 className="font-cormorant text-xl font-semibold text-foreground">Анна Смирнова</h3>
-                <p className="text-sm text-muted-foreground">+7 (916) 000-00-00</p>
+                <h3 className="font-cormorant text-xl font-semibold text-foreground">{userName || "Гость"}</h3>
+                <p className="text-sm text-muted-foreground">{phone || "—"}</p>
                 <div className="flex items-center gap-1.5 mt-1">
-                  <Icon name="Briefcase" size={11} className="text-primary" />
-                  <span className="text-xs text-primary">Психолог · Самозанятая</span>
+                  <Icon name={userRole === "admin" ? "Shield" : "Briefcase"} size={11} className="text-primary" />
+                  <span className="text-xs text-primary">{userRole === "admin" ? "Администратор" : "Личный кабинет"}</span>
                 </div>
               </div>
             </div>
@@ -371,7 +390,7 @@ export default function TabContent({
             ].map((item) => (
               <button
                 key={item.label}
-                onClick={item.label === "Выйти" ? () => setIsLoggedIn(false) : undefined}
+                onClick={item.label === "Выйти" ? onLogout : undefined}
                 className={`w-full card-warm rounded-xl p-3.5 flex items-center gap-3 text-left shadow-sm active:scale-[0.98] transition-transform ${item.danger ? "border border-red-200/50" : ""}`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? "bg-red-50" : "bg-primary/10"}`}>
