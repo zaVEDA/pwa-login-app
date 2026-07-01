@@ -257,13 +257,13 @@ export default function TabContent({
                     </p>
                   </button>
 
-                  {/* Правый блок фиксированной ширины */}
-                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0 w-24">
-                    {/* Сумма — по центру блока, без ₽ */}
-                    <p className={`font-cormorant text-xl font-semibold leading-none w-full text-center tabular-nums ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                      {inv.total != null ? inv.total.toLocaleString("ru-RU") : "—"}
-                    </p>
-                    {/* Кнопки */}
+                  {/* Сумма по центру между текстом и кнопками */}
+                  <p className={`font-cormorant text-xl font-semibold leading-none flex-shrink-0 w-20 text-center tabular-nums ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                    {inv.total != null ? inv.total.toLocaleString("ru-RU") : "—"}
+                  </p>
+
+                  {/* Правый блок: кнопки + статус */}
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => downloadPdf(inv.id, inv.invoice_number)}
