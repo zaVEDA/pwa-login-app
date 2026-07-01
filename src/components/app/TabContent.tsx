@@ -309,6 +309,50 @@ export default function TabContent({
     finally { setDocLoadingId(null); }
   };
 
+  const printDocPdf = async (doc: RealizationDoc) => {
+    if (docLoadingId) return;
+    setDocLoadingId(doc.id);
+    try {
+      const infoRes = await fetch(`${INVOICES_URL}?document_id=${doc.id}`, { headers: { "X-Phone": phone } });
+      const infoRaw = await infoRes.json();
+      const info = typeof infoRaw === "string" ? JSON.parse(infoRaw) : infoRaw;
+      const full = info.document;
+      if (!full) return;
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "document", doc_id: doc.id, ...full }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (c) => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, "_blank");
+        if (win) win.onload = () => { win.focus(); win.print(); }
+      }
+    } catch { /* ignore */ }
+    finally { setDocLoadingId(null); }
+  };
+
+  const [shareDocId, setShareDocId] = useState<number | null>(null);
+
+  const shareDoc = (doc: RealizationDoc, channel: "telegram" | "whatsapp" | "sms" | "email") => {
+    setShareDocId(null);
+    const label = doc.doc_type === "act" ? "Акт" : "Накладная";
+    const who = doc.client_name ? ` для ${doc.client_name}` : "";
+    const sum = doc.total ? ` на сумму ${doc.total.toLocaleString("ru-RU")} ₽` : "";
+    const msg = encodeURIComponent(`${label} № ${doc.doc_number}${who}${sum}`);
+    const urls: Record<string, string> = {
+      telegram: `https://t.me/share/url?url=&text=${msg}`,
+      whatsapp: `https://wa.me/?text=${msg}`,
+      sms: `sms:?body=${msg}`,
+      email: `mailto:?subject=${encodeURIComponent(`${label} № ${doc.doc_number}`)}&body=${msg}`,
+    };
+    window.open(urls[channel], "_blank");
+  };
+
   useEffect(() => {
     if (activeTab !== "docs") return;
     loadInvoices();
@@ -605,6 +649,22 @@ export default function TabContent({
                         >
                           <Icon name={docLoadingId === doc.id ? "Loader" : "FileDown"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
                         </button>
+                        <button
+                          onClick={() => printDocPdf(doc)}
+                          disabled={docLoadingId === doc.id || doc.status === "deleted"}
+                          aria-label="Печать"
+                          className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                        >
+                          <Icon name="Printer" size={15} />
+                        </button>
+                        <button
+                          onClick={() => setShareDocId(shareDocId === doc.id ? null : doc.id)}
+                          disabled={doc.status === "deleted"}
+                          aria-label="Поделиться"
+                          className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                        >
+                          <Icon name="Share2" size={14} />
+                        </button>
                       </div>
                     </div>
                     <button
@@ -653,6 +713,26 @@ export default function TabContent({
                             Удалить
                           </button>
                         )}
+                      </div>
+                    </>
+                  )}
+
+                  {shareDocId === doc.id && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setShareDocId(null)} />
+                      <div className="absolute right-3 top-12 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                        {([
+                          { key: "telegram", label: "Telegram", icon: "Send" },
+                          { key: "whatsapp", label: "WhatsApp", icon: "MessageCircle" },
+                          { key: "sms", label: "SMS", icon: "Smartphone" },
+                          { key: "email", label: "Почта", icon: "Mail" },
+                        ] as const).map((c) => (
+                          <button key={c.key} onClick={() => shareDoc(doc, c.key)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors">
+                            <Icon name={c.icon} size={15} className="text-primary" />
+                            {c.label}
+                          </button>
+                        ))}
                       </div>
                     </>
                   )}
