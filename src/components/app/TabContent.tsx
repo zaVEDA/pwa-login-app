@@ -238,6 +238,19 @@ export default function TabContent({
   };
 
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
+  const [docFilter, setDocFilter] = useState("Все");
+
+  // Счета показываем при: Все, Счета, Черновики
+  const showInvoicesList = docFilter === "Все" || docFilter === "Счета" || docFilter === "Черновики";
+  const filteredInvoices = invoices.filter((inv) =>
+    docFilter === "Черновики" ? inv.status === "created" : true
+  );
+  // Документы реализации показываем при: Все, Акты, Накладные
+  const showActs = docFilter === "Все" || docFilter === "Акты";
+  const showNotes = docFilter === "Все" || docFilter === "Накладные";
+  const filteredDocs = realizationDocs.filter((d) =>
+    (d.doc_type === "act" && showActs) || (d.doc_type === "invoice_note" && showNotes)
+  );
 
   const loadDocuments = () => {
     if (!phone) return;
@@ -323,11 +336,12 @@ export default function TabContent({
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
-            {["Все", "Договоры", "Акты", "Счета", "Черновики"].map((f, i) => (
+            {["Все", "Счета", "Акты", "Накладные", "Черновики"].map((f) => (
               <button
                 key={f}
+                onClick={() => setDocFilter(f)}
                 className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  i === 0
+                  docFilter === f
                     ? "gold-gradient text-white border-transparent"
                     : "bg-white/60 border-border text-foreground"
                 }`}
@@ -343,19 +357,21 @@ export default function TabContent({
             </div>
           )}
 
-          {!invoicesLoading && invoices.length === 0 && (
+          {!invoicesLoading && (showInvoicesList ? filteredInvoices.length : 0) === 0 && filteredDocs.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
                 <Icon name="FileText" size={24} className="text-primary/50" />
               </div>
-              <p className="text-sm font-medium text-foreground">Счетов пока нет</p>
+              <p className="text-sm font-medium text-foreground">
+                {docFilter === "Все" ? "Документов пока нет" : `Раздел «${docFilter}» пуст`}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">Нажмите + чтобы создать первый счёт</p>
             </div>
           )}
 
-          {!invoicesLoading && invoices.length > 0 && (
+          {!invoicesLoading && showInvoicesList && filteredInvoices.length > 0 && (
             <div className="space-y-3">
-              {invoices.map((inv) => (
+              {filteredInvoices.map((inv) => (
                 <div
                   key={inv.id}
                   className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${inv.status === "deleted" ? "opacity-50" : ""}`}
@@ -537,13 +553,13 @@ export default function TabContent({
           )}
 
           {/* Документы реализации: акты и накладные */}
-          {realizationDocs.length > 0 && (
+          {filteredDocs.length > 0 && (
             <div className="space-y-3 pt-2">
               <h3 className="font-cormorant text-lg font-semibold flex items-center gap-2">
                 <Icon name="FileCheck" size={17} className="text-primary" />
                 Акты и накладные
               </h3>
-              {realizationDocs.map((doc) => (
+              {filteredDocs.map((doc) => (
                 <div
                   key={`doc-${doc.id}`}
                   className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${doc.status === "deleted" ? "opacity-50" : ""}`}
