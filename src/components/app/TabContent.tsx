@@ -218,7 +218,7 @@ export default function TabContent({
                       onClick={() => setStatusMenuId(statusMenuId === inv.id ? null : inv.id)}
                       className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
                         inv.status === "deleted" ? "bg-red-100 text-red-600" :
-                        inv.status === "issued" ? "bg-primary/15 text-primary" :
+                        inv.status === "issued" ? "bg-blue-100 text-blue-700" :
                         inv.status === "paid" ? "bg-green-100 text-green-700" :
                         "bg-amber-100 text-amber-700"
                       }`}
