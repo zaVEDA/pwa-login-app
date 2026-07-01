@@ -612,13 +612,13 @@ export default function TabContent({
                       className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
                         doc.status === "deleted" ? "bg-red-100 text-red-600" :
                         doc.status === "issued" ? "bg-blue-100 text-blue-700" :
-                        doc.status === "signed" ? "bg-green-100 text-green-700" :
+                        doc.status === "paid" ? "bg-green-100 text-green-700" :
                         "bg-amber-100 text-amber-700"
                       }`}
                     >
                       {doc.status === "deleted" ? "Удалён" :
-                        doc.status === "issued" ? "Выдан" :
-                        doc.status === "signed" ? "Подписан" : "Создан"}
+                        doc.status === "issued" ? "Выставлен" :
+                        doc.status === "paid" ? "Оплачен" : "Создан"}
                       <Icon name="ChevronDown" size={11} />
                     </button>
                   </div>
@@ -629,8 +629,8 @@ export default function TabContent({
                       <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
                         {([
                           { key: "created", label: "Создан", icon: "FileText" },
-                          { key: "issued", label: "Выдан", icon: "Send" },
-                          { key: "signed", label: "Подписан", icon: "CheckCircle" },
+                          { key: "issued", label: "Выставлен", icon: "Send" },
+                          { key: "paid", label: "Оплачен", icon: "CheckCircle" },
                         ] as const).map((s) => (
                           <button key={s.key} onClick={() => changeDocStatus(doc.id, s.key)}
                             className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${doc.status === s.key ? "text-primary font-medium" : "text-foreground"}`}

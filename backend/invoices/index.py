@@ -582,7 +582,7 @@ def handler(event: dict, context) -> dict:
         if action == "set_document_status":
             new_status = body.get("status")
             d_id = body.get("id")
-            if new_status not in ("created", "issued", "signed", "deleted"):
+            if new_status not in ("created", "issued", "paid", "deleted"):
                 cur.close(); conn.close()
                 return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "bad status"})}
             cur.execute(
