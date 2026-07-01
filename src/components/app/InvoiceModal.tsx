@@ -347,7 +347,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
+    <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
       {/* Фон */}
       <div className="absolute inset-0 bg-background" />
 
@@ -748,7 +748,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
         {/* Footer */}
         <div
           className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pt-4 bg-background border-t border-border/50"
-          style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+          style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
         >
           {saveError && (
             <div className="mb-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
