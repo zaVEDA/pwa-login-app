@@ -97,6 +97,37 @@ export default function TabContent({
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [statusMenuId, setStatusMenuId] = useState<number | null>(null);
+  const [pdfLoadingId, setPdfLoadingId] = useState<number | null>(null);
+
+  const downloadPdf = async (id: number, invoiceNumber: string) => {
+    if (pdfLoadingId) return;
+    setPdfLoadingId(id);
+    try {
+      const infoRes = await fetch(`${INVOICES_URL}?id=${id}`, { headers: { "X-Phone": phone } });
+      const infoRaw = await infoRes.json();
+      const info = typeof infoRaw === "string" ? JSON.parse(infoRaw) : infoRaw;
+      const inv = info.invoice;
+      if (!inv) return;
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "pdf", ...inv }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (c) => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Счёт_${invoiceNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ }
+    finally { setPdfLoadingId(null); }
+  };
 
   const changeStatus = async (id: number, status: string) => {
     setStatusMenuId(null);
@@ -207,6 +238,17 @@ export default function TabContent({
                       </p>
                     </div>
                   </button>
+
+                  {inv.status !== "deleted" && (
+                    <button
+                      onClick={() => downloadPdf(inv.id, inv.invoice_number)}
+                      disabled={pdfLoadingId === inv.id}
+                      aria-label="Скачать PDF"
+                      className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform disabled:opacity-60"
+                    >
+                      <Icon name={pdfLoadingId === inv.id ? "Loader" : "FileDown"} size={16} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
+                    </button>
+                  )}
 
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                     {inv.total != null && (
