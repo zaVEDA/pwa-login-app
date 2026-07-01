@@ -249,12 +249,12 @@ export default function TabContent({
                     onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
                     className="flex-1 min-w-0 text-left"
                   >
-                    <div className="flex items-baseline gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className={`text-sm font-medium ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
                         Счёт № {inv.invoice_number}
                       </p>
                       {inv.total != null && (
-                        <p className={`text-sm font-semibold ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                        <p className={`font-cormorant text-xl font-semibold leading-none ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
                           {inv.total.toLocaleString("ru-RU")} ₽
                         </p>
                       )}
