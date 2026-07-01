@@ -1,0 +1,309 @@
+import { useState, useEffect } from "react";
+import Icon from "@/components/ui/icon";
+import { formatDate } from "@/lib/date";
+
+const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+interface Props {
+  docId: number;
+  onClose: () => void;
+  onSaved?: () => void;
+  phone: string;
+}
+
+export default function DocumentModal({ docId, onClose, onSaved, phone }: Props) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  const [docType, setDocType] = useState<"act" | "invoice_note">("act");
+  const [docNumber, setDocNumber] = useState("");
+  const [docDate, setDocDate] = useState(todayStr());
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientInn, setClientInn] = useState("");
+  const [clientAddress, setClientAddress] = useState("");
+  const [items, setItems] = useState([{ name: "", qty: "1", price: "" }]);
+  const [shareSheet, setShareSheet] = useState(false);
+
+  useEffect(() => {
+    fetch(`${INVOICES_URL}?document_id=${docId}`, { headers: { "X-Phone": phone } })
+      .then(r => r.json())
+      .then(raw => {
+        const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+        const d = data.document;
+        if (!d) return;
+        setDocType(d.doc_type || "act");
+        setDocNumber(d.doc_number || "");
+        setDocDate(d.doc_date || todayStr());
+        setInvoiceNumber(d.invoice_number || "");
+        setClientName(d.client_name || "");
+        setClientInn(d.client_inn || "");
+        setClientAddress(d.client_address || "");
+        setItems(Array.isArray(d.items) && d.items.length ? d.items : [{ name: "", qty: "1", price: "" }]);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [docId, phone]);
+
+  const total = items.reduce((s, i) => s + (parseFloat(i.qty) || 0) * (parseFloat(i.price) || 0), 0);
+
+  const addItem = () => setItems(prev => [...prev, { name: "", qty: "1", price: "" }]);
+  const removeItem = (i: number) => setItems(prev => prev.filter((_, idx) => idx !== i));
+  const updateItem = (i: number, field: string, val: string) =>
+    setItems(prev => prev.map((it, idx) => idx === i ? { ...it, [field]: val } : it));
+
+  const payload = () => ({
+    id: docId,
+    doc_type: docType,
+    doc_date: docDate,
+    invoice_number: invoiceNumber,
+    client_name: clientName,
+    client_inn: clientInn,
+    client_address: clientAddress,
+    items,
+    total,
+  });
+
+  const handleSave = async () => {
+    setSaveError(""); setSaving(true);
+    try {
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "update_document", ...payload() }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.ok) { setSaved(true); onSaved?.(); }
+      else setSaveError("Не удалось сохранить");
+    } catch { setSaveError("Ошибка сети"); }
+    finally { setSaving(false); }
+  };
+
+  const handlePdf = async () => {
+    setPdfLoading(true);
+    try {
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "document", doc_id: docId, ...payload() }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const label = docType === "act" ? "Акт" : "Накладная";
+        a.href = url;
+        a.download = `${label}_${docNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ }
+    finally { setPdfLoading(false); }
+  };
+
+  const handleShare = (channel: "telegram" | "whatsapp" | "sms" | "email") => {
+    setShareSheet(false);
+    const label = docType === "act" ? "Акт" : "Накладная";
+    const text = `${label} № ${docNumber}${clientName ? ` для ${clientName}` : ""}${total ? ` на сумму ${total.toLocaleString("ru-RU")} ₽` : ""}`;
+    const msg = encodeURIComponent(`${text}\nДля получения документа обратитесь к исполнителю.`);
+    const urls: Record<string, string> = {
+      telegram: `https://t.me/share/url?url=&text=${msg}`,
+      whatsapp: `https://wa.me/?text=${msg}`,
+      sms: `sms:?body=${msg}`,
+      email: `mailto:?subject=${encodeURIComponent(`${label} № ${docNumber}`)}&body=${msg}`,
+    };
+    window.open(urls[channel], "_blank");
+  };
+
+  const typeLabel = docType === "act" ? "Акт выполненных работ" : "Товарная накладная";
+
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
+      <div className="absolute inset-0 bg-background" />
+
+      <div className="relative flex flex-col h-full">
+        {loading && (
+          <div className="absolute inset-0 z-20 bg-background/80 flex items-center justify-center">
+            <Icon name="Loader" size={24} className="animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <button onClick={onClose} className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center">
+              <Icon name="X" size={16} className="text-muted-foreground" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-cormorant text-2xl font-semibold leading-tight">{typeLabel}</h2>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="text-xs text-muted-foreground">№</span>
+                <span className="text-xs font-medium text-primary">{docNumber}</span>
+                <span className="text-xs text-muted-foreground">от</span>
+                <span className="text-xs text-foreground">{formatDate(docDate)}</span>
+              </div>
+            </div>
+            {/* Переключатель типа */}
+            <button
+              onClick={() => setDocType(t => t === "act" ? "invoice_note" : "act")}
+              className="text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 flex-shrink-0"
+            >
+              {docType === "act" ? "Накладная" : "Акт"}
+            </button>
+          </div>
+        </div>
+
+        {/* Scroll content */}
+        <div className={`flex-1 overflow-y-auto px-5 py-5 space-y-5 pb-52`}>
+
+          {/* Дата документа */}
+          <div>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Дата документа</p>
+            <input type="date" value={docDate} onChange={e => setDocDate(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+          </div>
+
+          {/* Клиент */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
+              {docType === "act" ? "Заказчик" : "Покупатель"}
+            </p>
+            <input value={clientName} onChange={e => setClientName(e.target.value)}
+              placeholder="Имя или название организации"
+              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+            <input value={clientInn} onChange={e => setClientInn(e.target.value)}
+              placeholder="ИНН"
+              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+            <input value={clientAddress} onChange={e => setClientAddress(e.target.value)}
+              placeholder="Адрес"
+              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+          </div>
+
+          {/* Основание */}
+          {invoiceNumber && (
+            <div>
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Основание</p>
+              <p className="text-sm text-muted-foreground">Счёт № {invoiceNumber}</p>
+            </div>
+          )}
+
+          {/* Позиции */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
+              {docType === "act" ? "Услуги / работы" : "Товары"}
+            </p>
+            {items.map((item, i) => (
+              <div key={i} className="card-warm rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">Позиция {i + 1}</p>
+                  {items.length > 1 && (
+                    <button onClick={() => removeItem(i)}>
+                      <Icon name="Trash2" size={13} className="text-red-400" />
+                    </button>
+                  )}
+                </div>
+                <input value={item.name} onChange={e => updateItem(i, "name", e.target.value)}
+                  placeholder={docType === "act" ? "Название услуги или работы" : "Название товара"}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Кол-во</label>
+                    <input type="text" inputMode="decimal" value={item.qty} onChange={e => updateItem(i, "qty", e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Цена, ₽</label>
+                    <input type="text" inputMode="decimal" value={item.price} onChange={e => updateItem(i, "price", e.target.value)}
+                      placeholder="0"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button onClick={addItem}
+              className="w-full py-2.5 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+              <Icon name="Plus" size={13} />
+              Добавить позицию
+            </button>
+          </div>
+        </div>
+
+        {/* Share sheet */}
+        {shareSheet && (
+          <div className="absolute inset-0 z-10 flex flex-col justify-end" onClick={() => setShareSheet(false)}>
+            <div className="bg-background rounded-t-3xl p-5 pb-10 space-y-3 shadow-2xl border-t border-border/50" onClick={e => e.stopPropagation()}>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Отправить через</p>
+              {[
+                { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
+                { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
+                { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
+                { id: "email" as const, icon: "Mail", label: "Электронная почта", color: "text-orange-500" },
+              ].map(ch => (
+                <button key={ch.id} onClick={() => handleShare(ch.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform">
+                  <Icon name={ch.icon} size={18} className={ch.color} />
+                  <span className="text-sm font-medium">{ch.label}</span>
+                </button>
+              ))}
+              <button onClick={() => setShareSheet(false)} className="w-full py-3 text-sm text-muted-foreground">Отмена</button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pt-4 bg-background border-t border-border/50"
+          style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+          {saveError && (
+            <div className="mb-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+              <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
+              <p className="text-[11px] text-red-600">{saveError}</p>
+            </div>
+          )}
+          <div className="flex items-end justify-between gap-3 mb-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">Итого</p>
+              <p className="font-cormorant text-2xl font-semibold text-foreground leading-tight truncate">
+                {total.toLocaleString("ru-RU")} ₽
+              </p>
+            </div>
+            {!saved ? (
+              <button onClick={handleSave} disabled={saving}
+                className="flex-shrink-0 px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.97] transition-transform disabled:opacity-60 flex items-center gap-2">
+                {saving ? <Icon name="Loader" size={15} className="animate-spin" /> : <Icon name="Save" size={15} />}
+                {saving ? "Сохраняю..." : "Сохранить"}
+              </button>
+            ) : (
+              <div className="flex-shrink-0 flex items-center gap-1.5 text-green-600">
+                <Icon name="CheckCircle" size={15} className="flex-shrink-0" />
+                <span className="text-xs font-medium whitespace-nowrap">№ {docNumber} сохранён</span>
+              </div>
+            )}
+          </div>
+          {saved && (
+            <div className="flex gap-2">
+              <button onClick={handlePdf} disabled={pdfLoading}
+                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
+                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
+                {pdfLoading ? "Генерирую..." : "Скачать PDF"}
+              </button>
+              <button onClick={() => setShareSheet(true)}
+                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
+                <Icon name="Share2" size={14} />
+                Отправить
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -555,6 +555,29 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok, "status": new_status})}
 
+        # Обновление документа реализации (акт/накладная)
+        if action == "update_document":
+            d_id = body.get("id")
+            items = body.get("items", [])
+            total = sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items)
+            cur.execute("""
+                UPDATE documents SET doc_type=%s, doc_date=%s, client_type=%s, client_name=%s, client_inn=%s,
+                    client_ogrnip=%s, client_address=%s, items=%s, total=%s, updated_at=NOW()
+                WHERE id=%s AND user_id=%s RETURNING id, doc_number
+            """, (
+                body.get("doc_type", "act"),
+                body.get("doc_date") or str(datetime.date.today()),
+                body.get("client_type"), body.get("client_name", ""),
+                body.get("client_inn", ""), body.get("client_ogrnip", ""), body.get("client_address", ""),
+                json.dumps(items, ensure_ascii=False), total, d_id, user_id
+            ))
+            row = cur.fetchone()
+            conn.commit()
+            cur.close(); conn.close()
+            if not row:
+                return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
+            return {"statusCode": 200, "headers": cors, "body": json.dumps({"ok": True, "id": row[0], "doc_number": row[1]})}
+
         # Смена статуса документа реализации (акт/накладная)
         if action == "set_document_status":
             new_status = body.get("status")

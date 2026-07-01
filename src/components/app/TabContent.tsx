@@ -4,6 +4,7 @@ import RequisitesBlock from "@/components/app/RequisitesBlock";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import AdminUsers from "@/components/admin/AdminUsers";
 import { formatDate } from "@/lib/date";
+import DocumentModal from "@/components/app/DocumentModal";
 
 const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
 const HELP_URL = "https://functions.poehali.dev/66109594-95d9-45ec-bcda-4de385abc5ef";
@@ -239,6 +240,7 @@ export default function TabContent({
   };
 
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
+  const [openDocId, setOpenDocId] = useState<number | null>(null);
   const [docFilter, setDocFilter] = useState("Все");
 
   // Счета показываем при: Все, Счета, Черновики
@@ -321,6 +323,14 @@ export default function TabContent({
           phone={phone}
           onSaved={loadInvoices}
           invoiceId={openInvoiceId}
+        />
+      )}
+      {openDocId && (
+        <DocumentModal
+          docId={openDocId}
+          phone={phone}
+          onClose={() => setOpenDocId(null)}
+          onSaved={loadDocuments}
         />
       )}
 
@@ -561,33 +571,42 @@ export default function TabContent({
                   key={`doc-${doc.id}`}
                   className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${doc.status === "deleted" ? "opacity-50" : ""}`}
                 >
+                  {/* Иконка */}
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${doc.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
                     <Icon name={doc.doc_type === "act" ? "FileCheck" : "Package"} size={19} className={doc.status === "deleted" ? "text-gray-400" : "text-primary"} />
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  {/* Кликабельная зона */}
+                  <button
+                    onClick={() => setOpenDocId(doc.id)}
+                    className="flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
+                  >
                     <p className={`text-sm font-medium ${doc.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
                       {doc.doc_type === "act" ? "Акт" : "Накладная"} № {doc.doc_number}
                     </p>
                     <p className={`text-xs text-muted-foreground mt-0.5 truncate ${doc.status === "deleted" ? "line-through" : ""}`}>
                       {doc.client_name || "Без клиента"} · {formatDate(doc.doc_date)}
-                      {doc.invoice_number ? ` · счёт ${doc.invoice_number}` : ""}
+                      {doc.invoice_number ? ` · сч. ${doc.invoice_number}` : ""}
                     </p>
-                  </div>
+                  </button>
 
-                  <p className={`font-cormorant text-xl font-semibold leading-none tabular-nums flex-shrink-0 self-center ${doc.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                    {doc.total != null ? doc.total.toLocaleString("ru-RU") : "—"}
-                  </p>
-
+                  {/* Правый блок: сумма + кнопки + статус */}
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => downloadDocPdf(doc)}
-                      disabled={docLoadingId === doc.id || doc.status === "deleted"}
-                      aria-label="Скачать PDF"
-                      className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                    >
-                      <Icon name={docLoadingId === doc.id ? "Loader" : "FileDown"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <p className={`font-cormorant text-xl font-semibold leading-none tabular-nums ${doc.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                        {doc.total != null ? doc.total.toLocaleString("ru-RU") : "—"}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => downloadDocPdf(doc)}
+                          disabled={docLoadingId === doc.id || doc.status === "deleted"}
+                          aria-label="Скачать PDF"
+                          className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                        >
+                          <Icon name={docLoadingId === doc.id ? "Loader" : "FileDown"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
+                        </button>
+                      </div>
+                    </div>
                     <button
                       onClick={() => setStatusMenuId(statusMenuId === -doc.id ? null : -doc.id)}
                       className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
@@ -613,9 +632,7 @@ export default function TabContent({
                           { key: "issued", label: "Выдан", icon: "Send" },
                           { key: "signed", label: "Подписан", icon: "CheckCircle" },
                         ] as const).map((s) => (
-                          <button
-                            key={s.key}
-                            onClick={() => changeDocStatus(doc.id, s.key)}
+                          <button key={s.key} onClick={() => changeDocStatus(doc.id, s.key)}
                             className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${doc.status === s.key ? "text-primary font-medium" : "text-foreground"}`}
                           >
                             <Icon name={s.icon} size={15} className={doc.status === s.key ? "text-primary" : "text-muted-foreground"} />
@@ -624,18 +641,14 @@ export default function TabContent({
                           </button>
                         ))}
                         {doc.status === "deleted" ? (
-                          <button
-                            onClick={() => changeDocStatus(doc.id, "created")}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary hover:bg-amber-50 transition-colors border-t border-border"
-                          >
+                          <button onClick={() => changeDocStatus(doc.id, "created")}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary hover:bg-amber-50 transition-colors border-t border-border">
                             <Icon name="RotateCcw" size={15} />
                             Восстановить
                           </button>
                         ) : (
-                          <button
-                            onClick={() => changeDocStatus(doc.id, "deleted")}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
-                          >
+                          <button onClick={() => changeDocStatus(doc.id, "deleted")}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border">
                             <Icon name="Trash2" size={15} />
                             Удалить
                           </button>
