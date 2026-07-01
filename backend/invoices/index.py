@@ -15,6 +15,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
 
 _FONTS_READY = False
+# Шрифт DejaVuSans берётся из пакета matplotlib (встроен, без скачивания)
 
 def ensure_fonts():
     """Регистрирует шрифты с кириллицей. Берём TTF из пакета matplotlib —
@@ -124,6 +125,39 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
     corr = seller.get("corr_account", "")
 
     story = []
+
+    # ── Рамка с платёжными реквизитами получателя (как в банковских счетах) ──
+    is_ip = seller.get("entity_type") == "ip"
+    recipient = (f"ИП {seller_name}" if is_ip else seller_name) or "—"
+    if seller_inn and (seller.get("kpp")):
+        recipient_line = f"{recipient}\nИНН {seller_inn} КПП {seller.get('kpp')}"
+    elif seller_inn:
+        recipient_line = f"{recipient}\nИНН {seller_inn}"
+    else:
+        recipient_line = recipient
+
+    bank_block = [
+        [Paragraph(bank_name or "—", normal), Paragraph("<b>БИК</b>", bold), Paragraph(bik or "—", normal)],
+        [Paragraph("Банк получателя", small), Paragraph("<b>Сч. №</b>", bold), Paragraph(corr or "—", normal)],
+        [Paragraph(f"<b>ИНН</b> {seller_inn or '—'}", normal), Paragraph("<b>Сч. №</b>", bold), Paragraph(checking or "—", normal)],
+        [Paragraph(recipient_line.replace("\n", "<br/>"), normal), Paragraph("", normal), Paragraph("", normal)],
+        [Paragraph("Получатель", small), Paragraph("", normal), Paragraph("", normal)],
+    ]
+    bank_table = Table(bank_block, colWidths=[95*mm, 20*mm, 55*mm])
+    bank_table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.75, colors.HexColor("#333333")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        # Объединяем ячейки БИК/Сч.№ по вертикали для банка и получателя
+        ("SPAN", (0, 3), (2, 3)),   # строка с получателем (ФИО+ИНН) на всю ширину
+        ("SPAN", (0, 4), (2, 4)),   # подпись «Получатель»
+        ("LINEBELOW", (0, 2), (-1, 2), 0.75, colors.HexColor("#333333")),
+    ]))
+    story.append(bank_table)
+    story.append(Spacer(1, 6*mm))
 
     # Заголовок
     story.append(Paragraph(f"СЧЁТ НА ОПЛАТУ № {inv_num}", title_style))
