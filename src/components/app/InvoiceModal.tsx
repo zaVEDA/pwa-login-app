@@ -570,32 +570,40 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
                   )}
                 </div>
 
-                <div className="relative flex items-center gap-2">
-                  {/* Иконка справочника */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => { updateItem(i, "name", e.target.value); setAutocompleteIndex(i); }}
+                    onFocus={() => setAutocompleteIndex(i)}
+                    onBlur={() => {
+                      setTimeout(() => setAutocompleteIndex((cur) => cur === i ? null : cur), 150);
+                      if (item.name.trim()) saveService(item.name, item.price);
+                    }}
+                    placeholder="Название услуги или товара"
+                    className={`w-full px-3 py-2 text-sm outline-none rounded-lg border border-border bg-white/70 focus:border-primary transition-colors ${savedServices.length > 0 ? "pr-9" : ""}`}
+                  />
+                  {/* Иконка справочника — справа внутри поля */}
                   {savedServices.length > 0 && (
-                    <div className="relative flex-shrink-0">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2">
                       <button
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => setShowServiceList(showServiceList === i ? null : i)}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${showServiceList === i ? "bg-primary text-white" : "bg-primary/10 text-primary hover:bg-primary/20"}`}
+                        className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${showServiceList === i ? "bg-primary text-white" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}
                       >
-                        <Icon name="BookOpen" size={15} />
+                        <Icon name="BookOpen" size={14} />
                       </button>
-
-                      {/* Список справочника */}
                       {showServiceList === i && (
                         <>
                           <div className="fixed inset-0 z-10" onClick={() => setShowServiceList(null)} />
-                          <div className="absolute left-0 top-full mt-1 z-20 w-64 bg-white rounded-xl border border-border shadow-xl overflow-hidden">
+                          <div className="absolute right-0 top-full mt-1 z-20 w-64 bg-white rounded-xl border border-border shadow-xl overflow-hidden">
                             <p className="text-[10px] text-muted-foreground px-3 pt-2.5 pb-1 uppercase tracking-wide font-medium">Справочник услуг</p>
                             <div className="max-h-52 overflow-y-auto">
                               {savedServices.map((s) => (
                                 <button
                                   key={s.id}
-                                  onClick={() => {
-                                    updateItem(i, "name", s.name);
-                                    if (s.price) updateItem(i, "price", String(s.price));
-                                    setShowServiceList(null);
-                                  }}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => { updateItem(i, "name", s.name); if (s.price) updateItem(i, "price", String(s.price)); setShowServiceList(null); }}
                                   className="w-full text-left px-3 py-2.5 hover:bg-amber-50 active:bg-amber-100 transition-colors flex items-center justify-between gap-2 border-b border-border/40 last:border-0"
                                 >
                                   <span className="text-sm truncate">{s.name}</span>
@@ -608,20 +616,6 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
                       )}
                     </div>
                   )}
-
-                  <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(e) => { updateItem(i, "name", e.target.value); setAutocompleteIndex(i); }}
-                    onFocus={() => setAutocompleteIndex(i)}
-                    onBlur={() => {
-                      setTimeout(() => setAutocompleteIndex((cur) => cur === i ? null : cur), 150);
-                      if (item.name.trim()) saveService(item.name, item.price);
-                    }}
-                    placeholder="Название услуги или товара"
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                  />
                   {autocompleteIndex === i && item.name.trim().length >= 1 && (() => {
                     const q = item.name.trim().toLowerCase();
                     const matches = savedServices.filter(
@@ -657,7 +651,6 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
                       </div>
                     );
                   })()}
-                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
