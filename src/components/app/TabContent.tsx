@@ -249,25 +249,24 @@ export default function TabContent({
                     onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
                     className="flex-1 min-w-0 text-left"
                   >
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-sm font-medium ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
-                        Счёт № {inv.invoice_number}
-                      </p>
-                      {inv.total != null && (
-                        <p className={`font-cormorant text-xl font-semibold leading-none ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                          {inv.total.toLocaleString("ru-RU")} ₽
-                        </p>
-                      )}
-                    </div>
+                    <p className={`text-sm font-medium ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
+                      Счёт № {inv.invoice_number}
+                    </p>
                     <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
                       {inv.client_name || "Без клиента"} · {formatDate(inv.invoice_date)}
                     </p>
                   </button>
 
-                  {/* Правый блок: кнопки сверху, статус снизу */}
+                  {/* Правый блок: сумма + кнопки сверху, статус снизу */}
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    {/* Кнопки */}
-                    <div className="flex items-center gap-1">
+                    {/* Сумма + кнопки на одном уровне */}
+                    <div className="flex items-center gap-2">
+                      {inv.total != null && (
+                        <p className={`font-cormorant text-xl font-semibold leading-none ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                          {inv.total.toLocaleString("ru-RU")} ₽
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1">
                       <button
                         onClick={() => downloadPdf(inv.id, inv.invoice_number)}
                         disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
@@ -284,6 +283,7 @@ export default function TabContent({
                       >
                         <Icon name="Share2" size={14} />
                       </button>
+                    </div>
                     </div>
 
                     {shareMenuId === inv.id && (
