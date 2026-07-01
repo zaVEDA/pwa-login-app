@@ -257,16 +257,14 @@ export default function TabContent({
                     </p>
                   </button>
 
-                  {/* Правый блок: сумма + кнопки сверху, статус снизу */}
-                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    {/* Сумма + кнопки на одном уровне */}
-                    <div className="flex items-center gap-2">
-                      {inv.total != null && (
-                        <p className={`font-cormorant text-xl font-semibold leading-none ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                          {inv.total.toLocaleString("ru-RU")} ₽
-                        </p>
-                      )}
-                      <div className="flex items-center gap-1">
+                  {/* Правый блок фиксированной ширины */}
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0 w-24">
+                    {/* Сумма — по центру блока, без ₽ */}
+                    <p className={`font-cormorant text-xl font-semibold leading-none w-full text-center tabular-nums ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                      {inv.total != null ? inv.total.toLocaleString("ru-RU") : "—"}
+                    </p>
+                    {/* Кнопки */}
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => downloadPdf(inv.id, inv.invoice_number)}
                         disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
@@ -283,7 +281,6 @@ export default function TabContent({
                       >
                         <Icon name="Share2" size={14} />
                       </button>
-                    </div>
                     </div>
 
                     {shareMenuId === inv.id && (
