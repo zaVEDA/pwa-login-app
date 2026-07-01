@@ -244,7 +244,7 @@ export default function TabContent({
                     className="flex gap-3 items-center flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
                   >
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${inv.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
-                      <Icon name="Receipt" size={20} className={inv.status === "deleted" ? "text-gray-400" : "text-primary"} />
+                      <Icon name="FileText" size={20} className={inv.status === "deleted" ? "text-gray-400" : "text-primary"} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium truncate ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
