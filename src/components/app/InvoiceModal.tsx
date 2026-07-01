@@ -714,10 +714,10 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
               <p className="text-[11px] text-red-600">{saveError}</p>
             </div>
           )}
-          <div className="flex items-center justify-between mb-3">
-            <div>
+          <div className="flex items-end justify-between gap-3 mb-3">
+            <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">Итого к оплате</p>
-              <p className="font-cormorant text-3xl font-semibold text-foreground leading-tight">
+              <p className="font-cormorant text-2xl sm:text-3xl font-semibold text-foreground leading-tight truncate">
                 {total.toLocaleString("ru-RU")} ₽
               </p>
             </div>
@@ -726,7 +726,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
               <button
                 onClick={handleSave}
                 disabled={saveLoading}
-                className="px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2 disabled:opacity-60"
+                className="flex-shrink-0 px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.97] transition-transform flex items-center gap-2 disabled:opacity-60"
               >
                 {saveLoading
                   ? <Icon name="Loader" size={15} className="animate-spin" />
@@ -735,9 +735,9 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
                 {saveLoading ? "Сохраняю..." : "Сохранить"}
               </button>
             ) : (
-              <div className="flex items-center gap-1.5 text-green-600">
-                <Icon name="CheckCircle" size={15} />
-                <span className="text-xs font-medium">№ {invoiceNumber} сохранён</span>
+              <div className="flex-shrink-0 flex items-center gap-1.5 text-green-600">
+                <Icon name="CheckCircle" size={15} className="flex-shrink-0" />
+                <span className="text-xs font-medium whitespace-nowrap">№ {invoiceNumber} сохранён</span>
               </div>
             )}
           </div>
