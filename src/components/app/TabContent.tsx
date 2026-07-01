@@ -237,72 +237,76 @@ export default function TabContent({
               {invoices.map((inv) => (
                 <div
                   key={inv.id}
-                  className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center transition-opacity ${inv.status === "deleted" ? "opacity-50" : ""}`}
+                  className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${inv.status === "deleted" ? "opacity-50" : ""}`}
                 >
-                  <button
-                    onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
-                    className="flex gap-3 items-center flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
-                  >
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${inv.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
-                      <Icon name="FileText" size={20} className={inv.status === "deleted" ? "text-gray-400" : "text-primary"} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
-                        Счёт № {inv.invoice_number}
-                      </p>
-                      <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
-                        {inv.client_name || "Без клиента"} · {formatDate(inv.invoice_date)}
-                      </p>
-                    </div>
-                  </button>
-
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => downloadPdf(inv.id, inv.invoice_number)}
-                      disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
-                      aria-label="Скачать PDF"
-                      className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                    >
-                      <Icon name={pdfLoadingId === inv.id ? "Loader" : "FileDown"} size={16} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
-                    </button>
-                    <button
-                      onClick={() => setShareMenuId(shareMenuId === inv.id ? null : inv.id)}
-                      disabled={inv.status === "deleted"}
-                      aria-label="Отправить счёт"
-                      className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                    >
-                      <Icon name="Share2" size={15} />
-                    </button>
+                  {/* Иконка */}
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${inv.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
+                    <span className={`font-cormorant font-bold text-xl leading-none ${inv.status === "deleted" ? "text-gray-400" : "text-primary"}`}>₽</span>
                   </div>
 
-                  {shareMenuId === inv.id && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => setShareMenuId(null)} />
-                      <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                        {([
-                          { key: "telegram", label: "Telegram", icon: "Send" },
-                          { key: "whatsapp", label: "WhatsApp", icon: "MessageCircle" },
-                          { key: "sms", label: "SMS", icon: "Smartphone" },
-                          { key: "email", label: "Почта", icon: "Mail" },
-                        ] as const).map((c) => (
-                          <button
-                            key={c.key}
-                            onClick={() => shareInvoice(inv, c.key)}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
-                          >
-                            <Icon name={c.icon} size={15} className="text-primary" />
-                            {c.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    {inv.total != null && (
-                      <p className={`text-sm font-semibold ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                        {inv.total.toLocaleString("ru-RU")} ₽
+                  {/* Текст — кликабельная зона */}
+                  <button
+                    onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
+                    className="flex-1 min-w-0 text-left"
+                  >
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <p className={`text-sm font-medium ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
+                        Счёт № {inv.invoice_number}
                       </p>
+                      {inv.total != null && (
+                        <p className={`text-sm font-semibold ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                          {inv.total.toLocaleString("ru-RU")} ₽
+                        </p>
+                      )}
+                    </div>
+                    <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
+                      {inv.client_name || "Без клиента"} · {formatDate(inv.invoice_date)}
+                    </p>
+                  </button>
+
+                  {/* Правый блок: кнопки сверху, статус снизу */}
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                    {/* Кнопки */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => downloadPdf(inv.id, inv.invoice_number)}
+                        disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
+                        aria-label="Скачать PDF"
+                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                      >
+                        <Icon name={pdfLoadingId === inv.id ? "Loader" : "FileDown"} size={15} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
+                      </button>
+                      <button
+                        onClick={() => setShareMenuId(shareMenuId === inv.id ? null : inv.id)}
+                        disabled={inv.status === "deleted"}
+                        aria-label="Отправить счёт"
+                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                      >
+                        <Icon name="Share2" size={14} />
+                      </button>
+                    </div>
+
+                    {shareMenuId === inv.id && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setShareMenuId(null)} />
+                        <div className="absolute right-3 top-12 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                          {([
+                            { key: "telegram", label: "Telegram", icon: "Send" },
+                            { key: "whatsapp", label: "WhatsApp", icon: "MessageCircle" },
+                            { key: "sms", label: "SMS", icon: "Smartphone" },
+                            { key: "email", label: "Почта", icon: "Mail" },
+                          ] as const).map((c) => (
+                            <button
+                              key={c.key}
+                              onClick={() => shareInvoice(inv, c.key)}
+                              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
+                            >
+                              <Icon name={c.icon} size={15} className="text-primary" />
+                              {c.label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
                     )}
                     <button
                       onClick={() => setStatusMenuId(statusMenuId === inv.id ? null : inv.id)}
