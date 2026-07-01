@@ -109,17 +109,7 @@ export default function TabContent({
     } catch { loadInvoices(); }
   };
 
-  const deleteInvoice = async (id: number) => {
-    setStatusMenuId(null);
-    setInvoices((prev) => prev.filter((i) => i.id !== id));
-    try {
-      await fetch(INVOICES_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "delete", id }),
-      });
-    } catch { loadInvoices(); }
-  };
+  const deleteInvoice = (id: number) => changeStatus(id, "deleted");
 
   const loadInvoices = () => {
     if (!phone) return;
@@ -198,18 +188,20 @@ export default function TabContent({
               {invoices.map((inv) => (
                 <div
                   key={inv.id}
-                  className="relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center"
+                  className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center transition-opacity ${inv.status === "deleted" ? "opacity-50" : ""}`}
                 >
                   <button
                     onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
                     className="flex gap-3 items-center flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
                   >
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10">
-                      <Icon name="Receipt" size={20} className="text-primary" />
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${inv.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
+                      <Icon name="Receipt" size={20} className={inv.status === "deleted" ? "text-gray-400" : "text-primary"} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">Счёт № {inv.invoice_number}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      <p className={`text-sm font-medium truncate ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
+                        Счёт № {inv.invoice_number}
+                      </p>
+                      <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
                         {inv.client_name || "Без клиента"} · {inv.invoice_date}
                       </p>
                     </div>
@@ -217,19 +209,22 @@ export default function TabContent({
 
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                     {inv.total != null && (
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className={`text-sm font-semibold ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
                         {inv.total.toLocaleString("ru-RU")} ₽
                       </p>
                     )}
                     <button
                       onClick={() => setStatusMenuId(statusMenuId === inv.id ? null : inv.id)}
                       className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
+                        inv.status === "deleted" ? "bg-red-100 text-red-600" :
                         inv.status === "issued" ? "bg-primary/15 text-primary" :
                         inv.status === "paid" ? "bg-green-100 text-green-700" :
                         "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {inv.status === "issued" ? "Выставлен" : inv.status === "paid" ? "Оплачен" : "Создан"}
+                      {inv.status === "deleted" ? "Удалён" :
+                        inv.status === "issued" ? "Выставлен" :
+                        inv.status === "paid" ? "Оплачен" : "Создан"}
                       <Icon name="ChevronDown" size={11} />
                     </button>
                   </div>
@@ -253,13 +248,23 @@ export default function TabContent({
                             {inv.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
                           </button>
                         ))}
-                        <button
-                          onClick={() => deleteInvoice(inv.id)}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
-                        >
-                          <Icon name="Trash2" size={15} />
-                          Удалить
-                        </button>
+                        {inv.status === "deleted" ? (
+                          <button
+                            onClick={() => changeStatus(inv.id, "created")}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary hover:bg-amber-50 transition-colors border-t border-border"
+                          >
+                            <Icon name="RotateCcw" size={15} />
+                            Восстановить
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => deleteInvoice(inv.id)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
+                          >
+                            <Icon name="Trash2" size={15} />
+                            Удалить
+                          </button>
+                        )}
                       </div>
                     </>
                   )}

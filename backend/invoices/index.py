@@ -273,11 +273,11 @@ def handler(event: dict, context) -> dict:
         body = json.loads(event.get("body") or "{}")
         action = body.get("action", "save")
 
-        # Смена статуса счёта: created | issued | paid
+        # Смена статуса счёта: created | issued | paid | deleted
         if action == "set_status":
             new_status = body.get("status")
             inv_id = body.get("id")
-            if new_status not in ("created", "issued", "paid"):
+            if new_status not in ("created", "issued", "paid", "deleted"):
                 cur.close(); conn.close()
                 return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "bad status"})}
             cur.execute(
@@ -288,15 +288,6 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             cur.close(); conn.close()
             return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok, "status": new_status})}
-
-        # Удаление счёта
-        if action == "delete":
-            inv_id = body.get("id")
-            cur.execute("DELETE FROM invoices WHERE id=%s AND user_id=%s RETURNING id", (inv_id, user_id))
-            ok = cur.fetchone() is not None
-            conn.commit()
-            cur.close(); conn.close()
-            return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok})}
 
         # Получаем реквизиты продавца
         cur.execute(
