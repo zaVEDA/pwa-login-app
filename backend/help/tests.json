@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Получить все подсказки",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Подсказки по документам",
+      "method": "GET",
+      "path": "/?category=documents",
+      "expectedStatus": 200
+    }
+  ]
+}

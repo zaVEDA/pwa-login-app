@@ -6,6 +6,9 @@ import AdminUsers from "@/components/admin/AdminUsers";
 import { formatDate } from "@/lib/date";
 
 const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
+const HELP_URL = "https://functions.poehali.dev/66109594-95d9-45ec-bcda-4de385abc5ef";
+
+interface HelpTip { key: string; title: string; body: string; category: string; }
 
 interface Invoice {
   id: number;
@@ -131,6 +134,20 @@ export default function TabContent({
 
   const [basisMenuId, setBasisMenuId] = useState<number | null>(null);
   const [docLoadingId, setDocLoadingId] = useState<number | null>(null);
+  const [basisHelp, setBasisHelp] = useState(false);
+  const [docTips, setDocTips] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch(`${HELP_URL}?category=documents`)
+      .then((r) => r.json())
+      .then((data) => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        const map: Record<string, string> = {};
+        (parsed.tips || []).forEach((t: HelpTip) => { map[t.key] = t.body; });
+        setDocTips(map);
+      })
+      .catch(() => {});
+  }, []);
 
   const createDocument = async (inv: Invoice, docType: "act" | "invoice_note") => {
     setBasisMenuId(null);
@@ -328,23 +345,42 @@ export default function TabContent({
 
                     {basisMenuId === inv.id && (
                       <>
-                        <div className="fixed inset-0 z-30" onClick={() => setBasisMenuId(null)} />
-                        <div className="absolute right-3 top-12 z-40 w-52 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                          <p className="text-[10px] text-muted-foreground px-3.5 pt-2.5 pb-1 uppercase tracking-wide font-medium">Создать на основании</p>
+                        <div className="fixed inset-0 z-30" onClick={() => { setBasisMenuId(null); setBasisHelp(false); }} />
+                        <div className="absolute right-3 top-12 z-40 w-64 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                          <div className="flex items-center justify-between px-3.5 pt-2.5 pb-1">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Создать на основании</p>
+                            <button
+                              onClick={() => setBasisHelp((v) => !v)}
+                              aria-label="Справка"
+                              className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${basisHelp ? "bg-primary text-white" : "bg-primary/10 text-primary hover:bg-primary/20"}`}
+                            >
+                              <Icon name="HelpCircle" size={13} />
+                            </button>
+                          </div>
                           <button
                             onClick={() => createDocument(inv, "act")}
                             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
                           >
-                            <Icon name="FileCheck" size={15} className="text-primary" />
+                            <Icon name="FileCheck" size={15} className="text-primary flex-shrink-0" />
                             Акт выполненных работ
                           </button>
+                          {basisHelp && docTips["doc_act"] && (
+                            <p className="px-3.5 pb-2 -mt-1 text-[11px] leading-snug text-muted-foreground bg-amber-50/60">
+                              {docTips["doc_act"]}
+                            </p>
+                          )}
                           <button
                             onClick={() => createDocument(inv, "invoice_note")}
                             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
                           >
-                            <Icon name="Package" size={15} className="text-primary" />
+                            <Icon name="Package" size={15} className="text-primary flex-shrink-0" />
                             Товарная накладная
                           </button>
+                          {basisHelp && docTips["doc_invoice_note"] && (
+                            <p className="px-3.5 pb-2 -mt-1 text-[11px] leading-snug text-muted-foreground bg-amber-50/60">
+                              {docTips["doc_invoice_note"]}
+                            </p>
+                          )}
                         </div>
                       </>
                     )}
