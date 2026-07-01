@@ -563,45 +563,53 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
               <div key={i} className="card-warm rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">Позиция {i + 1}</p>
-                  <div className="flex items-center gap-2">
-                    {savedServices.length > 0 && (
-                      <button
-                        onClick={() => setShowServiceList(showServiceList === i ? null : i)}
-                        className="flex items-center gap-1 text-[11px] text-primary"
-                      >
-                        <Icon name="BookOpen" size={11} />
-                        Из справочника
-                      </button>
-                    )}
-                    {items.length > 1 && (
-                      <button onClick={() => removeItem(i)}>
-                        <Icon name="Trash2" size={13} className="text-red-400" />
-                      </button>
-                    )}
-                  </div>
+                  {items.length > 1 && (
+                    <button onClick={() => removeItem(i)}>
+                      <Icon name="Trash2" size={13} className="text-red-400" />
+                    </button>
+                  )}
                 </div>
 
-                {/* Выпадающий список услуг */}
-                {showServiceList === i && (
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {savedServices.map((s) => (
+                <div className="relative flex items-center gap-2">
+                  {/* Иконка справочника */}
+                  {savedServices.length > 0 && (
+                    <div className="relative flex-shrink-0">
                       <button
-                        key={s.id}
-                        onClick={() => {
-                          updateItem(i, "name", s.name);
-                          if (s.price) updateItem(i, "price", String(s.price));
-                          setShowServiceList(null);
-                        }}
-                        className="w-full text-left px-2.5 py-2 rounded-lg border border-border bg-white/80 hover:border-primary transition-colors flex items-center justify-between"
+                        onClick={() => setShowServiceList(showServiceList === i ? null : i)}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${showServiceList === i ? "bg-primary text-white" : "bg-primary/10 text-primary hover:bg-primary/20"}`}
                       >
-                        <span className="text-sm truncate">{s.name}</span>
-                        {s.price && <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">{s.price.toLocaleString("ru-RU")} ₽</span>}
+                        <Icon name="BookOpen" size={15} />
                       </button>
-                    ))}
-                  </div>
-                )}
 
-                <div className="relative">
+                      {/* Список справочника */}
+                      {showServiceList === i && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setShowServiceList(null)} />
+                          <div className="absolute left-0 top-full mt-1 z-20 w-64 bg-white rounded-xl border border-border shadow-xl overflow-hidden">
+                            <p className="text-[10px] text-muted-foreground px-3 pt-2.5 pb-1 uppercase tracking-wide font-medium">Справочник услуг</p>
+                            <div className="max-h-52 overflow-y-auto">
+                              {savedServices.map((s) => (
+                                <button
+                                  key={s.id}
+                                  onClick={() => {
+                                    updateItem(i, "name", s.name);
+                                    if (s.price) updateItem(i, "price", String(s.price));
+                                    setShowServiceList(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2.5 hover:bg-amber-50 active:bg-amber-100 transition-colors flex items-center justify-between gap-2 border-b border-border/40 last:border-0"
+                                >
+                                  <span className="text-sm truncate">{s.name}</span>
+                                  {s.price != null && <span className="text-xs text-muted-foreground flex-shrink-0">{s.price.toLocaleString("ru-RU")} ₽</span>}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="relative flex-1">
                   <input
                     type="text"
                     value={item.name}
@@ -649,6 +657,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
                       </div>
                     );
                   })()}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
