@@ -95,6 +95,31 @@ export default function TabContent({
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [statusMenuId, setStatusMenuId] = useState<number | null>(null);
+
+  const changeStatus = async (id: number, status: string) => {
+    setStatusMenuId(null);
+    setInvoices((prev) => prev.map((i) => i.id === id ? { ...i, status } : i));
+    try {
+      await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "set_status", id, status }),
+      });
+    } catch { loadInvoices(); }
+  };
+
+  const deleteInvoice = async (id: number) => {
+    setStatusMenuId(null);
+    setInvoices((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "delete", id }),
+      });
+    } catch { loadInvoices(); }
+  };
 
   const loadInvoices = () => {
     if (!phone) return;
@@ -171,35 +196,74 @@ export default function TabContent({
           {!invoicesLoading && invoices.length > 0 && (
             <div className="space-y-3">
               {invoices.map((inv) => (
-                <button
+                <div
                   key={inv.id}
-                  onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
-                  className="w-full text-left card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center active:scale-[0.98] transition-transform"
+                  className="relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 items-center"
                 >
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10">
-                    <Icon name="Receipt" size={20} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">Счёт № {inv.invoice_number}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {inv.client_name || "Без клиента"} · {inv.invoice_date}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5">
+                  <button
+                    onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
+                    className="flex gap-3 items-center flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10">
+                      <Icon name="Receipt" size={20} className="text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">Счёт № {inv.invoice_number}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {inv.client_name || "Без клиента"} · {inv.invoice_date}
+                      </p>
+                    </div>
+                  </button>
+
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                     {inv.total != null && (
                       <p className="text-sm font-semibold text-foreground">
                         {inv.total.toLocaleString("ru-RU")} ₽
                       </p>
                     )}
-                    <span className={`doc-tag ${
-                      inv.status === "created" ? "bg-primary/15 text-primary" :
-                      inv.status === "paid" ? "bg-green-100 text-green-700" :
-                      "bg-gray-100 text-gray-500"
-                    }`}>
-                      {inv.status === "created" ? "Выставлен" : inv.status === "paid" ? "Оплачен" : "Черновик"}
-                    </span>
+                    <button
+                      onClick={() => setStatusMenuId(statusMenuId === inv.id ? null : inv.id)}
+                      className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
+                        inv.status === "issued" ? "bg-primary/15 text-primary" :
+                        inv.status === "paid" ? "bg-green-100 text-green-700" :
+                        "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {inv.status === "issued" ? "Выставлен" : inv.status === "paid" ? "Оплачен" : "Создан"}
+                      <Icon name="ChevronDown" size={11} />
+                    </button>
                   </div>
-                </button>
+
+                  {statusMenuId === inv.id && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setStatusMenuId(null)} />
+                      <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                        {([
+                          { key: "created", label: "Создан", icon: "FileText" },
+                          { key: "issued", label: "Выставлен", icon: "Send" },
+                          { key: "paid", label: "Оплачен", icon: "CheckCircle" },
+                        ] as const).map((s) => (
+                          <button
+                            key={s.key}
+                            onClick={() => changeStatus(inv.id, s.key)}
+                            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${inv.status === s.key ? "text-primary font-medium" : "text-foreground"}`}
+                          >
+                            <Icon name={s.icon} size={15} className={inv.status === s.key ? "text-primary" : "text-muted-foreground"} />
+                            {s.label}
+                            {inv.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => deleteInvoice(inv.id)}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
+                        >
+                          <Icon name="Trash2" size={15} />
+                          Удалить
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               ))}
             </div>
           )}

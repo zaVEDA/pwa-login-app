@@ -31,6 +31,22 @@
       "path": "/",
       "headers": { "X-Phone": "+79001234567" },
       "expectedStatus": 200
+    },
+    {
+      "name": "Невалидный статус — 400",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": { "action": "set_status", "id": 999999, "status": "wrong" },
+      "expectedStatus": 400
+    },
+    {
+      "name": "Смена статуса несуществующего — 404",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": { "action": "set_status", "id": 999999, "status": "paid" },
+      "expectedStatus": 404
     }
   ]
 }

@@ -273,6 +273,31 @@ def handler(event: dict, context) -> dict:
         body = json.loads(event.get("body") or "{}")
         action = body.get("action", "save")
 
+        # Смена статуса счёта: created | issued | paid
+        if action == "set_status":
+            new_status = body.get("status")
+            inv_id = body.get("id")
+            if new_status not in ("created", "issued", "paid"):
+                cur.close(); conn.close()
+                return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "bad status"})}
+            cur.execute(
+                "UPDATE invoices SET status=%s, updated_at=NOW() WHERE id=%s AND user_id=%s RETURNING id",
+                (new_status, inv_id, user_id)
+            )
+            ok = cur.fetchone() is not None
+            conn.commit()
+            cur.close(); conn.close()
+            return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok, "status": new_status})}
+
+        # Удаление счёта
+        if action == "delete":
+            inv_id = body.get("id")
+            cur.execute("DELETE FROM invoices WHERE id=%s AND user_id=%s RETURNING id", (inv_id, user_id))
+            ok = cur.fetchone() is not None
+            conn.commit()
+            cur.close(); conn.close()
+            return {"statusCode": 200 if ok else 404, "headers": cors, "body": json.dumps({"ok": ok})}
+
         # Получаем реквизиты продавца
         cur.execute(
             "SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account FROM requisites WHERE user_id = %s",
