@@ -699,7 +699,10 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
         )}
 
         {/* Footer */}
-        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pb-20 pt-4 bg-background border-t border-border/50">
+        <div
+          className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pt-4 bg-background border-t border-border/50"
+          style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        >
           {saveError && (
             <div className="mb-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
               <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
