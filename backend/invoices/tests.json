@@ -33,6 +33,25 @@
       "expectedStatus": 200
     },
     {
+      "name": "PDF генерация с кириллицей",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "action": "pdf",
+        "invoice_date": "2026-06-27",
+        "client_type": "ip",
+        "client_name": "ИП Иванов Иван Иванович",
+        "client_inn": "123456789012",
+        "items": [{ "name": "Консультация психолога", "qty": "2", "price": "3000" }],
+        "due_date": "2026-07-10",
+        "comment": "Спасибо за обращение"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "ok": true },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Невалидный статус — 400",
       "method": "POST",
       "path": "/",

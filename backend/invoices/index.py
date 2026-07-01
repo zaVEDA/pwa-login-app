@@ -4,7 +4,6 @@ import psycopg2
 import io
 import base64
 import datetime
-import urllib.request
 import qrcode
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -15,33 +14,26 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
 
-FONT_PATH = "/tmp/DejaVuSans.ttf"
-FONT_BOLD_PATH = "/tmp/DejaVuSans-Bold.ttf"
-
-FONT_URLS = {
-    FONT_PATH: [
-        "https://cdn.jsdelivr.net/gh/dejavu-fonts/dejavu-fonts@2.37/ttf/DejaVuSans.ttf",
-        "https://raw.githubusercontent.com/dejavu-fonts/dejavu-fonts/version_2_37/ttf/DejaVuSans.ttf",
-    ],
-    FONT_BOLD_PATH: [
-        "https://cdn.jsdelivr.net/gh/dejavu-fonts/dejavu-fonts@2.37/ttf/DejaVuSans-Bold.ttf",
-        "https://raw.githubusercontent.com/dejavu-fonts/dejavu-fonts/version_2_37/ttf/DejaVuSans-Bold.ttf",
-    ],
-}
+_FONTS_READY = False
 
 def ensure_fonts():
-    import urllib.error
-    for path, urls in FONT_URLS.items():
-        if not os.path.exists(path):
-            for url in urls:
-                try:
-                    urllib.request.urlretrieve(url, path)
-                    break
-                except (urllib.error.HTTPError, urllib.error.URLError):
-                    continue
-    if "DejaVuSans" not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont("DejaVuSans", FONT_PATH))
-        pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", FONT_BOLD_PATH))
+    """Регистрирует шрифты с кириллицей. Берём TTF из пакета matplotlib —
+    он поставляется вместе с DejaVuSans и не требует скачивания из сети.
+    Шрифт встраивается прямо в PDF, поэтому корректно отображается
+    на любых устройствах РФ (телефоны, ПК) без установки шрифтов."""
+    global _FONTS_READY
+    if _FONTS_READY:
+        return
+    import matplotlib
+    mpl_dir = os.path.join(os.path.dirname(matplotlib.__file__), "mpl-data", "fonts", "ttf")
+    regular = os.path.join(mpl_dir, "DejaVuSans.ttf")
+    bold = os.path.join(mpl_dir, "DejaVuSans-Bold.ttf")
+    registered = pdfmetrics.getRegisteredFontNames()
+    if "DejaVuSans" not in registered:
+        pdfmetrics.registerFont(TTFont("DejaVuSans", regular))
+    if "DejaVuSans-Bold" not in registered:
+        pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", bold if os.path.exists(bold) else regular))
+    _FONTS_READY = True
 
 
 def get_conn():
