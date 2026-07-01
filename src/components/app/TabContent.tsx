@@ -556,10 +556,6 @@ export default function TabContent({
           {/* Документы реализации: акты и накладные */}
           {filteredDocs.length > 0 && (
             <div className="space-y-3 pt-2">
-              <h3 className="font-cormorant text-lg font-semibold flex items-center gap-2">
-                <Icon name="FileCheck" size={17} className="text-primary" />
-                Акты и накладные
-              </h3>
               {filteredDocs.map((doc) => (
                 <div
                   key={`doc-${doc.id}`}
