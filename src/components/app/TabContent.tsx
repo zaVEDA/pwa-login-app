@@ -143,6 +143,23 @@ export default function TabContent({
 
   const deleteInvoice = (id: number) => changeStatus(id, "deleted");
 
+  const [shareMenuId, setShareMenuId] = useState<number | null>(null);
+
+  const shareInvoice = (inv: Invoice, channel: "telegram" | "whatsapp" | "sms" | "email") => {
+    setShareMenuId(null);
+    const who = inv.client_name ? ` для ${inv.client_name}` : "";
+    const sum = inv.total ? ` на сумму ${inv.total.toLocaleString("ru-RU")} ₽` : "";
+    const text = `Счёт № ${inv.invoice_number}${who}${sum}`;
+    const msg = encodeURIComponent(`${text}\nДля оплаты скачайте PDF из приложения.`);
+    const urls: Record<string, string> = {
+      telegram: `https://t.me/share/url?url=&text=${msg}`,
+      whatsapp: `https://wa.me/?text=${msg}`,
+      sms: `sms:?body=${msg}`,
+      email: `mailto:?subject=${encodeURIComponent(`Счёт № ${inv.invoice_number}`)}&body=${msg}`,
+    };
+    window.open(urls[channel], "_blank");
+  };
+
   const loadInvoices = () => {
     if (!phone) return;
     setInvoicesLoading(true);
@@ -239,15 +256,46 @@ export default function TabContent({
                     </div>
                   </button>
 
-                  {inv.status !== "deleted" && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       onClick={() => downloadPdf(inv.id, inv.invoice_number)}
-                      disabled={pdfLoadingId === inv.id}
+                      disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
                       aria-label="Скачать PDF"
-                      className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform disabled:opacity-60"
+                      className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
                     >
                       <Icon name={pdfLoadingId === inv.id ? "Loader" : "FileDown"} size={16} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
                     </button>
+                    <button
+                      onClick={() => setShareMenuId(shareMenuId === inv.id ? null : inv.id)}
+                      disabled={inv.status === "deleted"}
+                      aria-label="Отправить счёт"
+                      className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                    >
+                      <Icon name="Share2" size={15} />
+                    </button>
+                  </div>
+
+                  {shareMenuId === inv.id && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setShareMenuId(null)} />
+                      <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                        {([
+                          { key: "telegram", label: "Telegram", icon: "Send" },
+                          { key: "whatsapp", label: "WhatsApp", icon: "MessageCircle" },
+                          { key: "sms", label: "SMS", icon: "Smartphone" },
+                          { key: "email", label: "Почта", icon: "Mail" },
+                        ] as const).map((c) => (
+                          <button
+                            key={c.key}
+                            onClick={() => shareInvoice(inv, c.key)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
+                          >
+                            <Icon name={c.icon} size={15} className="text-primary" />
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
 
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
