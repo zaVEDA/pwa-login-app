@@ -52,6 +52,42 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Создать акт на основании счёта",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "action": "document",
+        "doc_type": "act",
+        "invoice_number": "2026-0001",
+        "invoice_date": "2026-06-27",
+        "client_name": "ИП Иванов Иван Иванович",
+        "client_inn": "123456789012",
+        "items": [{ "name": "Консультация психолога", "qty": "2", "price": "3000" }]
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "ok": true },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Создать накладную на основании счёта",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "action": "document",
+        "doc_type": "invoice_note",
+        "invoice_number": "2026-0001",
+        "invoice_date": "2026-06-27",
+        "client_name": "ООО Ромашка",
+        "client_inn": "1234567890",
+        "items": [{ "name": "Товар", "qty": "5", "price": "100" }]
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "ok": true },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Невалидный статус — 400",
       "method": "POST",
       "path": "/",

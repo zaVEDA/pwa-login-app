@@ -266,6 +266,145 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
     return buf.read()
 
 
+def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
+    """Акт выполненных работ или Товарная накладная на основе данных счёта."""
+    ensure_fonts()
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            leftMargin=20*mm, rightMargin=20*mm,
+                            topMargin=15*mm, bottomMargin=15*mm)
+
+    normal = ParagraphStyle("N", fontName="DejaVuSans", fontSize=9, leading=12)
+    bold = ParagraphStyle("B", fontName="DejaVuSans-Bold", fontSize=9, leading=12)
+    title_style = ParagraphStyle("T", fontName="DejaVuSans-Bold", fontSize=14, leading=18, alignment=TA_CENTER)
+    small = ParagraphStyle("S", fontName="DejaVuSans", fontSize=8, leading=10, textColor=colors.grey)
+
+    items = invoice.get("items", [])
+    total = invoice.get("total", 0)
+    inv_num = invoice.get("invoice_number", "—")
+    inv_date = invoice.get("invoice_date", str(datetime.date.today()))
+
+    client_name = invoice.get("client_name", "")
+    client_inn = invoice.get("client_inn", "")
+    client_ogrnip = invoice.get("client_ogrnip", "")
+    client_address = invoice.get("client_address", "")
+
+    seller_name = seller.get("full_name", "")
+    seller_inn = seller.get("inn", "")
+    is_ip = seller.get("entity_type") == "ip"
+    seller_display = f"ИП {seller_name}" if is_ip else seller_name
+
+    is_act = doc_type == "act"
+    if is_act:
+        head = f"АКТ № {inv_num}"
+        subhead = "выполненных работ (оказанных услуг)"
+        col_name = "Наименование работы, услуги"
+    else:
+        head = f"ТОВАРНАЯ НАКЛАДНАЯ № {inv_num}"
+        subhead = "на отпуск товаров"
+        col_name = "Наименование товара"
+
+    story = []
+    story.append(Paragraph(head, title_style))
+    story.append(Spacer(1, 1*mm))
+    story.append(Paragraph(subhead, ParagraphStyle("SH", fontName="DejaVuSans", fontSize=10, alignment=TA_CENTER, textColor=colors.grey)))
+    story.append(Spacer(1, 1*mm))
+    story.append(Paragraph(f"от {fmt_date(inv_date)}", ParagraphStyle("DC", fontName="DejaVuSans", fontSize=9, alignment=TA_CENTER, textColor=colors.grey)))
+    story.append(Spacer(1, 5*mm))
+
+    party_data = [
+        [Paragraph("<b>Исполнитель:</b>" if is_act else "<b>Поставщик:</b>", bold), Paragraph(seller_display, normal)],
+        [Paragraph("ИНН:", small), Paragraph(seller_inn or "—", normal)],
+        [Paragraph("", normal), Paragraph("", normal)],
+        [Paragraph("<b>Заказчик:</b>" if is_act else "<b>Покупатель:</b>", bold), Paragraph(client_name or "—", normal)],
+    ]
+    if client_inn:
+        party_data.append([Paragraph("ИНН:", small), Paragraph(client_inn, normal)])
+    if client_ogrnip:
+        party_data.append([Paragraph("ОГРНИП:", small), Paragraph(client_ogrnip, normal)])
+    if client_address:
+        party_data.append([Paragraph("Адрес:", small), Paragraph(client_address, normal)])
+    party_data.append([Paragraph("Основание:", small), Paragraph(f"Счёт № {inv_num} от {fmt_date(inv_date)}", normal)])
+
+    party_table = Table(party_data, colWidths=[30*mm, 130*mm])
+    party_table.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("TOPPADDING", (0, 0), (-1, -1), 1),
+    ]))
+    story.append(party_table)
+    story.append(Spacer(1, 5*mm))
+
+    col_headers = [
+        Paragraph("<b>№</b>", bold),
+        Paragraph(f"<b>{col_name}</b>", bold),
+        Paragraph("<b>Кол-во</b>", bold),
+        Paragraph("<b>Цена, ₽</b>", bold),
+        Paragraph("<b>Сумма, ₽</b>", bold),
+    ]
+    table_data = [col_headers]
+    for idx, item in enumerate(items, 1):
+        qty = float(item.get("qty", 1))
+        price = float(item.get("price", 0))
+        amount = qty * price
+        table_data.append([
+            Paragraph(str(idx), normal),
+            Paragraph(item.get("name", ""), normal),
+            Paragraph(f"{qty:g}", normal),
+            Paragraph(f"{price:,.2f}", normal),
+            Paragraph(f"{amount:,.2f}", normal),
+        ])
+    table_data.append(["", "", "", Paragraph("<b>Итого:</b>", bold), Paragraph(f"<b>{total:,.2f} ₽</b>", bold)])
+
+    items_table = Table(table_data, colWidths=[10*mm, 90*mm, 20*mm, 25*mm, 25*mm])
+    items_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F5F0E8")),
+        ("GRID", (0, 0), (-1, -2), 0.5, colors.HexColor("#E0D8CC")),
+        ("LINEABOVE", (0, -1), (-1, -1), 1, colors.HexColor("#C8A96E")),
+        ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
+    ]))
+    story.append(items_table)
+    story.append(Spacer(1, 4*mm))
+
+    count = len(items)
+    story.append(Paragraph(
+        f"Всего наименований {count}, на сумму {total:,.2f} ₽",
+        bold
+    ))
+    story.append(Spacer(1, 2*mm))
+    if is_act:
+        story.append(Paragraph(
+            "Вышеперечисленные работы (услуги) выполнены полностью и в срок. "
+            "Заказчик претензий по объёму, качеству и срокам оказания услуг не имеет.",
+            normal
+        ))
+    story.append(Spacer(1, 12*mm))
+
+    sign_left = "Исполнитель" if is_act else "Поставщик"
+    sign_right = "Заказчик" if is_act else "Покупатель"
+    sign_data = [
+        [Paragraph(f"<b>{sign_left}</b>", bold), Paragraph(f"<b>{sign_right}</b>", bold)],
+        [Paragraph(seller_display, normal), Paragraph(client_name or "", normal)],
+        [Paragraph("_______________ / подпись", small), Paragraph("_______________ / подпись", small)],
+        [Paragraph("М.П.", small), Paragraph("М.П.", small)],
+    ]
+    sign_table = Table(sign_data, colWidths=[85*mm, 85*mm])
+    sign_table.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(sign_table)
+
+    doc.build(story)
+    buf.seek(0)
+    return buf.read()
+
+
 def handler(event: dict, context) -> dict:
     """Счета пользователя: получение списка, сохранение, генерация PDF."""
     cors = {
@@ -365,6 +504,29 @@ def handler(event: dict, context) -> dict:
         if row:
             keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account"]
             seller = dict(zip(keys, row))
+
+        # Создать документ на основании счёта: акт или накладную
+        if action == "document":
+            doc_type = body.get("doc_type", "act")  # act | invoice_note
+            items = body.get("items", [])
+            doc_data = {
+                "invoice_number": body.get("invoice_number", ""),
+                "invoice_date": body.get("invoice_date") or str(datetime.date.today()),
+                "items": items,
+                "total": sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items),
+                "client_name": body.get("client_name", ""),
+                "client_inn": body.get("client_inn", ""),
+                "client_ogrnip": body.get("client_ogrnip", ""),
+                "client_address": body.get("client_address", ""),
+            }
+            pdf_bytes = build_document(doc_data, seller, doc_type)
+            pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+            cur.close(); conn.close()
+            return {
+                "statusCode": 200,
+                "headers": {**cors, "Content-Type": "application/json"},
+                "body": json.dumps({"ok": True, "doc_type": doc_type, "pdf_base64": pdf_b64})
+            }
 
         inv_date = body.get("invoice_date") or str(datetime.date.today())
         items = body.get("items", [])

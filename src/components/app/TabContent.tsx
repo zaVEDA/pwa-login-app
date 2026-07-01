@@ -129,6 +129,41 @@ export default function TabContent({
     finally { setPdfLoadingId(null); }
   };
 
+  const [basisMenuId, setBasisMenuId] = useState<number | null>(null);
+  const [docLoadingId, setDocLoadingId] = useState<number | null>(null);
+
+  const createDocument = async (inv: Invoice, docType: "act" | "invoice_note") => {
+    setBasisMenuId(null);
+    if (docLoadingId) return;
+    setDocLoadingId(inv.id);
+    try {
+      const infoRes = await fetch(`${INVOICES_URL}?id=${inv.id}`, { headers: { "X-Phone": phone } });
+      const infoRaw = await infoRes.json();
+      const info = typeof infoRaw === "string" ? JSON.parse(infoRaw) : infoRaw;
+      const full = info.invoice;
+      if (!full) return;
+      const res = await fetch(INVOICES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "document", doc_type: docType, ...full }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (c) => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const label = docType === "act" ? "Акт" : "Накладная";
+        a.href = url;
+        a.download = `${label}_${inv.invoice_number}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ }
+    finally { setDocLoadingId(null); }
+  };
+
   const changeStatus = async (id: number, status: string) => {
     setStatusMenuId(null);
     setInvoices((prev) => prev.map((i) => i.id === id ? { ...i, status } : i));
@@ -280,8 +315,39 @@ export default function TabContent({
                       >
                         <Icon name="Share2" size={14} />
                       </button>
+                      <button
+                        onClick={() => setBasisMenuId(basisMenuId === inv.id ? null : inv.id)}
+                        disabled={docLoadingId === inv.id || inv.status === "deleted"}
+                        aria-label="Создать на основании"
+                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+                      >
+                        <Icon name={docLoadingId === inv.id ? "Loader" : "FilePlus"} size={15} className={docLoadingId === inv.id ? "animate-spin" : ""} />
+                      </button>
                       </div>
                     </div>
+
+                    {basisMenuId === inv.id && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setBasisMenuId(null)} />
+                        <div className="absolute right-3 top-12 z-40 w-52 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+                          <p className="text-[10px] text-muted-foreground px-3.5 pt-2.5 pb-1 uppercase tracking-wide font-medium">Создать на основании</p>
+                          <button
+                            onClick={() => createDocument(inv, "act")}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
+                          >
+                            <Icon name="FileCheck" size={15} className="text-primary" />
+                            Акт выполненных работ
+                          </button>
+                          <button
+                            onClick={() => createDocument(inv, "invoice_note")}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
+                          >
+                            <Icon name="Package" size={15} className="text-primary" />
+                            Товарная накладная
+                          </button>
+                        </div>
+                      </>
+                    )}
 
                     {shareMenuId === inv.id && (
                       <>
