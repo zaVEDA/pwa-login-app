@@ -36,6 +36,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
   // Справочник услуг
   const [savedServices, setSavedServices] = useState<{ id: number; name: string; price: number | null; unit: string }[]>([]);
   const [showServiceList, setShowServiceList] = useState<number | null>(null); // индекс позиции
+  const [autocompleteIndex, setAutocompleteIndex] = useState<number | null>(null); // поле с активным автоподбором
 
   // Номер и дата счёта
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -600,14 +601,55 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
                   </div>
                 )}
 
-                <input
-                  type="text"
-                  value={item.name}
-                  onChange={(e) => updateItem(i, "name", e.target.value)}
-                  onBlur={() => { if (item.name.trim()) saveService(item.name, item.price); }}
-                  placeholder="Название услуги или товара"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => { updateItem(i, "name", e.target.value); setAutocompleteIndex(i); }}
+                    onFocus={() => setAutocompleteIndex(i)}
+                    onBlur={() => {
+                      setTimeout(() => setAutocompleteIndex((cur) => cur === i ? null : cur), 150);
+                      if (item.name.trim()) saveService(item.name, item.price);
+                    }}
+                    placeholder="Название услуги или товара"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                  {autocompleteIndex === i && item.name.trim().length >= 1 && (() => {
+                    const q = item.name.trim().toLowerCase();
+                    const matches = savedServices.filter(
+                      (s) => s.name.toLowerCase().includes(q) && s.name.toLowerCase() !== q
+                    ).slice(0, 5);
+                    if (matches.length === 0) return null;
+                    return (
+                      <div className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-lg border border-border shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                        {matches.map((s) => {
+                          const idx = s.name.toLowerCase().indexOf(q);
+                          return (
+                            <button
+                              key={s.id}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => {
+                                updateItem(i, "name", s.name);
+                                if (s.price) updateItem(i, "price", String(s.price));
+                                setAutocompleteIndex(null);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-amber-50 transition-colors flex items-center justify-between gap-2"
+                            >
+                              <span className="text-sm truncate">
+                                {s.name.slice(0, idx)}
+                                <span className="font-semibold text-primary">{s.name.slice(idx, idx + q.length)}</span>
+                                {s.name.slice(idx + q.length)}
+                              </span>
+                              {s.price != null && (
+                                <span className="text-xs text-muted-foreground flex-shrink-0">{s.price.toLocaleString("ru-RU")} ₽</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-[10px] text-muted-foreground mb-1 block">Кол-во</label>
