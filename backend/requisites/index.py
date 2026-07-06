@@ -36,20 +36,20 @@ def handler(event: dict, context) -> dict:
     method = event.get("httpMethod")
 
     if method == "GET":
-        cur.execute("SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account FROM requisites WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp FROM requisites WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         cur.close()
         conn.close()
         if not row:
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"requisites": None})}
-        keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account"]
+        keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp"]
         return {"statusCode": 200, "headers": cors, "body": json.dumps({"requisites": dict(zip(keys, row))})}
 
     if method == "POST":
         body = json.loads(event.get("body") or "{}")
         cur.execute("""
-            INSERT INTO requisites (user_id, entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            INSERT INTO requisites (user_id, entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
             ON CONFLICT (user_id) DO UPDATE SET
                 entity_type = EXCLUDED.entity_type,
                 full_name = EXCLUDED.full_name,
@@ -60,6 +60,8 @@ def handler(event: dict, context) -> dict:
                 bank_name = EXCLUDED.bank_name,
                 corr_account = EXCLUDED.corr_account,
                 checking_account = EXCLUDED.checking_account,
+                okpo = EXCLUDED.okpo,
+                kpp = EXCLUDED.kpp,
                 updated_at = NOW()
         """, (
             user_id,
@@ -72,6 +74,8 @@ def handler(event: dict, context) -> dict:
             body.get("bank_name"),
             body.get("corr_account"),
             body.get("checking_account"),
+            body.get("okpo"),
+            body.get("kpp"),
         ))
         conn.commit()
         cur.close()

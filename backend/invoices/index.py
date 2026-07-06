@@ -206,10 +206,12 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
 
     client_name = invoice.get("client_name", "") or "—"
     client_inn = invoice.get("client_inn", "")
+    client_kpp = invoice.get("client_kpp", "")
     client_address = invoice.get("client_address", "")
 
     seller_name = seller.get("full_name", "")
     seller_inn = seller.get("inn", "")
+    seller_kpp = seller.get("kpp", "")
     seller_address = seller.get("address", "")
     seller_okpo = seller.get("okpo", "")
     bank_name = seller.get("bank_name", "")
@@ -221,6 +223,8 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     seller_line = seller_display
     if seller_inn:
         seller_line += f", ИНН {seller_inn}"
+    if seller_kpp:
+        seller_line += f", КПП {seller_kpp}"
     if seller_address:
         seller_line += f", {seller_address}"
     if bank_name:
@@ -229,6 +233,8 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     client_line = client_name
     if client_inn:
         client_line += f", ИНН {client_inn}"
+    if client_kpp:
+        client_line += f", КПП {client_kpp}"
     if client_address:
         client_line += f", {client_address}"
 
@@ -803,7 +809,7 @@ def handler(event: dict, context) -> dict:
         if qs.get("document_id"):
             cur.execute(
                 """SELECT id, doc_type, doc_format, doc_number, doc_date, invoice_number, client_type, client_name,
-                    client_inn, client_ogrnip, client_address, items, total, status
+                    client_inn, client_kpp, client_ogrnip, client_address, items, total, status
                    FROM documents WHERE id = %s AND user_id = %s""",
                 (qs.get("document_id"), user_id)
             )
@@ -812,7 +818,7 @@ def handler(event: dict, context) -> dict:
             if not row:
                 return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
             keys = ["id", "doc_type", "doc_format", "doc_number", "doc_date", "invoice_number", "client_type", "client_name",
-                    "client_inn", "client_ogrnip", "client_address", "items", "total", "status"]
+                    "client_inn", "client_kpp", "client_ogrnip", "client_address", "items", "total", "status"]
             d = dict(zip(keys, row))
             if d["doc_date"]: d["doc_date"] = str(d["doc_date"])
             if d["total"] is not None: d["total"] = float(d["total"])
@@ -820,6 +826,100 @@ def handler(event: dict, context) -> dict:
                 try: d["items"] = json.loads(d["items"])
                 except (ValueError, TypeError): d["items"] = []
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"document": d}, ensure_ascii=False)}
+
+        # Данные документа в стандартизированном JSON (для бота / внешних систем):
+        # form/document/parties/positions/totals — готово для подстановки в шаблон
+        if qs.get("document_json"):
+            cur.execute(
+                """SELECT id, doc_type, doc_format, doc_number, doc_date, invoice_number, invoice_date, client_name,
+                    client_inn, client_kpp, client_ogrnip, client_address, items, total
+                   FROM documents WHERE id = %s AND user_id = %s""",
+                (qs.get("document_json"), user_id)
+            )
+            row = cur.fetchone()
+            if not row:
+                cur.close(); conn.close()
+                return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
+            (d_id, doc_type, doc_format, doc_number, doc_date, invoice_number, invoice_date, client_name,
+             client_inn, client_kpp, client_ogrnip, client_address, items, total) = row
+
+            cur.execute(
+                "SELECT entity_type, full_name, inn, kpp, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo FROM requisites WHERE user_id = %s",
+                (user_id,)
+            )
+            s_row = cur.fetchone()
+            cur.close(); conn.close()
+            s_keys = ["entity_type", "full_name", "inn", "kpp", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo"]
+            s = dict(zip(s_keys, s_row)) if s_row else {}
+
+            if isinstance(items, str):
+                try: items = json.loads(items)
+                except (ValueError, TypeError): items = []
+            total = float(total) if total is not None else 0.0
+            is_ip = s.get("entity_type") == "ip"
+            seller_name = (f"ИП {s.get('full_name')}" if is_ip and s.get("full_name") else s.get("full_name")) or ""
+
+            positions = []
+            total_qty = 0.0
+            for i, item in enumerate(items, 1):
+                qty = float(item.get("qty", 1))
+                price = float(item.get("price", 0))
+                amount = qty * price
+                vat_rate = item.get("vat_rate", "no_vat")
+                vat_pct = 0.0 if vat_rate == "no_vat" else float(vat_rate)
+                vat_amount = round(amount * vat_pct / 100, 2)
+                total_qty += qty
+                positions.append({
+                    "line": i,
+                    "nomenclature": item.get("name", ""),
+                    "code": item.get("code", ""),
+                    "unit": item.get("unit", "шт"),
+                    "quantity": qty,
+                    "price_without_vat": round(price, 2),
+                    "vat_rate": "Без НДС" if vat_rate == "no_vat" else f"{vat_pct:g}%",
+                    "vat_amount": vat_amount,
+                    "amount_with_vat": round(amount + vat_amount, 2),
+                })
+            total_vat = round(sum(p["vat_amount"] for p in positions), 2)
+
+            result = {
+                "form": "ТОРГ-12" if doc_format == "torg12" else ("АКТ" if doc_type == "act" else "Товарная накладная"),
+                "year": datetime.date.today().year,
+                "document": {
+                    "number": doc_number,
+                    "date": str(doc_date) if doc_date else "",
+                },
+                "parties": {
+                    "supplier": {
+                        "name": seller_name,
+                        "inn": s.get("inn", ""),
+                        "kpp": s.get("kpp", ""),
+                        "address": s.get("address", ""),
+                        "bank_details": f"БИК {s.get('bik', '')}, р/с {s.get('checking_account', '')} в {s.get('bank_name', '')}",
+                    },
+                    "buyer": {
+                        "name": client_name or "",
+                        "inn": client_inn or "",
+                        "kpp": client_kpp or "",
+                        "address": client_address or "",
+                    },
+                },
+                "basis": {
+                    "type": "счёт" if invoice_number else "",
+                    "number": invoice_number or "",
+                    "date": str(invoice_date) if invoice_date else "",
+                },
+                "positions": positions,
+                "totals": {
+                    "total_lines": len(positions),
+                    "total_quantity": total_qty,
+                    "total_amount_without_vat": round(total, 2),
+                    "total_vat_amount": total_vat,
+                    "total_amount_with_vat": round(total + total_vat, 2),
+                    "total_amount_words": rub_words(total + total_vat),
+                },
+            }
+            return {"statusCode": 200, "headers": cors, "body": json.dumps(result, ensure_ascii=False)}
 
         # GET ?id= — полные данные одного счёта
         if qs.get("id"):
@@ -887,14 +987,14 @@ def handler(event: dict, context) -> dict:
             total = sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items)
             cur.execute("""
                 UPDATE documents SET doc_type=%s, doc_format=%s, doc_date=%s, client_type=%s, client_name=%s, client_inn=%s,
-                    client_ogrnip=%s, client_address=%s, items=%s, total=%s, updated_at=NOW()
+                    client_kpp=%s, client_ogrnip=%s, client_address=%s, items=%s, total=%s, updated_at=NOW()
                 WHERE id=%s AND user_id=%s RETURNING id, doc_number
             """, (
                 body.get("doc_type", "act"),
                 body.get("doc_format", "simple"),
                 body.get("doc_date") or str(datetime.date.today()),
                 body.get("client_type"), body.get("client_name", ""),
-                body.get("client_inn", ""), body.get("client_ogrnip", ""), body.get("client_address", ""),
+                body.get("client_inn", ""), body.get("client_kpp", ""), body.get("client_ogrnip", ""), body.get("client_address", ""),
                 json.dumps(items, ensure_ascii=False), total, d_id, user_id
             ))
             row = cur.fetchone()
@@ -922,13 +1022,13 @@ def handler(event: dict, context) -> dict:
 
         # Получаем реквизиты продавца
         cur.execute(
-            "SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo FROM requisites WHERE user_id = %s",
+            "SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp FROM requisites WHERE user_id = %s",
             (user_id,)
         )
         row = cur.fetchone()
         seller = {}
         if row:
-            keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo"]
+            keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp"]
             seller = dict(zip(keys, row))
 
         # Создать документ реализации (акт/накладную): сохранить в БД и вернуть PDF
@@ -953,14 +1053,14 @@ def handler(event: dict, context) -> dict:
                 doc_date_val = str(datetime.date.today())
                 cur.execute("""
                     INSERT INTO documents (user_id, doc_type, doc_format, doc_number, doc_date, invoice_id, invoice_number,
-                        client_type, client_name, client_inn, client_ogrnip, client_address, items, total, updated_at)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+                        client_type, client_name, client_inn, client_kpp, client_ogrnip, client_address, items, total, updated_at)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
                     RETURNING id
                 """, (
                     user_id, doc_type, doc_format, doc_number, doc_date_val,
                     body.get("invoice_id") or body.get("id"), body.get("invoice_number", ""),
                     body.get("client_type"), body.get("client_name", ""), body.get("client_inn", ""),
-                    body.get("client_ogrnip", ""), body.get("client_address", ""),
+                    body.get("client_kpp", ""), body.get("client_ogrnip", ""), body.get("client_address", ""),
                     json.dumps(items, ensure_ascii=False), total,
                 ))
                 doc_id = cur.fetchone()[0]
@@ -984,6 +1084,7 @@ def handler(event: dict, context) -> dict:
                 "total": total,
                 "client_name": body.get("client_name", ""),
                 "client_inn": body.get("client_inn", ""),
+                "client_kpp": body.get("client_kpp", ""),
                 "client_ogrnip": body.get("client_ogrnip", ""),
                 "client_address": body.get("client_address", ""),
             }

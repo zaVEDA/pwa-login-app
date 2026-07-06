@@ -27,6 +27,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientInn, setClientInn] = useState("");
+  const [clientKpp, setClientKpp] = useState("");
   const [clientAddress, setClientAddress] = useState("");
   const [items, setItems] = useState([{ name: "", qty: "1", price: "" }]);
   const [shareSheet, setShareSheet] = useState(false);
@@ -48,6 +49,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
         setInvoiceNumber(d.invoice_number || "");
         setClientName(d.client_name || "");
         setClientInn(d.client_inn || "");
+        setClientKpp(d.client_kpp || "");
         setClientAddress(d.client_address || "");
         setItems(Array.isArray(d.items) && d.items.length ? d.items : [{ name: "", qty: "1", price: "" }]);
         setSaved(true);
@@ -71,6 +73,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
     invoice_number: invoiceNumber,
     client_name: clientName,
     client_inn: clientInn,
+    client_kpp: clientKpp,
     client_address: clientAddress,
     items,
     total,
@@ -228,6 +231,11 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
             <input value={clientInn} onChange={e => setClientInn(e.target.value)} readOnly={readOnly}
               placeholder="ИНН"
               className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
+            {docType === "invoice_note" && (
+              <input value={clientKpp} onChange={e => setClientKpp(e.target.value.replace(/\D/g, "").slice(0, 9))} readOnly={readOnly}
+                placeholder="КПП (для организаций)"
+                className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
+            )}
             <input value={clientAddress} onChange={e => setClientAddress(e.target.value)} readOnly={readOnly}
               placeholder="Адрес"
               className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />

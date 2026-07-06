@@ -40,6 +40,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [bankName, setBankName] = useState<string>(() => loadSaved().bankName ?? "");
   const [corrAccount, setCorrAccount] = useState<string>(() => loadSaved().corrAccount ?? "");
   const [checkingAccount, setCheckingAccount] = useState<string>(() => loadSaved().checkingAccount ?? "");
+  const [okpo, setOkpo] = useState<string>(() => loadSaved().okpo ?? "");
+  const [kpp, setKpp] = useState<string>(() => loadSaved().kpp ?? "");
   const [bikChecking, setBikChecking] = useState(false);
   const [bikError, setBikError] = useState<string>("");
   const [checking, setChecking] = useState(false);
@@ -66,14 +68,16 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
         if (r.bank_name) setBankName(r.bank_name);
         if (r.corr_account) setCorrAccount(r.corr_account);
         if (r.checking_account) setCheckingAccount(r.checking_account);
+        if (r.okpo) setOkpo(r.okpo);
+        if (r.kpp) setKpp(r.kpp);
         setSaved(true);
       })
       .catch(() => {});
   }, [phone]);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, saved, showManualFill, fullName }));
-  }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, saved, showManualFill, fullName]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, saved, showManualFill, fullName }));
+  }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, saved, showManualFill, fullName]);
 
   const saveToDb = async () => {
     if (!phone) return;
@@ -89,6 +93,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
           bank_name: bankName,
           corr_account: corrAccount,
           checking_account: checkingAccount,
+          okpo,
+          kpp,
         }),
       });
       setSaved(true);
@@ -174,6 +180,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     setBankName("");
     setCorrAccount("");
     setCheckingAccount("");
+    setOkpo("");
+    setKpp("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -189,6 +197,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     setBankName("");
     setCorrAccount("");
     setCheckingAccount("");
+    setOkpo("");
+    setKpp("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -290,15 +300,39 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
 
           {/* ИНН для ООО */}
           {entityType === "ooo" && (
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">ИНН организации (10 цифр)</label>
-              <input
-                type="number"
-                value={inn}
-                onChange={(e) => { setInn(e.target.value.slice(0, innMaxLen)); setCheckResult(null); setSaved(false); }}
-                placeholder="7707083893"
-                className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-              />
+            <div className="space-y-2">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">ИНН организации (10 цифр)</label>
+                <input
+                  type="number"
+                  value={inn}
+                  onChange={(e) => { setInn(e.target.value.slice(0, innMaxLen)); setCheckResult(null); setSaved(false); }}
+                  placeholder="7707083893"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">КПП (9 цифр)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={kpp}
+                  onChange={(e) => { setKpp(e.target.value.replace(/\D/g, "").slice(0, 9)); setSaved(false); }}
+                  placeholder="770701001"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">ОКПО</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={okpo}
+                  onChange={(e) => { setOkpo(e.target.value.replace(/\D/g, "").slice(0, 10)); setSaved(false); }}
+                  placeholder="12345678"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
+              </div>
             </div>
           )}
 
@@ -377,6 +411,17 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">Используется в документах как юридический адрес ИП</p>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">ОКПО (для товарных накладных)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={okpo}
+                  onChange={(e) => { setOkpo(e.target.value.replace(/\D/g, "").slice(0, 10)); setSaved(false); }}
+                  placeholder="12345678"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                />
               </div>
 
               {/* Банковские реквизиты */}
