@@ -176,22 +176,26 @@ def rub_words(amount) -> str:
 
 
 def build_torg12(invoice: dict, seller: dict) -> bytes:
-    """Унифицированная форма № ТОРГ-12 (пост. Госкомстата России от 25.12.1998 № 132),
-    максимально приближенная к официальному бланку."""
+    """Унифицированная форма № ТОРГ-12 (пост. Госкомстата России от 25.12.1998 № 132).
+    Вёрстка воспроизводит структуру и пропорции официального бланка: шапка со сторонами
+    сделки и блоком кодов справа, таблица товаров из 15 граф с нумерованной строкой,
+    и итоговый блок с подписями."""
     ensure_fonts()
     buf = io.BytesIO()
+    PAGE_W = 277 * mm  # рабочая ширина листа A4 landscape за вычетом полей
     doc = SimpleDocTemplate(buf, pagesize=landscape(A4),
-                            leftMargin=8*mm, rightMargin=8*mm,
+                            leftMargin=10*mm, rightMargin=10*mm,
                             topMargin=8*mm, bottomMargin=8*mm)
 
-    tiny = ParagraphStyle("Tiny", fontName="DejaVuSans", fontSize=6, leading=7)
-    tiny_b = ParagraphStyle("TinyB", fontName="DejaVuSans-Bold", fontSize=6, leading=7)
-    small = ParagraphStyle("Small", fontName="DejaVuSans", fontSize=7, leading=9)
-    small_b = ParagraphStyle("SmallB", fontName="DejaVuSans-Bold", fontSize=7, leading=9)
-    normal = ParagraphStyle("N", fontName="DejaVuSans", fontSize=8, leading=10)
-    normal_b = ParagraphStyle("NB", fontName="DejaVuSans-Bold", fontSize=8, leading=10)
-    title_style = ParagraphStyle("T", fontName="DejaVuSans-Bold", fontSize=13, leading=16, alignment=TA_CENTER)
-    center7 = ParagraphStyle("C7", fontName="DejaVuSans", fontSize=7, leading=9, alignment=TA_CENTER)
+    grid_color = colors.HexColor("#333333")
+    tiny = ParagraphStyle("Tiny", fontName="DejaVuSans", fontSize=6.5, leading=8)
+    tiny_b = ParagraphStyle("TinyB", fontName="DejaVuSans-Bold", fontSize=6.5, leading=8)
+    tiny_c = ParagraphStyle("TinyC", fontName="DejaVuSans", fontSize=6.5, leading=8, alignment=TA_CENTER)
+    tiny_bc = ParagraphStyle("TinyBC", fontName="DejaVuSans-Bold", fontSize=6.5, leading=8, alignment=TA_CENTER)
+    small = ParagraphStyle("Small", fontName="DejaVuSans", fontSize=7.5, leading=9.5)
+    small_b = ParagraphStyle("SmallB", fontName="DejaVuSans-Bold", fontSize=7.5, leading=9.5)
+    normal_b = ParagraphStyle("NB", fontName="DejaVuSans-Bold", fontSize=9, leading=11, alignment=TA_CENTER)
+    title_style = ParagraphStyle("T", fontName="DejaVuSans-Bold", fontSize=14, leading=17, alignment=TA_CENTER)
 
     items = invoice.get("items", [])
     total = invoice.get("total", 0)
@@ -207,6 +211,7 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     seller_name = seller.get("full_name", "")
     seller_inn = seller.get("inn", "")
     seller_address = seller.get("address", "")
+    seller_okpo = seller.get("okpo", "")
     bank_name = seller.get("bank_name", "")
     bik = seller.get("bik", "")
     checking = seller.get("checking_account", "")
@@ -219,7 +224,7 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     if seller_address:
         seller_line += f", {seller_address}"
     if bank_name:
-        seller_line += f"; р/с {checking or '—'} в {bank_name}, БИК {bik or '—'}"
+        seller_line += f", р/с {checking or '—'} в {bank_name}, БИК {bik or '—'}, к/с {seller.get('corr_account') or '—'}"
 
     client_line = client_name
     if client_inn:
@@ -227,152 +232,177 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     if client_address:
         client_line += f", {client_address}"
 
-    basis_line = f"Счёт № {basis_num} от {fmt_date(basis_date)}" if basis_num else "—"
+    basis_line = f"Договор" + (f" (счёт № {basis_num} от {fmt_date(basis_date)})" if basis_num else "")
 
     story = []
 
-    # ── Шапка: стороны сделки + коды ──
-    def party_row(label):
-        return [Paragraph(f"<b>{label}</b>", tiny_b), Paragraph("", tiny), Paragraph("по ОКПО", tiny)]
+    # ── Шапка: стороны сделки (слева) + коды (справа), единая таблица ──
+    LABEL_W = 46 * mm
+    VALUE_W = 148 * mm
+    CODE_LABEL_W = 46 * mm
+    CODE_VALUE_W = PAGE_W - LABEL_W - VALUE_W - CODE_LABEL_W
 
-    parties_data = [
-        [Paragraph("Грузоотправитель и его адрес, банковские реквизиты", tiny_b), Paragraph(seller_line, tiny), Paragraph("—", center7)],
-        [Paragraph("Грузополучатель и его адрес, банковские реквизиты", tiny_b), Paragraph(client_line, tiny), Paragraph("—", center7)],
-        [Paragraph("Поставщик и его адрес, банковские реквизиты", tiny_b), Paragraph(seller_line, tiny), Paragraph("—", center7)],
-        [Paragraph("Плательщик и его адрес, банковские реквизиты", tiny_b), Paragraph(client_line, tiny), Paragraph("—", center7)],
-        [Paragraph("Основание", tiny_b), Paragraph(basis_line, tiny), Paragraph("", center7)],
+    header_data = [
+        [Paragraph("Грузоотправитель и его адрес, банковские реквизиты", tiny_b), Paragraph(seller_line, tiny),
+         Paragraph("Форма по ОКУД", tiny), Paragraph("0330212", tiny_bc)],
+        [Paragraph("Грузополучатель и его адрес, банковские реквизиты", tiny_b), Paragraph(client_line, tiny),
+         Paragraph("по ОКПО", tiny), Paragraph("—", tiny_c)],
+        [Paragraph("Поставщик и его адрес, банковские реквизиты", tiny_b), Paragraph(seller_line, tiny),
+         Paragraph("по ОКПО", tiny), Paragraph(seller_okpo or "—", tiny_c)],
+        [Paragraph("Плательщик и его адрес, банковские реквизиты", tiny_b), Paragraph(client_line, tiny),
+         Paragraph("по ОКПО", tiny), Paragraph("—", tiny_c)],
+        [Paragraph("Основание", tiny_b), Paragraph(basis_line, tiny),
+         Paragraph("Вид деятельности по ОКДП", tiny), Paragraph("—", tiny_c)],
     ]
-    parties_table = Table(parties_data, colWidths=[46*mm, 145*mm, 16*mm])
-    parties_table.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#999999")),
+    header_table = Table(header_data, colWidths=[LABEL_W, VALUE_W, CODE_LABEL_W, CODE_VALUE_W])
+    header_table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.5, grid_color),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("BACKGROUND", (3, 0), (3, 0), colors.HexColor("#FBE4C4")),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    story.append(header_table)
+
+    # ── Номер документа / Дата составления, справа под кодами ──
+    doc_box = Table([
+        [Paragraph("Номер\nдокумента", tiny_c), Paragraph("Дата\nсоставления", tiny_c)],
+        [Paragraph(str(doc_num), normal_b), Paragraph(fmt_date(doc_date), normal_b)],
+    ], colWidths=[CODE_LABEL_W, CODE_VALUE_W])
+    doc_box.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.5, grid_color),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 2),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-        ("LEFTPADDING", (0, 0), (-1, -1), 3),
     ]))
-
-    codes_data = [
-        [Paragraph("Форма по ОКУД", tiny), Paragraph("0330212", tiny_b)],
-        [Paragraph("Дата составления", tiny), Paragraph(fmt_date(doc_date), tiny_b)],
-        [Paragraph("по ОКПО", tiny), Paragraph("—", tiny)],
-        [Paragraph("Вид деятельности по ОКДП", tiny), Paragraph("—", tiny)],
-        [Paragraph("Вид операции", tiny), Paragraph("—", tiny)],
-    ]
-    codes_table = Table(codes_data, colWidths=[32*mm, 22*mm])
-    codes_table.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#999999")),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 2),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-    ]))
-
-    header_row = Table([[parties_table, codes_table]], colWidths=[207*mm, 54*mm])
-    header_row.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-    ]))
-    story.append(header_row)
-    story.append(Spacer(1, 3*mm))
-
-    # ── Заголовок + номер/дата ──
-    title_row = Table([[
+    title_box = Table([[
         Paragraph("ТОВАРНАЯ НАКЛАДНАЯ", title_style),
-        Table([
-            [Paragraph("Номер документа", tiny), Paragraph("Дата составления", tiny)],
-            [Paragraph(str(doc_num), normal_b), Paragraph(fmt_date(doc_date), normal_b)],
-        ], colWidths=[27*mm, 27*mm], style=TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#999999")),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("TOPPADDING", (0, 0), (-1, -1), 2),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-        ])),
-    ]], colWidths=[207*mm, 54*mm])
-    title_row.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-    story.append(title_row)
+        doc_box,
+    ]], colWidths=[LABEL_W + VALUE_W, CODE_LABEL_W + CODE_VALUE_W])
+    title_box.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    story.append(title_box)
     story.append(Spacer(1, 3*mm))
 
-    # ── Таблица товаров ──
-    headers = [
-        "№\nп/п", "Наименование, характеристика,\nсорт, артикул товара", "Код",
-        "наим.", "код по\nОКЕИ", "Вид\nупаковки",
-        "в одном\nместе", "кол-во\nмест, шт", "масса\nбрутто",
-        "Кол-во\n(масса\nнетто)", "Цена,\nруб. коп.",
-        "Сумма без\nучёта НДС,\nруб. коп.", "ставка,\n%", "сумма,\nруб. коп.",
-        "Сумма с учётом\nНДС, руб. коп.",
+    # ── Таблица товаров: 15 граф, с нумерованной строкой ──
+    group_headers = [
+        Paragraph("№\nп/п", tiny_bc),
+        Paragraph("Наименование, характеристика, сорт,\nартикул товара", tiny_bc),
+        Paragraph("Код", tiny_bc),
+        Paragraph("Единица измерения", tiny_bc), "",
+        Paragraph("Вид\nупаковки", tiny_bc),
+        Paragraph("Количество", tiny_bc), "",
+        Paragraph("Масса\nбрутто", tiny_bc),
+        Paragraph("Количество\n(масса нетто)", tiny_bc),
+        Paragraph("Цена,\nруб. коп.", tiny_bc),
+        Paragraph("Сумма без учёта\nНДС, руб. коп.", tiny_bc),
+        Paragraph("НДС", tiny_bc), "",
+        Paragraph("Сумма с учётом\nНДС, руб. коп.", tiny_bc),
     ]
-    col_widths = [7, 46, 10, 9, 9, 10, 11, 11, 10, 12, 15, 18, 9, 13, 20]
-    col_widths = [w * mm for w in col_widths]
+    sub_headers = [
+        "", "", "",
+        Paragraph("наименование", tiny_c), Paragraph("код по ОКЕИ", tiny_c),
+        "",
+        Paragraph("в одном\nместе", tiny_c), Paragraph("количество\nмест", tiny_c),
+        "", "", "", "",
+        Paragraph("ставка,\n%", tiny_c), Paragraph("сумма,\nруб. коп.", tiny_c),
+        "",
+    ]
+    number_row = [Paragraph(str(n), tiny_bc) for n in range(1, 16)]
 
-    table_data = [[Paragraph(h, tiny_b) for h in headers]]
+    col_pct = [3, 24, 4, 6, 5, 5, 5, 5, 6, 7, 8, 9, 5, 7, 9]
+    col_widths = [PAGE_W * p / sum(col_pct) for p in col_pct]
+
+    table_data = [group_headers, sub_headers, number_row]
     for idx, item in enumerate(items, 1):
         qty = float(item.get("qty", 1))
         price = float(item.get("price", 0))
         amount = qty * price
+        vat_rate = item.get("vat_rate", "no_vat")
+        vat_label = {"no_vat": "Без НДС", "5": "5%", "7": "7%", "10": "10%", "22": "22%"}.get(vat_rate, "Без НДС")
+        vat_sum = "—" if vat_rate == "no_vat" else f"{amount * float(vat_rate) / 100:,.2f}"
+        amount_with_vat = amount if vat_rate == "no_vat" else amount + float(vat_sum.replace(",", ""))
         table_data.append([
-            Paragraph(str(idx), tiny),
+            Paragraph(str(idx), tiny_c),
             Paragraph(item.get("name", ""), tiny),
-            Paragraph("—", tiny),
-            Paragraph(item.get("unit", "шт"), tiny),
-            Paragraph("796", tiny),
-            Paragraph("—", tiny),
-            Paragraph(f"{qty:g}", tiny),
-            Paragraph("1", tiny),
-            Paragraph("—", tiny),
-            Paragraph(f"{qty:g}", tiny),
-            Paragraph(f"{price:,.2f}", tiny),
-            Paragraph(f"{amount:,.2f}", tiny),
-            Paragraph("Без\nНДС", tiny),
-            Paragraph("—", tiny),
-            Paragraph(f"{amount:,.2f}", tiny),
+            Paragraph("—", tiny_c),
+            Paragraph(item.get("unit", "шт"), tiny_c),
+            Paragraph(item.get("okei", "796"), tiny_c),
+            Paragraph("—", tiny_c),
+            Paragraph(f"{qty:g}", tiny_c),
+            Paragraph("1", tiny_c),
+            Paragraph("—", tiny_c),
+            Paragraph(f"{qty:g}", tiny_c),
+            Paragraph(f"{price:,.2f}", tiny_c),
+            Paragraph(f"{amount:,.2f}", tiny_c),
+            Paragraph(vat_label, tiny_c),
+            Paragraph(vat_sum, tiny_c),
+            Paragraph(f"{amount_with_vat:,.2f}", tiny_c),
         ])
     table_data.append([
-        "", Paragraph("<b>Итого</b>", tiny_b), "", "", "", "",
-        "", "", "", "", "",
-        Paragraph(f"<b>{total:,.2f}</b>", tiny_b), Paragraph("X", tiny_b), Paragraph("X", tiny_b),
-        Paragraph(f"<b>{total:,.2f}</b>", tiny_b),
+        "", Paragraph("Итого", tiny_bc), "", "", "", "", "", "", "", "",
+        "", Paragraph(f"{total:,.2f}", tiny_bc), "", "", Paragraph(f"{total:,.2f}", tiny_bc),
     ])
 
-    items_table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    items_table = Table(table_data, colWidths=col_widths, repeatRows=3)
     items_table.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#999999")),
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F5F0E8")),
+        ("GRID", (0, 0), (-1, -1), 0.5, grid_color),
+        ("SPAN", (0, 0), (0, 1)),   # № п/п
+        ("SPAN", (1, 0), (1, 1)),   # Наименование
+        ("SPAN", (2, 0), (2, 1)),   # Код
+        ("SPAN", (3, 0), (4, 0)),   # Единица измерения
+        ("SPAN", (5, 0), (5, 1)),   # Вид упаковки
+        ("SPAN", (6, 0), (7, 0)),   # Количество
+        ("SPAN", (8, 0), (8, 1)),   # Масса брутто
+        ("SPAN", (9, 0), (9, 1)),   # Количество (масса нетто)
+        ("SPAN", (10, 0), (10, 1)),  # Цена
+        ("SPAN", (11, 0), (11, 1)),  # Сумма без НДС
+        ("SPAN", (12, 0), (13, 0)),  # НДС
+        ("SPAN", (14, 0), (14, 1)),  # Сумма с учётом НДС
+        ("BACKGROUND", (0, 0), (-1, 1), colors.HexColor("#F5F0E8")),
+        ("BACKGROUND", (0, 2), (-1, 2), colors.HexColor("#EDEDED")),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("ALIGN", (1, 1), (1, -1), "LEFT"),
+        ("ALIGN", (1, 3), (1, -2), "LEFT"),
         ("TOPPADDING", (0, 0), (-1, -1), 2),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("SPAN", (0, -1), (1, -1)),
     ]))
     story.append(items_table)
     story.append(Spacer(1, 3*mm))
 
-    places = 1
-    story.append(Paragraph(f"Товарная накладная имеет приложение на —— листах, порядковые номера записей ——", small))
-    story.append(Paragraph(f"Всего мест {places}     Масса груза (нетто) ——     Масса груза (брутто) ——", small))
-    story.append(Paragraph("Приложение (паспорта, сертификаты и т.п.) на —— листах", small))
+    story.append(Paragraph("Товарная накладная имеет приложение на —— листах, порядковые номера записей ——", small))
+    story.append(Paragraph(f"Всего мест —— &nbsp;&nbsp;&nbsp; Масса груза (нетто) —— &nbsp;&nbsp;&nbsp; Масса груза (брутто) ——", small))
+    story.append(Paragraph("Приложение (паспорта, сертификаты и т. п.) на —— листах", small))
     story.append(Spacer(1, 2*mm))
     story.append(Paragraph(f"<b>Всего отпущено на сумму {rub_words(total)}</b>", small_b))
-    story.append(Paragraph(f"По доверенности № —— от ——, выданной ——", small))
+    story.append(Paragraph("По доверенности № —— от ——, выданной ——", small))
     story.append(Spacer(1, 6*mm))
 
     sign_data = [
         [Paragraph("Отпуск груза разрешил", small), Paragraph(seller_display, small), Paragraph("_______________ / подпись", tiny)],
         [Paragraph("Главный (старший) бухгалтер", small), Paragraph("", small), Paragraph("_______________ / подпись", tiny)],
         [Paragraph("Отпуск груза произвёл", small), Paragraph("", small), Paragraph("_______________ / подпись", tiny)],
+        [Paragraph("М.П.", small), Paragraph("", small), Paragraph("", small)],
         [Paragraph("", small), Paragraph("", small), Paragraph("", small)],
         [Paragraph("Груз принял грузополучатель", small), Paragraph(client_name, small), Paragraph("_______________ / подпись", tiny)],
         [Paragraph("Груз получил грузополучатель", small), Paragraph("", small), Paragraph("_______________ / подпись", tiny)],
+        [Paragraph("М.П.", small), Paragraph("", small), Paragraph("", small)],
     ]
-    sign_table = Table(sign_data, colWidths=[55*mm, 100*mm, 45*mm])
+    sign_table = Table(sign_data, colWidths=[PAGE_W*0.28, PAGE_W*0.47, PAGE_W*0.25])
     sign_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("LINEBELOW", (1, 0), (1, 0), 0.4, colors.HexColor("#999999")),
-        ("LINEBELOW", (1, 4), (1, 4), 0.4, colors.HexColor("#999999")),
+        ("LINEBELOW", (1, 0), (1, 0), 0.4, grid_color),
+        ("LINEBELOW", (1, 5), (1, 5), 0.4, grid_color),
     ]))
     story.append(sign_table)
-    story.append(Spacer(1, 4*mm))
-    story.append(Paragraph("М.П.                                                                                                                    М.П.", small))
 
     doc.build(story)
     buf.seek(0)
@@ -892,13 +922,13 @@ def handler(event: dict, context) -> dict:
 
         # Получаем реквизиты продавца
         cur.execute(
-            "SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account FROM requisites WHERE user_id = %s",
+            "SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo FROM requisites WHERE user_id = %s",
             (user_id,)
         )
         row = cur.fetchone()
         seller = {}
         if row:
-            keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account"]
+            keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo"]
             seller = dict(zip(keys, row))
 
         # Создать документ реализации (акт/накладную): сохранить в БД и вернуть PDF
