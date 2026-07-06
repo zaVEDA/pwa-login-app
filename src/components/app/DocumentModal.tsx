@@ -31,6 +31,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const [items, setItems] = useState([{ name: "", qty: "1", price: "" }]);
   const [shareSheet, setShareSheet] = useState(false);
   const [formatSheet, setFormatSheet] = useState(false);
+  const [formatIntent, setFormatIntent] = useState<"save" | "pdf">("save");
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
@@ -99,16 +100,31 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const handleChooseFormat = (fmt: "simple" | "torg12" | "upd") => {
     setFormatSheet(false);
     setDocFormat(fmt);
-    doSave(fmt);
+    if (formatIntent === "pdf") {
+      handlePdf(fmt);
+    } else {
+      doSave(fmt);
+    }
+    setFormatIntent("save");
   };
 
-  const handlePdf = async () => {
+  const openPdf = () => {
+    if (docType === "invoice_note") {
+      setFormatIntent("pdf");
+      setFormatSheet(true);
+    } else {
+      handlePdf();
+    }
+  };
+
+  const handlePdf = async (fmt?: "simple" | "torg12" | "upd") => {
+    const useFmt = fmt ?? docFormat;
     setPdfLoading(true);
     try {
       const res = await fetch(INVOICES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "document", doc_id: docId, ...payload() }),
+        body: JSON.stringify({ action: "document", doc_id: docId, ...payload(), doc_format: docType === "invoice_note" ? useFmt : "simple" }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -348,7 +364,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
             <div className="space-y-2">
               {/* Выбор печатной формы — только для накладной */}
               {docType === "invoice_note" && (
-                <button onClick={() => setFormatSheet(true)} disabled={saving}
+                <button onClick={() => { setFormatIntent("save"); setFormatSheet(true); }} disabled={saving}
                   className="w-full py-2.5 rounded-xl border border-primary/40 bg-primary/5 text-sm font-medium text-primary flex items-center justify-between gap-2 px-4 active:scale-[0.98] transition-transform disabled:opacity-60">
                   <span className="flex items-center gap-2">
                     <Icon name="FileText" size={15} />
@@ -361,7 +377,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
                 </button>
               )}
               <div className="flex gap-2">
-                <button onClick={handlePdf} disabled={pdfLoading}
+                <button onClick={openPdf} disabled={pdfLoading}
                   className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
                   {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
                   {pdfLoading ? "Генерирую..." : "Скачать PDF"}
