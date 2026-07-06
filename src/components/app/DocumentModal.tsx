@@ -159,7 +159,6 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
 
   const typeLabel = docType === "act" ? "Акт выполненных работ" : "Товарная накладная";
   const readOnly = saved && !editing;
-  const formatLabel = docFormat === "torg12" ? "ТОРГ-12" : docFormat === "upd" ? "УПД" : "Обычная";
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
@@ -361,33 +360,17 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
             )}
           </div>
           {readOnly && (
-            <div className="space-y-2">
-              {/* Выбор печатной формы — только для накладной */}
-              {docType === "invoice_note" && (
-                <button onClick={() => { setFormatIntent("save"); setFormatSheet(true); }} disabled={saving}
-                  className="w-full py-2.5 rounded-xl border border-primary/40 bg-primary/5 text-sm font-medium text-primary flex items-center justify-between gap-2 px-4 active:scale-[0.98] transition-transform disabled:opacity-60">
-                  <span className="flex items-center gap-2">
-                    <Icon name="FileText" size={15} />
-                    Печатная форма
-                  </span>
-                  <span className="flex items-center gap-1 text-xs">
-                    {formatLabel}
-                    <Icon name="ChevronDown" size={14} />
-                  </span>
-                </button>
-              )}
-              <div className="flex gap-2">
-                <button onClick={openPdf} disabled={pdfLoading}
-                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
-                  {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
-                  {pdfLoading ? "Генерирую..." : "Скачать PDF"}
-                </button>
-                <button onClick={() => setShareSheet(true)}
-                  className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
-                  <Icon name="Share2" size={14} />
-                  Отправить
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <button onClick={openPdf} disabled={pdfLoading}
+                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
+                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
+                {pdfLoading ? "Генерирую..." : "Скачать PDF"}
+              </button>
+              <button onClick={() => setShareSheet(true)}
+                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
+                <Icon name="Share2" size={14} />
+                Отправить
+              </button>
             </div>
           )}
         </div>
