@@ -21,6 +21,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const [saved, setSaved] = useState(false);
 
   const [docType, setDocType] = useState<"act" | "invoice_note">("act");
+  const [docFormat, setDocFormat] = useState<"simple" | "torg12" | "upd">("simple");
   const [docNumber, setDocNumber] = useState("");
   const [docDate, setDocDate] = useState(todayStr());
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -29,6 +30,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const [clientAddress, setClientAddress] = useState("");
   const [items, setItems] = useState([{ name: "", qty: "1", price: "" }]);
   const [shareSheet, setShareSheet] = useState(false);
+  const [formatSheet, setFormatSheet] = useState(false);
 
   useEffect(() => {
     fetch(`${INVOICES_URL}?document_id=${docId}`, { headers: { "X-Phone": phone } })
@@ -38,6 +40,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
         const d = data.document;
         if (!d) return;
         setDocType(d.doc_type || "act");
+        setDocFormat(d.doc_format || "simple");
         setDocNumber(d.doc_number || "");
         setDocDate(d.doc_date || todayStr());
         setInvoiceNumber(d.invoice_number || "");
@@ -60,6 +63,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const payload = () => ({
     id: docId,
     doc_type: docType,
+    doc_format: docType === "invoice_note" ? docFormat : "simple",
     doc_date: docDate,
     invoice_number: invoiceNumber,
     client_name: clientName,
@@ -69,20 +73,31 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
     total,
   });
 
-  const handleSave = async () => {
+  const doSave = async (format?: "simple" | "torg12" | "upd") => {
     setSaveError(""); setSaving(true);
+    const fmt = format ?? docFormat;
     try {
       const res = await fetch(INVOICES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "update_document", ...payload() }),
+        body: JSON.stringify({ action: "update_document", ...payload(), doc_format: docType === "invoice_note" ? fmt : "simple" }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-      if (parsed.ok) { setSaved(true); onSaved?.(); }
+      if (parsed.ok) { setDocFormat(fmt); setSaved(true); onSaved?.(); }
       else setSaveError("Не удалось сохранить");
     } catch { setSaveError("Ошибка сети"); }
     finally { setSaving(false); }
+  };
+
+  const handleSave = () => {
+    if (docType === "invoice_note") { setFormatSheet(true); return; }
+    doSave();
+  };
+
+  const handleChooseFormat = (fmt: "simple" | "torg12" | "upd") => {
+    setFormatSheet(false);
+    doSave(fmt);
   };
 
   const handlePdf = async () => {
@@ -236,6 +251,30 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
             </button>
           </div>
         </div>
+
+        {/* Format sheet (только для накладной) */}
+        {formatSheet && (
+          <div className="absolute inset-0 z-10 flex flex-col justify-end" onClick={() => setFormatSheet(false)}>
+            <div className="bg-background rounded-t-3xl p-5 pb-10 space-y-3 shadow-2xl border-t border-border/50" onClick={e => e.stopPropagation()}>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Форма накладной</p>
+              {[
+                { id: "simple" as const, icon: "FileText", label: "Обычная накладная", desc: "Простая форма без унифицированного шаблона" },
+                { id: "torg12" as const, icon: "FileSpreadsheet", label: "ТОРГ-12", desc: "Унифицированная форма товарной накладной" },
+                { id: "upd" as const, icon: "FileCheck2", label: "УПД", desc: "Универсальный передаточный документ" },
+              ].map(f => (
+                <button key={f.id} onClick={() => handleChooseFormat(f.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform text-left">
+                  <Icon name={f.icon} size={18} className="text-primary flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{f.label}</p>
+                    <p className="text-xs text-muted-foreground truncate">{f.desc}</p>
+                  </div>
+                </button>
+              ))}
+              <button onClick={() => setFormatSheet(false)} className="w-full py-3 text-sm text-muted-foreground">Отмена</button>
+            </div>
+          </div>
+        )}
 
         {/* Share sheet */}
         {shareSheet && (

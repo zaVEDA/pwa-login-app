@@ -285,8 +285,8 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
     return buf.read()
 
 
-def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
-    """Акт выполненных работ или Товарная накладная на основе данных счёта."""
+def build_document(invoice: dict, seller: dict, doc_type: str, doc_format: str = "simple") -> bytes:
+    """Акт выполненных работ или Товарная накладная (простая / ТОРГ-12 / УПД) на основе данных счёта."""
     ensure_fonts()
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4,
@@ -316,10 +316,21 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
     seller_display = f"ИП {seller_name}" if is_ip else seller_name
 
     is_act = doc_type == "act"
+    is_torg12 = (not is_act) and doc_format == "torg12"
+    is_upd = doc_format == "upd"
+
     if is_act:
         head = f"АКТ № {doc_num}"
         subhead = "выполненных работ (оказанных услуг)"
         col_name = "Наименование работы, услуги"
+    elif is_torg12:
+        head = f"ТОВАРНАЯ НАКЛАДНАЯ (ТОРГ-12) № {doc_num}"
+        subhead = "унифицированная форма № ТОРГ-12"
+        col_name = "Наименование товара"
+    elif is_upd:
+        head = f"УНИВЕРСАЛЬНЫЙ ПЕРЕДАТОЧНЫЙ ДОКУМЕНТ № {doc_num}"
+        subhead = "статус 1 — счёт-фактура и передаточный документ (акт)"
+        col_name = "Наименование товара, работы, услуги"
     else:
         head = f"ТОВАРНАЯ НАКЛАДНАЯ № {doc_num}"
         subhead = "на отпуск товаров"
@@ -405,6 +416,12 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
             "Заказчик претензий по объёму, качеству и срокам оказания услуг не имеет.",
             normal
         ))
+    elif is_upd:
+        story.append(Paragraph(
+            "Документ составлен в соответствии с требованиями законодательства РФ и может быть использован "
+            "для подтверждения фактов хозяйственной жизни в целях бухгалтерского и налогового учёта.",
+            normal
+        ))
     story.append(Spacer(1, 12*mm))
 
     sign_left = "Исполнитель" if is_act else "Поставщик"
@@ -415,6 +432,9 @@ def build_document(invoice: dict, seller: dict, doc_type: str) -> bytes:
         [Paragraph("_______________ / подпись", small), Paragraph("_______________ / подпись", small)],
         [Paragraph("М.П.", small), Paragraph("М.П.", small)],
     ]
+    if is_torg12 or is_upd:
+        sign_data.insert(2, [Paragraph("Отпуск груза разрешил / Груз принял", small), Paragraph("Груз получил грузополучатель", small)])
+        sign_data.insert(3, [Paragraph("_______________ / подпись", small), Paragraph("_______________ / подпись", small)])
     sign_table = Table(sign_data, colWidths=[85*mm, 85*mm])
     sign_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -477,7 +497,7 @@ def handler(event: dict, context) -> dict:
         # Полные данные одного документа реализации
         if qs.get("document_id"):
             cur.execute(
-                """SELECT id, doc_type, doc_number, doc_date, invoice_number, client_type, client_name,
+                """SELECT id, doc_type, doc_format, doc_number, doc_date, invoice_number, client_type, client_name,
                     client_inn, client_ogrnip, client_address, items, total, status
                    FROM documents WHERE id = %s AND user_id = %s""",
                 (qs.get("document_id"), user_id)
@@ -486,7 +506,7 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             if not row:
                 return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
-            keys = ["id", "doc_type", "doc_number", "doc_date", "invoice_number", "client_type", "client_name",
+            keys = ["id", "doc_type", "doc_format", "doc_number", "doc_date", "invoice_number", "client_type", "client_name",
                     "client_inn", "client_ogrnip", "client_address", "items", "total", "status"]
             d = dict(zip(keys, row))
             if d["doc_date"]: d["doc_date"] = str(d["doc_date"])
@@ -561,11 +581,12 @@ def handler(event: dict, context) -> dict:
             items = body.get("items", [])
             total = sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items)
             cur.execute("""
-                UPDATE documents SET doc_type=%s, doc_date=%s, client_type=%s, client_name=%s, client_inn=%s,
+                UPDATE documents SET doc_type=%s, doc_format=%s, doc_date=%s, client_type=%s, client_name=%s, client_inn=%s,
                     client_ogrnip=%s, client_address=%s, items=%s, total=%s, updated_at=NOW()
                 WHERE id=%s AND user_id=%s RETURNING id, doc_number
             """, (
                 body.get("doc_type", "act"),
+                body.get("doc_format", "simple"),
                 body.get("doc_date") or str(datetime.date.today()),
                 body.get("client_type"), body.get("client_name", ""),
                 body.get("client_inn", ""), body.get("client_ogrnip", ""), body.get("client_address", ""),
@@ -608,6 +629,7 @@ def handler(event: dict, context) -> dict:
         # Создать документ реализации (акт/накладную): сохранить в БД и вернуть PDF
         if action == "document":
             doc_type = body.get("doc_type", "act")  # act | invoice_note
+            doc_format = body.get("doc_format", "simple")  # simple | torg12 | upd
             items = body.get("items", [])
             total = sum(float(i.get("qty", 1)) * float(i.get("price", 0)) for i in items)
             doc_id = body.get("doc_id")
@@ -618,17 +640,19 @@ def handler(event: dict, context) -> dict:
                 r = cur.fetchone()
                 doc_number = r[0] if r else next_document_number(cur, user_id)
                 doc_date_val = str(r[1]) if r and r[1] else str(datetime.date.today())
+                cur.execute("UPDATE documents SET doc_format=%s, updated_at=NOW() WHERE id=%s AND user_id=%s", (doc_format, doc_id, user_id))
+                conn.commit()
             else:
                 # Новый документ — сквозной номер (общий для актов и накладных)
                 doc_number = next_document_number(cur, user_id)
                 doc_date_val = str(datetime.date.today())
                 cur.execute("""
-                    INSERT INTO documents (user_id, doc_type, doc_number, doc_date, invoice_id, invoice_number,
+                    INSERT INTO documents (user_id, doc_type, doc_format, doc_number, doc_date, invoice_id, invoice_number,
                         client_type, client_name, client_inn, client_ogrnip, client_address, items, total, updated_at)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
                     RETURNING id
                 """, (
-                    user_id, doc_type, doc_number, doc_date_val,
+                    user_id, doc_type, doc_format, doc_number, doc_date_val,
                     body.get("invoice_id") or body.get("id"), body.get("invoice_number", ""),
                     body.get("client_type"), body.get("client_name", ""), body.get("client_inn", ""),
                     body.get("client_ogrnip", ""), body.get("client_address", ""),
@@ -649,13 +673,13 @@ def handler(event: dict, context) -> dict:
                 "client_ogrnip": body.get("client_ogrnip", ""),
                 "client_address": body.get("client_address", ""),
             }
-            pdf_bytes = build_document(doc_data, seller, doc_type)
+            pdf_bytes = build_document(doc_data, seller, doc_type, doc_format)
             pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
             cur.close(); conn.close()
             return {
                 "statusCode": 200,
                 "headers": {**cors, "Content-Type": "application/json"},
-                "body": json.dumps({"ok": True, "id": doc_id, "doc_type": doc_type, "doc_number": doc_number, "pdf_base64": pdf_b64})
+                "body": json.dumps({"ok": True, "id": doc_id, "doc_type": doc_type, "doc_format": doc_format, "doc_number": doc_number, "pdf_base64": pdf_b64})
             }
 
         inv_date = body.get("invoice_date") or str(datetime.date.today())

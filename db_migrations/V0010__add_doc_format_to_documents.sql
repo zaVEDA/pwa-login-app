@@ -1,0 +1,1 @@
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS doc_format VARCHAR(20) DEFAULT 'simple';
