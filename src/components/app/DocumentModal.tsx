@@ -191,9 +191,9 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
               /* Кнопка Изменить */
               <button
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-1 text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 flex-shrink-0"
+                className="flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-lg px-3 py-1.5 shadow-sm active:scale-95 transition-transform flex-shrink-0"
               >
-                <Icon name="Pencil" size={12} />
+                <Icon name="Pencil" size={13} />
                 Изменить
               </button>
             ) : (
