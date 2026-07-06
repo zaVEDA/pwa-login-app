@@ -661,6 +661,15 @@ def handler(event: dict, context) -> dict:
                 doc_id = cur.fetchone()[0]
                 conn.commit()
 
+            # Только создать/сохранить документ без генерации PDF (для открытия в редакторе)
+            if body.get("no_pdf"):
+                cur.close(); conn.close()
+                return {
+                    "statusCode": 200,
+                    "headers": {**cors, "Content-Type": "application/json"},
+                    "body": json.dumps({"ok": True, "id": doc_id, "doc_type": doc_type, "doc_format": doc_format, "doc_number": doc_number})
+                }
+
             doc_data = {
                 "doc_number": doc_number,
                 "doc_date": doc_date_val,

@@ -174,23 +174,13 @@ export default function TabContent({
       const res = await fetch(INVOICES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "document", doc_type: docType, invoice_id: inv.id, ...full }),
+        body: JSON.stringify({ action: "document", doc_type: docType, invoice_id: inv.id, no_pdf: true, ...full }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-      if (parsed.pdf_base64) {
-        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (c) => c.charCodeAt(0));
-        const blob = new Blob([bytes], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        const label = docType === "act" ? "Акт" : "Накладная";
-        a.href = url;
-        a.download = `${label}_${parsed.doc_number || inv.invoice_number}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
       loadDocuments();
       setDocFilter(docType === "act" ? "Акты" : "Накладные");
+      if (parsed.id) setOpenDocId(parsed.id);
     } catch { /* ignore */ }
     finally { setDocLoadingId(null); }
   };
