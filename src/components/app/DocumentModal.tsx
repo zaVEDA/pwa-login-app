@@ -31,6 +31,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   const [items, setItems] = useState([{ name: "", qty: "1", price: "" }]);
   const [shareSheet, setShareSheet] = useState(false);
   const [formatSheet, setFormatSheet] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     fetch(`${INVOICES_URL}?document_id=${docId}`, { headers: { "X-Phone": phone } })
@@ -48,6 +49,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
         setClientInn(d.client_inn || "");
         setClientAddress(d.client_address || "");
         setItems(Array.isArray(d.items) && d.items.length ? d.items : [{ name: "", qty: "1", price: "" }]);
+        setSaved(true);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -84,19 +86,19 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-      if (parsed.ok) { setDocFormat(fmt); setSaved(true); onSaved?.(); }
+      if (parsed.ok) { setDocFormat(fmt); setSaved(true); setEditing(false); onSaved?.(); }
       else setSaveError("Не удалось сохранить");
     } catch { setSaveError("Ошибка сети"); }
     finally { setSaving(false); }
   };
 
   const handleSave = () => {
-    if (docType === "invoice_note") { setFormatSheet(true); return; }
     doSave();
   };
 
   const handleChooseFormat = (fmt: "simple" | "torg12" | "upd") => {
     setFormatSheet(false);
+    setDocFormat(fmt);
     doSave(fmt);
   };
 
@@ -140,6 +142,8 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
   };
 
   const typeLabel = docType === "act" ? "Акт выполненных работ" : "Товарная накладная";
+  const readOnly = saved && !editing;
+  const formatLabel = docFormat === "torg12" ? "ТОРГ-12" : docFormat === "upd" ? "УПД" : "Обычная";
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
@@ -167,13 +171,24 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
                 <span className="text-xs text-foreground">{formatDate(docDate)}</span>
               </div>
             </div>
-            {/* Переключатель типа */}
-            <button
-              onClick={() => setDocType(t => t === "act" ? "invoice_note" : "act")}
-              className="text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 flex-shrink-0"
-            >
-              {docType === "act" ? "Накладная" : "Акт"}
-            </button>
+            {readOnly ? (
+              /* Кнопка Изменить */
+              <button
+                onClick={() => setEditing(true)}
+                className="flex items-center gap-1 text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 flex-shrink-0"
+              >
+                <Icon name="Pencil" size={12} />
+                Изменить
+              </button>
+            ) : (
+              /* Переключатель типа */
+              <button
+                onClick={() => setDocType(t => t === "act" ? "invoice_note" : "act")}
+                className="text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 flex-shrink-0"
+              >
+                {docType === "act" ? "Накладная" : "Акт"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -183,8 +198,8 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
           {/* Дата документа */}
           <div>
             <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Дата документа</p>
-            <input type="date" value={docDate} onChange={e => setDocDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+            <input type="date" value={docDate} onChange={e => setDocDate(e.target.value)} readOnly={readOnly} disabled={readOnly}
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary disabled:opacity-70" />
           </div>
 
           {/* Клиент */}
@@ -192,15 +207,15 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
             <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
               {docType === "act" ? "Заказчик" : "Покупатель"}
             </p>
-            <input value={clientName} onChange={e => setClientName(e.target.value)}
+            <input value={clientName} onChange={e => setClientName(e.target.value)} readOnly={readOnly}
               placeholder="Имя или название организации"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-            <input value={clientInn} onChange={e => setClientInn(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
+            <input value={clientInn} onChange={e => setClientInn(e.target.value)} readOnly={readOnly}
               placeholder="ИНН"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-            <input value={clientAddress} onChange={e => setClientAddress(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
+            <input value={clientAddress} onChange={e => setClientAddress(e.target.value)} readOnly={readOnly}
               placeholder="Адрес"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+              className="w-full px-3 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
           </div>
 
           {/* Основание */}
@@ -220,35 +235,37 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
               <div key={i} className="card-warm rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">Позиция {i + 1}</p>
-                  {items.length > 1 && (
+                  {items.length > 1 && !readOnly && (
                     <button onClick={() => removeItem(i)}>
                       <Icon name="Trash2" size={13} className="text-red-400" />
                     </button>
                   )}
                 </div>
-                <input value={item.name} onChange={e => updateItem(i, "name", e.target.value)}
+                <input value={item.name} onChange={e => updateItem(i, "name", e.target.value)} readOnly={readOnly}
                   placeholder={docType === "act" ? "Название услуги или работы" : "Название товара"}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-[10px] text-muted-foreground mb-1 block">Кол-во</label>
-                    <input type="text" inputMode="decimal" value={item.qty} onChange={e => updateItem(i, "qty", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                    <input type="text" inputMode="decimal" value={item.qty} onChange={e => updateItem(i, "qty", e.target.value)} readOnly={readOnly}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
                   </div>
                   <div>
                     <label className="text-[10px] text-muted-foreground mb-1 block">Цена, ₽</label>
-                    <input type="text" inputMode="decimal" value={item.price} onChange={e => updateItem(i, "price", e.target.value)}
+                    <input type="text" inputMode="decimal" value={item.price} onChange={e => updateItem(i, "price", e.target.value)} readOnly={readOnly}
                       placeholder="0"
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary read-only:opacity-70" />
                   </div>
                 </div>
               </div>
             ))}
-            <button onClick={addItem}
-              className="w-full py-2.5 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-center justify-center gap-1.5">
-              <Icon name="Plus" size={13} />
-              Добавить позицию
-            </button>
+            {!readOnly && (
+              <button onClick={addItem}
+                className="w-full py-2.5 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+                <Icon name="Plus" size={13} />
+                Добавить позицию
+              </button>
+            )}
           </div>
         </div>
 
@@ -314,7 +331,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
                 {total.toLocaleString("ru-RU")} ₽
               </p>
             </div>
-            {!saved ? (
+            {!readOnly ? (
               <button onClick={handleSave} disabled={saving}
                 className="flex-shrink-0 px-5 py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.97] transition-transform disabled:opacity-60 flex items-center gap-2">
                 {saving ? <Icon name="Loader" size={15} className="animate-spin" /> : <Icon name="Save" size={15} />}
@@ -327,18 +344,34 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
               </div>
             )}
           </div>
-          {saved && (
-            <div className="flex gap-2">
-              <button onClick={handlePdf} disabled={pdfLoading}
-                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
-                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
-                {pdfLoading ? "Генерирую..." : "Скачать PDF"}
-              </button>
-              <button onClick={() => setShareSheet(true)}
-                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
-                <Icon name="Share2" size={14} />
-                Отправить
-              </button>
+          {readOnly && (
+            <div className="space-y-2">
+              {/* Выбор печатной формы — только для накладной */}
+              {docType === "invoice_note" && (
+                <button onClick={() => setFormatSheet(true)} disabled={saving}
+                  className="w-full py-2.5 rounded-xl border border-primary/40 bg-primary/5 text-sm font-medium text-primary flex items-center justify-between gap-2 px-4 active:scale-[0.98] transition-transform disabled:opacity-60">
+                  <span className="flex items-center gap-2">
+                    <Icon name="FileText" size={15} />
+                    Печатная форма
+                  </span>
+                  <span className="flex items-center gap-1 text-xs">
+                    {formatLabel}
+                    <Icon name="ChevronDown" size={14} />
+                  </span>
+                </button>
+              )}
+              <div className="flex gap-2">
+                <button onClick={handlePdf} disabled={pdfLoading}
+                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
+                  {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
+                  {pdfLoading ? "Генерирую..." : "Скачать PDF"}
+                </button>
+                <button onClick={() => setShareSheet(true)}
+                  className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
+                  <Icon name="Share2" size={14} />
+                  Отправить
+                </button>
+              </div>
             </div>
           )}
         </div>
