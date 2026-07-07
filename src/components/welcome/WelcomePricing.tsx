@@ -52,12 +52,14 @@ export default function WelcomePricing() {
               </div>
               <h3 className="font-cormorant text-xl font-semibold mb-1">{p.label}</h3>
               <p className="text-xs text-muted-foreground mb-4 leading-relaxed min-h-[48px]">{p.desc}</p>
-              <div className="mb-1 flex items-baseline gap-1.5 flex-wrap">
-                {isPresale && <span className="text-sm line-through opacity-50" style={{ color: "hsl(35 72% 38%)" }}>{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
-                <span className="font-cormorant text-3xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>{halfYearPrice.toLocaleString("ru-RU")} ₽</span>
-                <span className="text-xs text-muted-foreground">/6 мес</span>
+              <div className="mb-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">за 6 месяцев</p>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="font-cormorant text-4xl font-bold leading-none" style={{ color: "hsl(35 72% 38%)" }}>{halfYearPrice.toLocaleString("ru-RU")} ₽</span>
+                  {isPresale && <span className="text-sm line-through opacity-50 text-muted-foreground">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 {p.month.toLocaleString("ru-RU")} ₽ за 1 мес.
               </p>
             </a>
