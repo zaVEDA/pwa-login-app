@@ -52,13 +52,13 @@ export default function WelcomePricing() {
               </div>
               <h3 className="font-cormorant text-xl font-semibold mb-1">{p.label}</h3>
               <p className="text-xs text-muted-foreground mb-4 leading-relaxed min-h-[48px]">{p.desc}</p>
-              <div className="mb-1">
-                <span className="font-cormorant text-3xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>{p.month.toLocaleString("ru-RU")} ₽</span>
-                <span className="text-xs text-muted-foreground"> /мес</span>
+              <div className="mb-1 flex items-baseline gap-1.5 flex-wrap">
+                {isPresale && <span className="text-sm line-through opacity-50" style={{ color: "hsl(35 72% 38%)" }}>{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
+                <span className="font-cormorant text-3xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>{halfYearPrice.toLocaleString("ru-RU")} ₽</span>
+                <span className="text-xs text-muted-foreground">/6 мес</span>
               </div>
               <p className="text-[11px] font-semibold text-muted-foreground">
-                {isPresale && <span className="line-through opacity-60 mr-1">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
-                {halfYearPrice.toLocaleString("ru-RU")} ₽ за 6 мес.
+                {p.month.toLocaleString("ru-RU")} ₽ за 1 мес.
               </p>
             </a>
           );
