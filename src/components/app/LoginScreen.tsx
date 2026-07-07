@@ -3,14 +3,14 @@ import Icon from "@/components/ui/icon";
 import { authApi, setToken, AuthUser } from "@/lib/auth";
 
 const specialtyColors = [
-  { icon: "Brain", label: "Психолог", bg: "hsl(35 72% 48% / 0.12)", fg: "hsl(35 72% 38%)" },
-  { icon: "Star", label: "Астролог", bg: "hsl(150 45% 40% / 0.12)", fg: "hsl(150 45% 32%)" },
-  { icon: "Hash", label: "Нумеролог", bg: "hsl(345 58% 52% / 0.12)", fg: "hsl(345 58% 42%)" },
-  { icon: "Target", label: "Коуч", bg: "hsl(18 55% 42% / 0.12)", fg: "hsl(18 55% 34%)" },
-  { icon: "BookOpen", label: "Репетитор", bg: "hsl(35 72% 48% / 0.12)", fg: "hsl(35 72% 38%)" },
-  { icon: "Baby", label: "Няня", bg: "hsl(150 45% 40% / 0.12)", fg: "hsl(150 45% 32%)" },
-  { icon: "Camera", label: "Фотограф", bg: "hsl(345 58% 52% / 0.12)", fg: "hsl(345 58% 42%)" },
-  { icon: "Home", label: "Арендодатель", bg: "hsl(18 55% 42% / 0.12)", fg: "hsl(18 55% 34%)" },
+  { emoji: "🧠", label: "Психолог", bg: "linear-gradient(135deg, #FDCEDF, #F17EAA)" },
+  { emoji: "🎯", label: "Коуч", bg: "linear-gradient(135deg, #FFE5B4, #FF9F45)" },
+  { emoji: "🔮", label: "Астролог", bg: "linear-gradient(135deg, #D6C7FF, #9B7BFF)" },
+  { emoji: "✨", label: "Нумеролог", bg: "linear-gradient(135deg, #C9F2E0, #4FBF8B)" },
+  { emoji: "📚", label: "Репетитор", bg: "linear-gradient(135deg, #C7E4FF, #5B9BF5)" },
+  { emoji: "👶", label: "Няня", bg: "linear-gradient(135deg, #FFE9C7, #F5B95B)" },
+  { emoji: "📷", label: "Фотограф", bg: "linear-gradient(135deg, #D6E8FF, #7BAEFF)" },
+  { emoji: "🏠", label: "Арендодатель", bg: "linear-gradient(135deg, #FFD9C7, #F58B5B)" },
 ];
 
 type Mode = "phone" | "code" | "password" | "recover" | "recover_code" | "recover_new" | "admin";
@@ -158,14 +158,23 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
               <button
                 key={s.label}
                 onClick={() => setSelectedSpecialty(s.label === selectedSpecialty ? null : s.label)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-sm"
+                className={`flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 border ${
+                  selectedSpecialty === s.label
+                    ? "shadow-sm border-transparent"
+                    : "bg-white/80 border-border text-foreground hover:border-primary/40"
+                }`}
                 style={
                   selectedSpecialty === s.label
-                    ? { background: s.fg, color: "white" }
-                    : { background: s.bg, color: s.fg }
+                    ? { background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 72% 38%)" }
+                    : undefined
                 }
               >
-                <Icon name={s.icon} size={12} />
+                <span
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+                  style={{ background: s.bg }}
+                >
+                  {s.emoji}
+                </span>
                 {s.label}
               </button>
             ))}
