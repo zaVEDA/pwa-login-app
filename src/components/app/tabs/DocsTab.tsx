@@ -336,8 +336,11 @@ export default function DocsTab({ phone }: Props) {
                   <p className={`text-sm font-medium ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
                     Счёт № {inv.invoice_number}
                   </p>
+                  <p className={`text-xs text-muted-foreground mt-0.5 ${inv.status === "deleted" ? "line-through" : ""}`}>
+                    {formatDate(inv.invoice_date)}
+                  </p>
                   <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
-                    {inv.client_name || "Без клиента"} · {formatDate(inv.invoice_date)}
+                    {inv.client_name || "Без клиента"}
                   </p>
                 </button>
 
@@ -520,9 +523,11 @@ export default function DocsTab({ phone }: Props) {
                   <p className={`text-sm font-medium ${doc.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
                     {doc.doc_type === "act" ? "Акт" : "Накладная"} № {doc.doc_number}
                   </p>
+                  <p className={`text-xs text-muted-foreground mt-0.5 ${doc.status === "deleted" ? "line-through" : ""}`}>
+                    {formatDate(doc.doc_date)}{doc.invoice_number ? ` · сч. ${doc.invoice_number}` : ""}
+                  </p>
                   <p className={`text-xs text-muted-foreground mt-0.5 truncate ${doc.status === "deleted" ? "line-through" : ""}`}>
-                    {doc.client_name || "Без клиента"} · {formatDate(doc.doc_date)}
-                    {doc.invoice_number ? ` · сч. ${doc.invoice_number}` : ""}
+                    {doc.client_name || "Без клиента"}
                   </p>
                 </button>
 
