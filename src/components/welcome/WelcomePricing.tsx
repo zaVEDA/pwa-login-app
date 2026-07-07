@@ -27,7 +27,7 @@ export default function WelcomePricing() {
       {isPresale && (
         <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 mb-8 max-w-md mx-auto">
           <Icon name="Sparkles" size={14} className="text-primary flex-shrink-0" />
-          <p className="text-xs text-primary font-medium">Предпродажа по сниженной цене на подписку 6 месяцев — до 15 июля. При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 1 сентября</p>
+          <p className="text-xs text-primary font-medium">Предпродажа по сниженной цене на подписку 6 месяцев — до 15 июля</p>
         </div>
       )}
 
@@ -63,6 +63,12 @@ export default function WelcomePricing() {
             </a>
           );
         })}
+      </div>
+
+      <div className="mt-6 px-5 py-3.5 rounded-xl bg-primary/10 border border-primary/20 text-center">
+        <p className="text-sm font-bold" style={{ color: "hsl(35 72% 38%)" }}>
+          При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 1 сентября
+        </p>
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
