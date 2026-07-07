@@ -2,14 +2,15 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi, setToken, AuthUser } from "@/lib/auth";
 
-const specialties = [
-  { icon: "Brain", label: "Психолог" },
-  { icon: "Star", label: "Астролог" },
-  { icon: "Hash", label: "Нумеролог" },
-  { icon: "Target", label: "Коуч" },
-  { icon: "BookOpen", label: "Репетитор" },
-  { icon: "Baby", label: "Няня" },
-  { icon: "Camera", label: "Фотограф" },
+const specialtyColors = [
+  { icon: "Brain", label: "Психолог", bg: "hsl(280 60% 96%)", fg: "hsl(280 55% 45%)" },
+  { icon: "Star", label: "Астролог", bg: "hsl(260 60% 96%)", fg: "hsl(260 55% 48%)" },
+  { icon: "Hash", label: "Нумеролог", bg: "hsl(220 65% 96%)", fg: "hsl(220 60% 48%)" },
+  { icon: "Target", label: "Коуч", bg: "hsl(200 65% 95%)", fg: "hsl(200 65% 40%)" },
+  { icon: "BookOpen", label: "Репетитор", bg: "hsl(160 45% 94%)", fg: "hsl(160 45% 35%)" },
+  { icon: "Baby", label: "Няня", bg: "hsl(40 75% 94%)", fg: "hsl(32 60% 42%)" },
+  { icon: "Camera", label: "Фотограф", bg: "hsl(15 70% 95%)", fg: "hsl(15 60% 46%)" },
+  { icon: "Home", label: "Арендодатель", bg: "hsl(340 60% 96%)", fg: "hsl(340 55% 48%)" },
 ];
 
 type Mode = "phone" | "code" | "password" | "recover" | "recover_code" | "recover_new" | "admin";
@@ -153,15 +154,16 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
         {/* Specialties */}
         {mode === "phone" && (
           <div className="flex flex-wrap gap-2 justify-center mb-8">
-            {specialties.map((s) => (
+            {specialtyColors.map((s) => (
               <button
                 key={s.label}
                 onClick={() => setSelectedSpecialty(s.label === selectedSpecialty ? null : s.label)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border ${
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-sm"
+                style={
                   selectedSpecialty === s.label
-                    ? "gold-gradient text-white border-transparent shadow-sm"
-                    : "bg-white/60 border-border text-foreground hover:border-primary/40"
-                }`}
+                    ? { background: s.fg, color: "white" }
+                    : { background: s.bg, color: s.fg }
+                }
               >
                 <Icon name={s.icon} size={12} />
                 {s.label}
