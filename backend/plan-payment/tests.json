@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Оплата без токена",
+      "method": "POST",
+      "path": "/",
+      "body": { "plan": "start", "period": "month" },
+      "expectedStatus": 401
+    },
+    {
+      "name": "Неизвестный тариф",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Auth-Token": "test" },
+      "body": { "plan": "unknown", "period": "month" },
+      "expectedStatus": 400
+    },
+    {
+      "name": "Неизвестный период",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Auth-Token": "test" },
+      "body": { "plan": "start", "period": "year" },
+      "expectedStatus": 400
+    }
+  ]
+}
