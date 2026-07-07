@@ -54,15 +54,18 @@ export default function WelcomePricing() {
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
                   style={{ background: "hsl(35 72% 48%)", color: "white" }}>Популярный</span>
               )}
+              {p.id === "start" && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap"
+                  style={{ background: "hsl(35 72% 48%)", color: "white" }}>Базовый</span>
+              )}
+              {p.id === "pro" && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap"
+                  style={{ background: "hsl(35 72% 48%)", color: "white" }}>Продвинутый</span>
+              )}
               <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-3"
                 style={{ background: p.popular ? "hsl(35 72% 48%)" : "hsl(35 72% 48% / 0.12)" }}>
                 <Icon name={p.icon} size={20} className={p.popular ? "text-white" : ""} style={!p.popular ? { color: "hsl(35 72% 42%)" } : undefined} />
               </div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                {p.id === "start" && "Базовый"}
-                {p.id === "pro" && "Продвинутый"}
-                {p.id !== "start" && p.id !== "pro" && "\u00A0"}
-              </p>
               <h3 className="font-cormorant text-xl font-semibold mb-1">{p.label}</h3>
               <p className="text-xs text-muted-foreground mb-4 leading-relaxed min-h-[48px]">{p.desc}</p>
               <div className="mb-2">
