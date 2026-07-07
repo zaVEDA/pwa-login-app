@@ -45,7 +45,7 @@ export default function WelcomePricing() {
           return (
             <a key={p.id} href="/"
               onClick={() => reachGoal("welcome_pricing_plan_click", { plan: p.id })}
-              className={`block p-5 rounded-2xl border relative transition-transform hover:scale-[1.02] ${p.popular ? "shadow-md" : "bg-white/60"}`}
+              className={`flex flex-col h-full p-5 rounded-2xl border relative transition-transform hover:scale-[1.02] ${p.popular ? "shadow-md" : "bg-white/60"}`}
               style={{
                 borderColor: p.popular ? "hsl(35 72% 48% / 0.4)" : "hsl(36 28% 82%)",
                 background: p.popular ? "linear-gradient(145deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.12))" : undefined,
@@ -67,7 +67,7 @@ export default function WelcomePricing() {
                 <Icon name={p.icon} size={20} className={p.popular ? "text-white" : ""} style={!p.popular ? { color: "hsl(35 72% 42%)" } : undefined} />
               </div>
               <h3 className="font-cormorant text-xl font-semibold mb-1">{p.label}</h3>
-              <p className="text-xs text-muted-foreground mb-4 leading-relaxed min-h-[48px]">{p.desc}</p>
+              <p className="text-xs text-muted-foreground mb-4 leading-relaxed flex-grow">{p.desc}</p>
               <div className="mb-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">за 6 месяцев</p>
                 <div className="flex items-baseline gap-2 flex-wrap">
