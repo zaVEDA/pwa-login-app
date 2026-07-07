@@ -7,7 +7,7 @@ const isPresale = new Date() <= PRESALE_UNTIL;
 const paidPlans = [
   { id: "start", label: "Опора", desc: "До 15 документов в месяц, до 9 подписей по СМС, шаблоны из базы", icon: "Sprout", month: 1444, halfYear: 6868, presaleHalfYear: 5955 },
   { id: "medium", label: "Рост", desc: "Безграничное создание документов, до 33 подписей по СМС в месяц, шаблоны из базы", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333, popular: true },
-  { id: "pro", label: "Творец", desc: "До 88 подписей по СМС в месяц, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
+  { id: "pro", label: "Творец", desc: "Безграничное создание документов, до 88 подписей по СМС в месяц, можно добавить свой шаблон договоров", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
 ];
 
 export default function WelcomePricing() {
