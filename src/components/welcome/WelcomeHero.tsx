@@ -46,12 +46,12 @@ export default function WelcomeHero() {
           style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 72% 38%)" }}>
           Документы с подписью без головной боли
         </span>
-        <h1 className="font-cormorant text-4xl md:text-6xl font-semibold leading-tight mb-5"
+        <h1 className="font-cormorant text-3xl sm:text-4xl md:text-6xl font-semibold leading-tight mb-5"
           style={{ color: "hsl(24 20% 13%)" }}>
           Работайте легально<br />
           <span style={{ color: "hsl(35 72% 48%)" }}>без бумажной волокиты</span>
         </h1>
-        <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
+        <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
           Договоры, чеки и согласия за пару минут с телефона. Клиент подписывает документ электронной подписью по СМС — без встреч и распечаток.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
