@@ -158,12 +158,12 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
 
         {/* Specialties */}
         {mode === "phone" && (
-          <div className="flex flex-wrap gap-2 justify-center mb-8">
+          <div className="flex flex-wrap gap-1.5 justify-center mb-8">
             {specialtyColors.map((s) => (
               <button
                 key={s.label}
                 onClick={() => setSelectedSpecialty(s.label === selectedSpecialty ? null : s.label)}
-                className={`flex items-center gap-1.5 pl-1.5 pr-4 py-1.5 rounded-full text-sm font-normal transition-all duration-200 border ${
+                className={`flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full text-xs font-normal transition-all duration-200 border ${
                   selectedSpecialty === s.label
                     ? "shadow-sm border-transparent"
                     : "bg-white/80 border-border text-foreground hover:border-primary/40"
@@ -174,7 +174,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                     : undefined
                 }
               >
-                <span className="w-5 h-5 flex items-center justify-center text-sm flex-shrink-0">
+                <span className="w-4 h-4 flex items-center justify-center text-xs flex-shrink-0">
                   {s.emoji}
                 </span>
                 {s.label}
