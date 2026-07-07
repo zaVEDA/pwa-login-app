@@ -44,7 +44,7 @@ export default function WelcomeHero() {
 
         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6 tracking-wider uppercase"
           style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 72% 38%)" }}>
-          Документы и подписи без головной боли
+          Документы с подписью без головной боли
         </span>
         <h1 className="font-cormorant text-4xl md:text-6xl font-semibold leading-tight mb-5"
           style={{ color: "hsl(24 20% 13%)" }}>
