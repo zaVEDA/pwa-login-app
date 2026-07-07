@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { reachGoal } from "@/lib/metrika";
 
 const PRESALE_UNTIL = new Date("2026-07-15T23:59:59");
 const isPresale = new Date() <= PRESALE_UNTIL;
@@ -31,7 +32,9 @@ export default function WelcomePricing() {
         {paidPlans.map((p) => {
           const halfYearPrice = isPresale ? p.presaleHalfYear : p.halfYear;
           return (
-            <div key={p.id} className={`p-5 rounded-2xl border relative ${p.popular ? "shadow-md" : "bg-white/60"}`}
+            <a key={p.id} href="/"
+              onClick={() => reachGoal("welcome_pricing_plan_click", { plan: p.id })}
+              className={`block p-5 rounded-2xl border relative transition-transform hover:scale-[1.02] ${p.popular ? "shadow-md" : "bg-white/60"}`}
               style={{
                 borderColor: p.popular ? "hsl(35 72% 48% / 0.4)" : "hsl(36 28% 82%)",
                 background: p.popular ? "linear-gradient(145deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.12))" : undefined,
@@ -54,7 +57,7 @@ export default function WelcomePricing() {
                 {isPresale && <span className="line-through opacity-60 mr-1">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
                 {halfYearPrice.toLocaleString("ru-RU")} ₽ за 6 мес.
               </p>
-            </div>
+            </a>
           );
         })}
       </div>

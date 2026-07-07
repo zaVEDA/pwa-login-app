@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { reachGoal } from "@/lib/metrika";
 
 export default function WelcomeCta() {
   return (
@@ -18,6 +19,7 @@ export default function WelcomeCta() {
           <div className="flex justify-center relative z-10">
             <a
               href="/"
+              onClick={() => reachGoal("welcome_cta_start")}
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03]"
               style={{ background: "white", color: "hsl(35 72% 38%)" }}
             >

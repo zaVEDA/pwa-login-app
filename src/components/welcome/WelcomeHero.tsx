@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { reachGoal } from "@/lib/metrika";
 
 const audience = [
   { emoji: "🧠", label: "Психологи" },
@@ -56,6 +57,7 @@ export default function WelcomeHero() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
             href="/"
+            onClick={() => reachGoal("welcome_hero_start")}
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
             style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))", color: "white" }}
           >
@@ -63,6 +65,7 @@ export default function WelcomeHero() {
             Начать бесплатно
           </a>
           <a href="#pricing"
+            onClick={() => reachGoal("welcome_hero_pricing_click")}
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm border transition-all hover:scale-[1.02]"
             style={{ borderColor: "hsl(36 28% 82%)", color: "hsl(24 20% 13%)", background: "white" }}>
             <Icon name="Tag" size={16} />
