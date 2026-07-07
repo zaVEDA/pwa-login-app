@@ -5,7 +5,7 @@ export default function WelcomeCta() {
   return (
     <>
       {/* CTA */}
-      <section className="px-5 pb-16 max-w-3xl mx-auto">
+      <section className="px-5 pt-14 pb-16 max-w-3xl mx-auto">
         <div className="rounded-3xl p-6 sm:p-10 relative overflow-hidden text-center"
           style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 40%))" }}>
           <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10"
