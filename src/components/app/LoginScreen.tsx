@@ -11,6 +11,11 @@ const specialtyColors = [
   { emoji: "👶", label: "Няня", bg: "linear-gradient(135deg, #FFE9C7, #F5B95B)" },
   { emoji: "📷", label: "Фотограф", bg: "linear-gradient(135deg, #D6E8FF, #7BAEFF)" },
   { emoji: "🏠", label: "Арендодатель", bg: "linear-gradient(135deg, #FFD9C7, #F58B5B)" },
+  { emoji: "✨", label: "Мастер", bg: "linear-gradient(135deg, #F5D9FF, #C77BFF)" },
+  { emoji: "💬", label: "Консультант", bg: "linear-gradient(135deg, #C7FFF0, #5BE0C7)" },
+  { emoji: "💻", label: "Программист", bg: "linear-gradient(135deg, #D0D9FF, #6B7FE8)" },
+  { emoji: "🎭", label: "Актёр", bg: "linear-gradient(135deg, #FFD6E0, #F55B8B)" },
+  { emoji: "🧹", label: "Фея чистоты", bg: "linear-gradient(135deg, #E0F5FF, #6BC7F5)" },
 ];
 
 type Mode = "phone" | "code" | "password" | "recover" | "recover_code" | "recover_new" | "admin";
