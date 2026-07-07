@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import DocumentModal from "@/components/app/DocumentModal";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { formatDate } from "@/lib/date";
 import { INVOICES_URL, HELP_URL, HelpTip, Invoice, RealizationDoc } from "./constants";
+import type { DateRange } from "react-day-picker";
 
 interface Props {
   phone: string;
@@ -135,18 +138,49 @@ export default function DocsTab({ phone }: Props) {
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
   const [openDocId, setOpenDocId] = useState<number | null>(null);
   const [docFilter, setDocFilter] = useState("Все");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [clientFilter, setClientFilter] = useState<string>("");
+  const [clientPickerOpen, setClientPickerOpen] = useState(false);
+
+  // Список клиентов из всех счетов и документов, для выбора в фильтре
+  const clientOptions = useMemo(() => {
+    const names = new Set<string>();
+    invoices.forEach((inv) => { if (inv.client_name) names.add(inv.client_name); });
+    realizationDocs.forEach((d) => { if (d.client_name) names.add(d.client_name); });
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "ru"));
+  }, [invoices, realizationDocs]);
+
+  const isInDateRange = (dateStr: string) => {
+    if (!dateRange?.from || !dateStr) return true;
+    const d = new Date(dateStr);
+    d.setHours(0, 0, 0, 0);
+    const from = new Date(dateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = dateRange.to ? new Date(dateRange.to) : from;
+    to.setHours(0, 0, 0, 0);
+    return d >= from && d <= to;
+  };
 
   // Счета показываем при: Все, Счета, Черновики
   const showInvoicesList = docFilter === "Все" || docFilter === "Счета" || docFilter === "Черновики";
   const filteredInvoices = invoices.filter((inv) =>
-    docFilter === "Черновики" ? inv.status === "created" : true
+    (docFilter === "Черновики" ? inv.status === "created" : true) &&
+    isInDateRange(inv.invoice_date) &&
+    (!clientFilter || inv.client_name === clientFilter)
   );
   // Документы реализации показываем при: Все, Акты, Накладные
   const showActs = docFilter === "Все" || docFilter === "Акты";
   const showNotes = docFilter === "Все" || docFilter === "Накладные";
   const filteredDocs = realizationDocs.filter((d) =>
     (d.doc_type === "act" && showActs) || (d.doc_type === "invoice_note" && showNotes)
-  );
+  ).filter((d) => isInDateRange(d.doc_date) && (!clientFilter || d.client_name === clientFilter));
+
+  const dateFilterLabel = dateRange?.from
+    ? dateRange.to && dateRange.to.getTime() !== dateRange.from.getTime()
+      ? `${formatDate(dateRange.from.toISOString())} – ${formatDate(dateRange.to.toISOString())}`
+      : formatDate(dateRange.from.toISOString())
+    : "Дата";
 
   const loadDocuments = () => {
     if (!phone) return;
@@ -298,6 +332,87 @@ export default function DocsTab({ phone }: Props) {
           ))}
         </div>
 
+        {/* Доп. фильтры: по дате и по клиенту */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
+          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+            <PopoverTrigger asChild>
+              <button
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  dateRange?.from ? "bg-primary/10 border-primary/40 text-primary" : "bg-white/60 border-border text-foreground"
+                }`}
+              >
+                <Icon name="CalendarDays" size={13} />
+                {dateFilterLabel}
+                {dateRange?.from && (
+                  <span
+                    role="button"
+                    onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }}
+                    className="ml-0.5"
+                  >
+                    <Icon name="X" size={12} />
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="start">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={1}
+                defaultMonth={dateRange?.from}
+              />
+              {dateRange?.from && (
+                <button
+                  onClick={() => { setDateRange(undefined); setDatePickerOpen(false); }}
+                  className="w-full mt-1 py-2 rounded-lg text-xs text-muted-foreground hover:bg-amber-50 transition-colors"
+                >
+                  Сбросить дату
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          <Popover open={clientPickerOpen} onOpenChange={setClientPickerOpen}>
+            <PopoverTrigger asChild>
+              <button
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all max-w-[160px] ${
+                  clientFilter ? "bg-primary/10 border-primary/40 text-primary" : "bg-white/60 border-border text-foreground"
+                }`}
+              >
+                <Icon name="User" size={13} className="flex-shrink-0" />
+                <span className="truncate">{clientFilter || "Клиент"}</span>
+                {clientFilter && (
+                  <span
+                    role="button"
+                    onClick={(e) => { e.stopPropagation(); setClientFilter(""); }}
+                    className="flex-shrink-0"
+                  >
+                    <Icon name="X" size={12} />
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-1 max-h-64 overflow-y-auto" align="start">
+              {clientOptions.length === 0 && (
+                <p className="text-xs text-muted-foreground px-2.5 py-2">Пока нет клиентов</p>
+              )}
+              {clientOptions.map((name) => (
+                <button
+                  key={name}
+                  onClick={() => { setClientFilter(name); setClientPickerOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left transition-colors ${
+                    clientFilter === name ? "bg-primary/10 text-primary font-medium" : "hover:bg-amber-50 text-foreground"
+                  }`}
+                >
+                  {name}
+                  {clientFilter === name && <Icon name="Check" size={13} className="ml-auto" />}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
+
         {invoicesLoading && (
           <div className="flex items-center justify-center py-8">
             <Icon name="Loader" size={20} className="animate-spin text-muted-foreground" />
@@ -310,9 +425,13 @@ export default function DocsTab({ phone }: Props) {
               <Icon name="FileText" size={24} className="text-primary/50" />
             </div>
             <p className="text-sm font-medium text-foreground">
-              {docFilter === "Все" ? "Документов пока нет" : `Раздел «${docFilter}» пуст`}
+              {dateRange?.from || clientFilter
+                ? "Ничего не найдено по выбранным фильтрам"
+                : docFilter === "Все" ? "Документов пока нет" : `Раздел «${docFilter}» пуст`}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Нажмите + чтобы создать первый счёт</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {dateRange?.from || clientFilter ? "Попробуйте изменить дату или клиента" : "Нажмите + чтобы создать первый счёт"}
+            </p>
           </div>
         )}
 
