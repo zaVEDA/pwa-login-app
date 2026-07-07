@@ -194,7 +194,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
               {mode === "recover" && "Выберите способ восстановления"}
               {mode === "recover_code" && "Введите код из сообщения"}
               {mode === "recover_new" && "Придумайте новый пароль"}
-              {mode === "admin" && "Логин и пароль администратора"}
+              {mode === "admin" && "Логин и пароль Заведующей"}
             </p>
           </div>
 
@@ -363,7 +363,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
               Посмотреть без регистрации →
             </button>
             <button onClick={() => { setMode("admin"); setError(""); }} className="w-full mt-3 py-1 text-[11px] text-muted-foreground">
-              Вход для администратора
+              Вход для Заведующей
             </button>
           </>
         )}
