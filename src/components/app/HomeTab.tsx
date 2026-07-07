@@ -4,12 +4,6 @@ import InvoiceModal from "@/components/app/InvoiceModal";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
-const recentDocs = [
-  { title: "Договор об оказании услуг", client: "Анна М.", date: "09.06.2026", status: "signed", statusLabel: "Подписан" },
-  { title: "Акт выполненных работ", client: "Игорь С.", date: "07.06.2026", status: "pending", statusLabel: "Ожидает" },
-  { title: "Счёт на оплату", client: "Мария В.", date: "05.06.2026", status: "draft", statusLabel: "Черновик" },
-];
-
 const themes = {
   honey: {
     label: "Янтарь",
@@ -123,34 +117,6 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone }
             <p className="text-sm font-medium text-foreground">Учёт доходов</p>
             <p className="text-xs text-muted-foreground mt-0.5">Доходы и налоги</p>
           </button>
-        </div>
-      </div>
-
-      {/* Recent docs */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-cormorant text-xl font-semibold">Последние документы</h2>
-          <button onClick={() => setActiveTab("docs")} className="text-xs text-primary">Все →</button>
-        </div>
-        <div className="space-y-2.5">
-          {recentDocs.map((doc) => (
-            <div key={doc.title} className="card-warm rounded-xl p-3.5 flex items-center gap-3 shadow-sm">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Icon name="FileText" size={16} className="text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{doc.title}</p>
-                <p className="text-xs text-muted-foreground">{doc.client} · {doc.date}</p>
-              </div>
-              <span className={`doc-tag flex-shrink-0 ${
-                doc.status === "signed" ? "bg-green-100 text-green-700" :
-                doc.status === "pending" ? "bg-primary/15 text-primary" :
-                "bg-gray-100 text-gray-500"
-              }`}>
-                {doc.statusLabel}
-              </span>
-            </div>
-          ))}
         </div>
       </div>
 
