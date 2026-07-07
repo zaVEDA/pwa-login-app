@@ -12,7 +12,7 @@ const paidPlans = [
 
 export default function WelcomePricing() {
   return (
-    <section id="pricing" className="px-5 py-14 max-w-3xl mx-auto">
+    <section id="pricing" className="px-5 py-8 max-w-3xl mx-auto">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 text-center">Тарифы</p>
       <h2 className="font-cormorant text-3xl font-semibold mb-3 text-center" style={{ color: "hsl(24 20% 13%)" }}>
         Выберите подходящий тариф

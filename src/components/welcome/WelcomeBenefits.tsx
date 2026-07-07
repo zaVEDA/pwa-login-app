@@ -37,7 +37,7 @@ const image = "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a98
 
 export default function WelcomeBenefits() {
   return (
-    <section className="px-5 py-14 max-w-3xl mx-auto">
+    <section className="px-5 py-8 max-w-3xl mx-auto">
       <div className="rounded-3xl overflow-hidden mb-10 shadow-sm">
         <img src={image} alt="Оформление документа с электронной подписью" className="w-full h-56 object-cover" />
       </div>

@@ -17,7 +17,7 @@ const audienceMore = [
 
 export default function WelcomeHero() {
   return (
-    <section className="relative overflow-hidden px-5 pt-16 pb-14 text-center max-w-3xl mx-auto">
+    <section className="relative overflow-hidden px-5 pt-12 pb-8 text-center max-w-3xl mx-auto">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-10 left-1/4 w-64 h-64 rounded-full opacity-20"
           style={{ background: "radial-gradient(circle, hsl(35 72% 48%), transparent)" }} />
