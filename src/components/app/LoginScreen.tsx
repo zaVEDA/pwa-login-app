@@ -158,7 +158,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
               <button
                 key={s.label}
                 onClick={() => setSelectedSpecialty(s.label === selectedSpecialty ? null : s.label)}
-                className={`flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 border ${
+                className={`flex items-center gap-1.5 pl-1.5 pr-4 py-1.5 rounded-full text-sm font-normal transition-all duration-200 border ${
                   selectedSpecialty === s.label
                     ? "shadow-sm border-transparent"
                     : "bg-white/80 border-border text-foreground hover:border-primary/40"
@@ -169,7 +169,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                     : undefined
                 }
               >
-                <span className="w-7 h-7 flex items-center justify-center text-base flex-shrink-0">
+                <span className="w-5 h-5 flex items-center justify-center text-sm flex-shrink-0">
                   {s.emoji}
                 </span>
                 {s.label}
