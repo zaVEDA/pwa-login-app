@@ -3,14 +3,14 @@ import Icon from "@/components/ui/icon";
 import { authApi, setToken, AuthUser } from "@/lib/auth";
 
 const specialtyColors = [
-  { icon: "Brain", label: "Психолог", bg: "hsl(280 60% 96%)", fg: "hsl(280 55% 45%)" },
-  { icon: "Star", label: "Астролог", bg: "hsl(260 60% 96%)", fg: "hsl(260 55% 48%)" },
-  { icon: "Hash", label: "Нумеролог", bg: "hsl(220 65% 96%)", fg: "hsl(220 60% 48%)" },
-  { icon: "Target", label: "Коуч", bg: "hsl(200 65% 95%)", fg: "hsl(200 65% 40%)" },
-  { icon: "BookOpen", label: "Репетитор", bg: "hsl(160 45% 94%)", fg: "hsl(160 45% 35%)" },
-  { icon: "Baby", label: "Няня", bg: "hsl(40 75% 94%)", fg: "hsl(32 60% 42%)" },
-  { icon: "Camera", label: "Фотограф", bg: "hsl(15 70% 95%)", fg: "hsl(15 60% 46%)" },
-  { icon: "Home", label: "Арендодатель", bg: "hsl(340 60% 96%)", fg: "hsl(340 55% 48%)" },
+  { icon: "Brain", label: "Психолог", bg: "hsl(35 72% 48% / 0.12)", fg: "hsl(35 72% 38%)" },
+  { icon: "Star", label: "Астролог", bg: "hsl(150 45% 40% / 0.12)", fg: "hsl(150 45% 32%)" },
+  { icon: "Hash", label: "Нумеролог", bg: "hsl(345 58% 52% / 0.12)", fg: "hsl(345 58% 42%)" },
+  { icon: "Target", label: "Коуч", bg: "hsl(18 55% 42% / 0.12)", fg: "hsl(18 55% 34%)" },
+  { icon: "BookOpen", label: "Репетитор", bg: "hsl(35 72% 48% / 0.12)", fg: "hsl(35 72% 38%)" },
+  { icon: "Baby", label: "Няня", bg: "hsl(150 45% 40% / 0.12)", fg: "hsl(150 45% 32%)" },
+  { icon: "Camera", label: "Фотограф", bg: "hsl(345 58% 52% / 0.12)", fg: "hsl(345 58% 42%)" },
+  { icon: "Home", label: "Арендодатель", bg: "hsl(18 55% 42% / 0.12)", fg: "hsl(18 55% 34%)" },
 ];
 
 type Mode = "phone" | "code" | "password" | "recover" | "recover_code" | "recover_new" | "admin";
