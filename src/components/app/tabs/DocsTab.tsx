@@ -521,7 +521,10 @@ export default function DocsTab({ phone }: Props) {
                   className="flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
                 >
                   <p className={`text-sm font-medium ${doc.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
-                    {doc.doc_type === "act" ? "Акт" : "Накладная"} № {doc.doc_number}
+                    {doc.doc_type === "act" ? "Акт" : "Накладная"}
+                  </p>
+                  <p className={`text-xs text-muted-foreground mt-0.5 ${doc.status === "deleted" ? "line-through" : ""}`}>
+                    № {doc.doc_number}
                   </p>
                   <p className={`text-xs text-muted-foreground mt-0.5 ${doc.status === "deleted" ? "line-through" : ""}`}>
                     {formatDate(doc.doc_date)}{doc.invoice_number ? ` · сч. ${doc.invoice_number}` : ""}
