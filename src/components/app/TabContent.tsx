@@ -2,6 +2,7 @@ import { Tab, themes } from "./tabs/constants";
 import DocsTab from "./tabs/DocsTab";
 import TemplatesTab from "./tabs/TemplatesTab";
 import AccountTab from "./tabs/AccountTab";
+import { AuthUser, PlanType } from "@/lib/auth";
 
 interface Props {
   activeTab: Tab;
@@ -18,6 +19,8 @@ interface Props {
   phone: string;
   userName?: string | null;
   userRole?: string;
+  userPlan?: PlanType | null;
+  onUserUpdated?: (user: AuthUser) => void;
 }
 
 export default function TabContent({
@@ -35,10 +38,12 @@ export default function TabContent({
   phone,
   userName,
   userRole,
+  userPlan,
+  onUserUpdated,
 }: Props) {
   return (
     <>
-      {activeTab === "docs" && <DocsTab phone={phone} />}
+      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} />}
 
       <TemplatesTab activeTab={activeTab} />
 
@@ -53,6 +58,8 @@ export default function TabContent({
           phone={phone}
           userName={userName}
           userRole={userRole}
+          userPlan={userPlan}
+          onUserUpdated={onUserUpdated}
         />
       )}
     </>

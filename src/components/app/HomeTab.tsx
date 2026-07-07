@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
+import { PlanType } from "@/lib/auth";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -52,15 +53,16 @@ interface Props {
   todayPhrase: string;
   setActiveTab: (t: Tab) => void;
   phone: string;
+  userPlan?: PlanType | null;
 }
 
-export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone }: Props) {
+export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan }: Props) {
   const theme = themes[colorTheme];
   const [showInvoice, setShowInvoice] = useState(false);
 
   return (
     <div className="space-y-6 animate-slide-up">
-      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} />}
+      {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} userPlan={userPlan} />}
       {/* Мотивирующая фраза дня */}
       <div className="rounded-2xl p-4 relative overflow-hidden"
         style={{ background: theme.phraseBg, border: `1px solid ${theme.phraseBorder}` }}>

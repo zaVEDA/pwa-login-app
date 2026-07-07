@@ -1,7 +1,17 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import AdminUsers from "@/components/admin/AdminUsers";
+import PlanModal from "@/components/app/PlanModal";
+import { AuthUser, PlanType } from "@/lib/auth";
 import { themes } from "./constants";
+
+const planLabels: Record<PlanType, string> = {
+  start: "Начальный",
+  medium: "Средний",
+  pro: "Про",
+  family: "Для родных",
+};
 
 interface Props {
   isSelfEmployed: boolean | null;
@@ -13,6 +23,8 @@ interface Props {
   phone: string;
   userName?: string | null;
   userRole?: string;
+  userPlan?: PlanType | null;
+  onUserUpdated?: (user: AuthUser) => void;
 }
 
 export default function AccountTab({
@@ -25,7 +37,10 @@ export default function AccountTab({
   phone,
   userName,
   userRole,
+  userPlan,
+  onUserUpdated,
 }: Props) {
+  const [showPlanModal, setShowPlanModal] = useState(false);
   return (
     <>
       {userRole === "admin" && (
@@ -61,6 +76,31 @@ export default function AccountTab({
               </div>
             </div>
           </div>
+
+          {/* Тариф */}
+          <button
+            onClick={() => setShowPlanModal(true)}
+            className="w-full card-warm rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-[0.98] transition-transform"
+          >
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Icon name="Crown" size={16} className="text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Тариф</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {userPlan ? planLabels[userPlan] : "Не выбран — нажмите, чтобы выбрать"}
+              </p>
+            </div>
+            <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
+          </button>
+
+          {showPlanModal && (
+            <PlanModal
+              currentPlan={userPlan ?? null}
+              onClose={() => setShowPlanModal(false)}
+              onSelected={(u) => onUserUpdated?.(u)}
+            />
+          )}
 
           {/* Цветовая тема */}
           <div className="card-warm rounded-2xl p-4 shadow-sm">

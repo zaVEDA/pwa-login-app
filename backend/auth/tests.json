@@ -38,6 +38,20 @@
       "path": "/",
       "body": { "action": "login_password", "login": "nouser", "password": "wrong" },
       "expectedStatus": 404
+    },
+    {
+      "name": "Выбор тарифа без сессии",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "set_plan", "plan": "pro" },
+      "expectedStatus": 401
+    },
+    {
+      "name": "Выбор недопустимого тарифа",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "set_plan", "plan": "unknown" },
+      "expectedStatus": 400
     }
   ]
 }

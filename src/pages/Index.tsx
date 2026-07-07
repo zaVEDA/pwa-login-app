@@ -157,6 +157,7 @@ export default function Index() {
             todayPhrase={todayPhrase}
             setActiveTab={setActiveTab}
             phone={phone}
+            userPlan={user?.plan ?? null}
           />
         )}
         <TabContent
@@ -174,6 +175,8 @@ export default function Index() {
           phone={phone}
           userName={user?.full_name}
           userRole={user?.role}
+          userPlan={user?.plan ?? null}
+          onUserUpdated={setUser}
         />
       </main>
 

@@ -51,8 +51,9 @@ def user_public(row, keys) -> dict:
     return d
 
 
-USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status"
-USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status"]
+USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, plan"
+USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status", "plan"]
+VALID_PLANS = ("start", "medium", "pro", "family")
 
 
 def cors_headers():
@@ -297,7 +298,24 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return resp(200, {"ok": True})
 
-        # 8. Выход
+        # 8. Выбор тарифа (без оплаты, пользователь сам закрепляет тариф за собой)
+        if action == "set_plan":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            plan = (body.get("plan") or "").strip()
+            if plan not in VALID_PLANS:
+                return resp(400, {"error": "Неизвестный тариф"})
+            cur.execute("SELECT user_id FROM user_sessions WHERE token = %s AND (expires_at IS NULL OR expires_at > NOW())", (token,))
+            s = cur.fetchone()
+            if not s:
+                return resp(401, {"error": "Сессия истекла"})
+            uid = s[0]
+            cur.execute("UPDATE users SET plan = %s WHERE id = %s", (plan, uid))
+            cur.execute(f"SELECT {USER_COLS} FROM users WHERE id = %s", (uid,))
+            urow = cur.fetchone()
+            conn.commit()
+            return resp(200, {"ok": True, "user": user_public(urow, USER_KEYS)})
+
+        # 9. Выход
         if action == "logout":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
             cur.execute("UPDATE user_sessions SET expires_at = NOW() WHERE token = %s", (token,))

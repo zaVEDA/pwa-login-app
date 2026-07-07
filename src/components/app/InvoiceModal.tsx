@@ -14,15 +14,17 @@ import InvoiceModalHeader from "./invoice/InvoiceModalHeader";
 import InvoiceClientSection from "./invoice/InvoiceClientSection";
 import InvoiceItemsSection from "./invoice/InvoiceItemsSection";
 import InvoiceModalFooter from "./invoice/InvoiceModalFooter";
+import { PlanType } from "@/lib/auth";
 
 interface Props {
   onClose: () => void;
   phone: string;
   onSaved?: () => void;
   invoiceId?: number | null;
+  userPlan?: PlanType | null;
 }
 
-export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Props) {
+export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userPlan }: Props) {
   const [minimized, setMinimized] = useState(false);
 
   // Справочник клиентов
@@ -417,6 +419,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId }: Pro
           handleSave={handleSave}
           handleCreatePdf={handleCreatePdf}
           handleShare={handleShare}
+          noPlan={!userPlan}
         />
       </div>
     </div>

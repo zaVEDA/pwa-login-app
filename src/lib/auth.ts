@@ -1,5 +1,7 @@
 const AUTH_URL = "https://functions.poehali.dev/014fc1d1-8785-4bdb-8c38-bc1b5126ef4b";
 
+export type PlanType = "start" | "medium" | "pro" | "family";
+
 export interface AuthUser {
   id: number;
   phone: string;
@@ -11,6 +13,7 @@ export interface AuthUser {
   consent_pep: boolean;
   profile_completed: boolean;
   status: string | null;
+  plan: PlanType | null;
 }
 
 export function getDeviceId(): string {
@@ -60,5 +63,6 @@ export const authApi = {
   updateProfile: (p: { full_name?: string; email?: string; login?: string; password?: string }) =>
     call("update_profile", p),
   resetPassword: (password: string) => call("reset_password", { password }),
+  setPlan: (plan: PlanType) => call("set_plan", { plan }),
   logout: () => call("logout"),
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { formatDate } from "@/lib/date";
+import { PlanType } from "@/lib/auth";
 
 const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
 
@@ -11,9 +12,10 @@ interface Props {
   onClose: () => void;
   onSaved?: () => void;
   phone: string;
+  userPlan?: PlanType | null;
 }
 
-export default function DocumentModal({ docId, onClose, onSaved, phone }: Props) {
+export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -367,16 +369,22 @@ export default function DocumentModal({ docId, onClose, onSaved, phone }: Props)
               </div>
             )}
           </div>
+          {readOnly && !userPlan && (
+            <div className="mb-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-center gap-2">
+              <Icon name="Lock" size={14} className="text-amber-600 flex-shrink-0" />
+              <p className="text-[11px] text-amber-700">Выберите тариф в Аккаунте, чтобы скачать PDF и отправить документ</p>
+            </div>
+          )}
           {readOnly && (
             <div className="flex gap-2">
-              <button onClick={openPdf} disabled={pdfLoading}
-                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-60">
-                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="FileDown" size={14} />}
+              <button onClick={openPdf} disabled={pdfLoading || !userPlan}
+                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
+                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name={userPlan ? "FileDown" : "Lock"} size={14} />}
                 {pdfLoading ? "Генерирую..." : "Скачать PDF"}
               </button>
-              <button onClick={() => setShareSheet(true)}
-                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
-                <Icon name="Share2" size={14} />
+              <button onClick={() => setShareSheet(true)} disabled={!userPlan}
+                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
+                <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
                 Отправить
               </button>
             </div>

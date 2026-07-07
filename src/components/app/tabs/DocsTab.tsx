@@ -7,12 +7,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { formatDate } from "@/lib/date";
 import { INVOICES_URL, HELP_URL, HelpTip, Invoice, RealizationDoc } from "./constants";
 import type { DateRange } from "react-day-picker";
+import { PlanType } from "@/lib/auth";
 
 interface Props {
   phone: string;
+  userPlan?: PlanType | null;
 }
 
-export default function DocsTab({ phone }: Props) {
+export default function DocsTab({ phone, userPlan }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -294,6 +296,7 @@ export default function DocsTab({ phone }: Props) {
           phone={phone}
           onSaved={loadInvoices}
           invoiceId={openInvoiceId}
+          userPlan={userPlan}
         />
       )}
       {openDocId && (
@@ -302,6 +305,7 @@ export default function DocsTab({ phone }: Props) {
           phone={phone}
           onClose={() => setOpenDocId(null)}
           onSaved={loadDocuments}
+          userPlan={userPlan}
         />
       )}
 
@@ -472,19 +476,19 @@ export default function DocsTab({ phone }: Props) {
                     <div className="flex items-center gap-1">
                     <button
                       onClick={() => downloadPdf(inv.id, inv.invoice_number)}
-                      disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
-                      aria-label="Скачать PDF"
+                      disabled={pdfLoadingId === inv.id || inv.status === "deleted" || !userPlan}
+                      aria-label={userPlan ? "Скачать PDF" : "Выберите тариф в Аккаунте"}
                       className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
                     >
-                      <Icon name={pdfLoadingId === inv.id ? "Loader" : "FileDown"} size={15} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
+                      <Icon name={pdfLoadingId === inv.id ? "Loader" : userPlan ? "FileDown" : "Lock"} size={15} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
                     </button>
                     <button
                       onClick={() => setShareMenuId(shareMenuId === inv.id ? null : inv.id)}
-                      disabled={inv.status === "deleted"}
-                      aria-label="Отправить счёт"
+                      disabled={inv.status === "deleted" || !userPlan}
+                      aria-label={userPlan ? "Отправить счёт" : "Выберите тариф в Аккаунте"}
                       className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
                     >
-                      <Icon name="Share2" size={14} />
+                      <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
                     </button>
                     <button
                       onClick={() => setBasisMenuId(basisMenuId === inv.id ? null : inv.id)}
@@ -662,27 +666,27 @@ export default function DocsTab({ phone }: Props) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => downloadDocPdf(doc)}
-                        disabled={docLoadingId === doc.id || doc.status === "deleted"}
-                        aria-label="Скачать PDF"
+                        disabled={docLoadingId === doc.id || doc.status === "deleted" || !userPlan}
+                        aria-label={userPlan ? "Скачать PDF" : "Выберите тариф в Аккаунте"}
                         className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
                       >
-                        <Icon name={docLoadingId === doc.id ? "Loader" : "FileDown"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
+                        <Icon name={docLoadingId === doc.id ? "Loader" : userPlan ? "FileDown" : "Lock"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
                       </button>
                       <button
                         onClick={() => printDocPdf(doc)}
-                        disabled={docLoadingId === doc.id || doc.status === "deleted"}
-                        aria-label="Печать"
+                        disabled={docLoadingId === doc.id || doc.status === "deleted" || !userPlan}
+                        aria-label={userPlan ? "Печать" : "Выберите тариф в Аккаунте"}
                         className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
                       >
-                        <Icon name="Printer" size={15} />
+                        <Icon name={userPlan ? "Printer" : "Lock"} size={15} />
                       </button>
                       <button
                         onClick={() => setShareDocId(shareDocId === doc.id ? null : doc.id)}
-                        disabled={doc.status === "deleted"}
-                        aria-label="Поделиться"
+                        disabled={doc.status === "deleted" || !userPlan}
+                        aria-label={userPlan ? "Поделиться" : "Выберите тариф в Аккаунте"}
                         className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
                       >
-                        <Icon name="Share2" size={14} />
+                        <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
                       </button>
                     </div>
                   </div>
