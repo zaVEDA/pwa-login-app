@@ -18,13 +18,13 @@ export default function WelcomePricing() {
         Выберите подходящий тариф
       </h2>
       <p className="text-sm text-muted-foreground text-center max-w-lg mx-auto mb-8">
-        Первые документы — бесплатно. Оплачивайте только когда работа пойдёт активно.
+        Зайдите и ознакомьтесь с приложением уже сейчас, а оплачивать подписку начнёте, когда работа пойдёт активно.
       </p>
 
       {isPresale && (
         <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 mb-8 max-w-md mx-auto">
           <Icon name="Sparkles" size={14} className="text-primary flex-shrink-0" />
-          <p className="text-xs text-primary font-medium">Предпродажа: скидка на подписку на 6 месяцев — до 15 июля</p>
+          <p className="text-xs text-primary font-medium">Предпродажа по сниженной цене на подписку 6 месяцев — до 15 июля. При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 1 сентября</p>
         </div>
       )}
 

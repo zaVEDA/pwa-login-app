@@ -44,7 +44,7 @@ export default function WelcomeHero() {
 
         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6 tracking-wider uppercase"
           style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 72% 38%)" }}>
-          Документы и подписи без головной боли
+          Запуск первой версии приложения — с 15 июля
         </span>
         <h1 className="font-cormorant text-4xl md:text-6xl font-semibold leading-tight mb-5"
           style={{ color: "hsl(24 20% 13%)" }}>
@@ -61,8 +61,8 @@ export default function WelcomeHero() {
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
             style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))", color: "white" }}
           >
-            <Icon name="Sparkles" size={16} />
-            Начать бесплатно
+            <Icon name="Eye" size={16} />
+            Зайти и ознакомиться
           </a>
           <a href="#pricing"
             onClick={() => reachGoal("welcome_hero_pricing_click")}

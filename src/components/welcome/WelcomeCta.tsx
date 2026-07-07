@@ -14,7 +14,7 @@ export default function WelcomeCta() {
             Готовы навести порядок в документах?
           </h2>
           <p className="text-white/80 text-sm mb-6 relative z-10">
-            Регистрация по номеру телефона — первые документы бесплатно
+            Запуск первой версии приложения — с 15 июля. Заходите и знакомьтесь уже сейчас
           </p>
           <div className="flex justify-center relative z-10">
             <a
@@ -23,8 +23,8 @@ export default function WelcomeCta() {
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03]"
               style={{ background: "white", color: "hsl(35 72% 38%)" }}
             >
-              <Icon name="ArrowRight" size={16} />
-              Начать бесплатно
+              <Icon name="Eye" size={16} />
+              Зайти и ознакомиться
             </a>
           </div>
         </div>
