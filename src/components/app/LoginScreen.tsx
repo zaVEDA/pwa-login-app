@@ -158,7 +158,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
 
         {/* Specialties */}
         {mode === "phone" && (
-          <div className="flex flex-wrap gap-1.5 justify-center mb-8">
+          <div className="flex flex-wrap gap-1.5 justify-center mb-8 max-w-[380px] mx-auto">
             {specialtyColors.map((s) => (
               <button
                 key={s.label}
