@@ -17,8 +17,11 @@ export default function WelcomePricing() {
       <h2 className="font-cormorant text-3xl font-semibold mb-3 text-center" style={{ color: "hsl(24 20% 13%)" }}>
         Выберите подходящий тариф
       </h2>
-      <p className="text-sm text-muted-foreground text-center max-w-lg mx-auto mb-8">
+      <p className="text-sm text-muted-foreground text-center max-w-lg mx-auto mb-3">
         Зайдите и ознакомьтесь с приложением уже сейчас, а оплачивать подписку начнёте, когда работа пойдёт активно.
+      </p>
+      <p className="text-xs font-semibold text-center mb-8" style={{ color: "hsl(35 72% 38%)" }}>
+        Запуск первой версии приложения — с 15 июля
       </p>
 
       {isPresale && (
