@@ -11,7 +11,7 @@ export default function WelcomeCta() {
           <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10"
             style={{ background: "radial-gradient(circle, white, transparent)", transform: "translate(30%, -30%)" }} />
           <h2 className="font-cormorant text-2xl sm:text-3xl font-semibold text-white mb-3 relative z-10">
-            Готовы навести порядок в документах?
+            Готовы навести порядок в своих документах?
           </h2>
           <p className="text-white/80 text-sm mb-6 relative z-10">
             Запуск первой версии приложения — с 15 июля. Заходите и знакомьтесь уже сейчас
