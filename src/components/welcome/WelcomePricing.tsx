@@ -59,7 +59,7 @@ export default function WelcomePricing() {
                   {isPresale && <span className="text-sm line-through opacity-50 text-muted-foreground">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
                 </div>
               </div>
-              <p className="text-xs font-medium text-muted-foreground">
+              <p className="text-xs font-bold text-muted-foreground">
                 {p.month.toLocaleString("ru-RU")} ₽ за 1 мес.
               </p>
             </a>
