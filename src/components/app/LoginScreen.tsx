@@ -125,7 +125,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     recover: "Восстановление доступа",
     recover_code: "Введите код",
     recover_new: "Новый пароль",
-    admin: "Вход администратора",
+    admin: "Вход для Заведующей",
   };
 
   return (
