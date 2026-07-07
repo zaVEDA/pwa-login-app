@@ -56,7 +56,7 @@ export default function WelcomePricing() {
                 <span className="font-cormorant text-3xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>{p.month.toLocaleString("ru-RU")} ₽</span>
                 <span className="text-xs text-muted-foreground"> /мес</span>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] font-semibold text-muted-foreground">
                 {isPresale && <span className="line-through opacity-60 mr-1">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
                 {halfYearPrice.toLocaleString("ru-RU")} ₽ за 6 мес.
               </p>
