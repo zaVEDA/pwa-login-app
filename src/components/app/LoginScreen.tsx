@@ -169,10 +169,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                     : undefined
                 }
               >
-                <span
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-                  style={{ background: s.bg }}
-                >
+                <span className="w-7 h-7 flex items-center justify-center text-base flex-shrink-0">
                   {s.emoji}
                 </span>
                 {s.label}
