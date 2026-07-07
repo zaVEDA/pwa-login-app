@@ -70,11 +70,6 @@ export default function WelcomePricing() {
           При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 1 сентября
         </p>
       </div>
-
-      <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Icon name="Heart" size={13} />
-        Есть бесплатный доступ «Для родных» по кодовому слову
-      </div>
     </section>
   );
 }
