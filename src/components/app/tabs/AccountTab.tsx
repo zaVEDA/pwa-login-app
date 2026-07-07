@@ -7,9 +7,9 @@ import { AuthUser, PlanType } from "@/lib/auth";
 import { themes } from "./constants";
 
 const planLabels: Record<PlanType, string> = {
-  start: "Начальный",
-  medium: "Средний",
-  pro: "Про",
+  start: "Опора",
+  medium: "Рост",
+  pro: "Творец",
   family: "Для родных",
 };
 
@@ -24,6 +24,8 @@ interface Props {
   userName?: string | null;
   userRole?: string;
   userPlan?: PlanType | null;
+  planExpiresAt?: string | null;
+  familyRequestStatus?: "pending" | "approved" | "rejected" | null;
   onUserUpdated?: (user: AuthUser) => void;
 }
 
@@ -38,6 +40,8 @@ export default function AccountTab({
   userName,
   userRole,
   userPlan,
+  planExpiresAt,
+  familyRequestStatus,
   onUserUpdated,
 }: Props) {
   const [showPlanModal, setShowPlanModal] = useState(false);
@@ -88,7 +92,9 @@ export default function AccountTab({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">Тариф</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {userPlan ? planLabels[userPlan] : "Не выбран — нажмите, чтобы выбрать"}
+                {userPlan
+                  ? `${planLabels[userPlan]}${userPlan !== "family" && planExpiresAt ? ` · до ${new Date(planExpiresAt).toLocaleDateString("ru-RU")}` : ""}`
+                  : "Не выбран — нажмите, чтобы выбрать"}
               </p>
             </div>
             <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
@@ -97,6 +103,7 @@ export default function AccountTab({
           {showPlanModal && (
             <PlanModal
               currentPlan={userPlan ?? null}
+              familyRequestStatus={familyRequestStatus}
               onClose={() => setShowPlanModal(false)}
               onSelected={(u) => onUserUpdated?.(u)}
             />

@@ -14,6 +14,18 @@ export interface AuthUser {
   profile_completed: boolean;
   status: string | null;
   plan: PlanType | null;
+  plan_expires_at: string | null;
+  family_request_status: "pending" | "approved" | "rejected" | null;
+}
+
+export interface FamilyRequestItem {
+  id: number;
+  user_id: number;
+  full_name: string | null;
+  phone: string;
+  code_word: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string | null;
 }
 
 export function getDeviceId(): string {
@@ -63,6 +75,9 @@ export const authApi = {
   updateProfile: (p: { full_name?: string; email?: string; login?: string; password?: string }) =>
     call("update_profile", p),
   resetPassword: (password: string) => call("reset_password", { password }),
-  setPlan: (plan: PlanType) => call("set_plan", { plan }),
+  requestFamilyPlan: (code_word: string) => call("request_family_plan", { code_word }),
+  adminListFamilyRequests: () => call("admin_list_family_requests"),
+  adminDecideFamilyRequest: (request_id: number, decision: "approved" | "rejected") =>
+    call("admin_decide_family_request", { request_id, decision }),
   logout: () => call("logout"),
 };

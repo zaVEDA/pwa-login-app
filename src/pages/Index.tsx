@@ -52,7 +52,8 @@ export default function Index() {
     }
   }, []);
 
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const paymentResult = new URLSearchParams(window.location.search).get("payment");
+  const [activeTab, setActiveTab] = useState<Tab>(paymentResult ? "account" : "home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
 
@@ -81,6 +82,12 @@ export default function Index() {
       }
       setAuthChecked(true);
     }).catch(() => setAuthChecked(true));
+
+    if (paymentResult) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("payment");
+      window.history.replaceState({}, "", url.toString());
+    }
   }, []);
 
   const handleAuth = (u: AuthUser) => {
@@ -151,6 +158,18 @@ export default function Index() {
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto px-5 pb-28 space-y-6">
+        {paymentResult === "success" && (
+          <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+            <Icon name="CheckCircle2" size={15} className="flex-shrink-0" />
+            Оплата прошла успешно, тариф активирован
+          </div>
+        )}
+        {paymentResult === "fail" && (
+          <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+            <Icon name="XCircle" size={15} className="flex-shrink-0" />
+            Оплата не прошла, попробуйте снова
+          </div>
+        )}
         {activeTab === "home" && (
           <HomeTab
             colorTheme={colorTheme}
@@ -176,6 +195,8 @@ export default function Index() {
           userName={user?.full_name}
           userRole={user?.role}
           userPlan={user?.plan ?? null}
+          planExpiresAt={user?.plan_expires_at ?? null}
+          familyRequestStatus={user?.family_request_status ?? null}
           onUserUpdated={setUser}
         />
       </main>

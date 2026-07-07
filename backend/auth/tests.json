@@ -40,18 +40,32 @@
       "expectedStatus": 404
     },
     {
-      "name": "Выбор тарифа без сессии",
+      "name": "Заявка на семейный тариф без сессии",
       "method": "POST",
       "path": "/",
-      "body": { "action": "set_plan", "plan": "pro" },
+      "body": { "action": "request_family_plan", "code_word": "тест" },
       "expectedStatus": 401
     },
     {
-      "name": "Выбор недопустимого тарифа",
+      "name": "Заявка на семейный тариф без кодового слова",
       "method": "POST",
       "path": "/",
-      "body": { "action": "set_plan", "plan": "unknown" },
+      "body": { "action": "request_family_plan", "code_word": "" },
       "expectedStatus": 400
+    },
+    {
+      "name": "Список заявок без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_list_family_requests" },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Решение по заявке без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_decide_family_request", "request_id": 1, "decision": "approved" },
+      "expectedStatus": 403
     }
   ]
 }

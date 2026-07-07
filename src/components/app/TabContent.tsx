@@ -20,6 +20,8 @@ interface Props {
   userName?: string | null;
   userRole?: string;
   userPlan?: PlanType | null;
+  planExpiresAt?: string | null;
+  familyRequestStatus?: "pending" | "approved" | "rejected" | null;
   onUserUpdated?: (user: AuthUser) => void;
 }
 
@@ -39,6 +41,8 @@ export default function TabContent({
   userName,
   userRole,
   userPlan,
+  planExpiresAt,
+  familyRequestStatus,
   onUserUpdated,
 }: Props) {
   return (
@@ -59,6 +63,8 @@ export default function TabContent({
           userName={userName}
           userRole={userRole}
           userPlan={userPlan}
+          planExpiresAt={planExpiresAt}
+          familyRequestStatus={familyRequestStatus}
           onUserUpdated={onUserUpdated}
         />
       )}

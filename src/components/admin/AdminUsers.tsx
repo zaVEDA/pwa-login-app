@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import { authApi, FamilyRequestItem } from "@/lib/auth";
 
 type User = {
   id: number;
@@ -121,6 +122,73 @@ function UserCard({ user, onBack }: { user: User; onBack: () => void }) {
   );
 }
 
+function FamilyRequests() {
+  const [items, setItems] = useState<FamilyRequestItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  const load = () => {
+    authApi.adminListFamilyRequests().then(({ status, data }) => {
+      if (status === 200 && data.items) setItems(data.items);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const decide = async (id: number, decision: "approved" | "rejected") => {
+    setBusyId(id);
+    try {
+      await authApi.adminDecideFamilyRequest(id, decision);
+      load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const pending = items.filter((i) => i.status === "pending");
+
+  if (loading) return null;
+  if (pending.length === 0) return null;
+
+  return (
+    <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
+      <div className="flex items-center gap-2">
+        <Icon name="Heart" size={15} className="text-primary" />
+        <p className="font-cormorant text-lg font-semibold">Заявки «Для родных»</p>
+        <span className="doc-tag bg-amber-100 text-amber-700 text-[10px] ml-auto">{pending.length}</span>
+      </div>
+      {pending.map((r) => (
+        <div key={r.id} className="bg-white/60 rounded-xl p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">{r.full_name || "Без имени"}</p>
+              <p className="text-xs text-muted-foreground">{r.phone}</p>
+            </div>
+            <span className="text-xs text-primary bg-primary/10 rounded-lg px-2 py-1">«{r.code_word}»</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => decide(r.id, "approved")}
+              disabled={busyId === r.id}
+              className="flex-1 py-2 rounded-lg gold-gradient text-white text-xs font-medium disabled:opacity-60"
+            >
+              Подтвердить
+            </button>
+            <button
+              onClick={() => decide(r.id, "rejected")}
+              disabled={busyId === r.id}
+              className="flex-1 py-2 rounded-lg border border-red-200 text-red-500 text-xs font-medium disabled:opacity-60"
+            >
+              Отклонить
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userSearch, setUserSearch] = useState("");
@@ -131,6 +199,8 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-4">
+      <FamilyRequests />
+
       <div className="grid grid-cols-2 gap-3">
         {[
           { label: "Всего пользователей", value: mockUsers.length, icon: "Users", color: "text-amber-700" },

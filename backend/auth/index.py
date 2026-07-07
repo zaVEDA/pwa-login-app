@@ -45,15 +45,14 @@ def gen_token() -> str:
 def user_public(row, keys) -> dict:
     d = dict(zip(keys, row))
     d.pop("password_hash", None)
-    for k in ("consent_at", "created_at", "last_login_at"):
+    for k in ("consent_at", "created_at", "last_login_at", "plan_expires_at"):
         if d.get(k):
             d[k] = str(d[k])
     return d
 
 
-USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, plan"
-USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status", "plan"]
-VALID_PLANS = ("start", "medium", "pro", "family")
+USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, plan, plan_expires_at"
+USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status", "plan", "plan_expires_at"]
 
 
 def cors_headers():
@@ -247,7 +246,11 @@ def handler(event: dict, context) -> dict:
                 return resp(401, {"error": "Сессия истекла"})
             cur.execute(f"SELECT {USER_COLS} FROM users WHERE id = %s", (s[0],))
             urow = cur.fetchone()
-            return resp(200, {"ok": True, "user": user_public(urow, USER_KEYS)})
+            user = user_public(urow, USER_KEYS)
+            cur.execute("SELECT status FROM family_requests WHERE user_id = %s ORDER BY created_at DESC LIMIT 1", (s[0],))
+            fr = cur.fetchone()
+            user["family_request_status"] = fr[0] if fr else None
+            return resp(200, {"ok": True, "user": user})
 
         # 6. Обновить профиль (ФИО, email, логин, пароль)
         if action == "update_profile":
@@ -298,27 +301,76 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return resp(200, {"ok": True})
 
-        # 8. Выбор тарифа (без оплаты, пользователь сам закрепляет тариф за собой)
-        if action == "set_plan":
+        # 8. Заявка на бесплатный тариф «Для родных» по кодовому слову — модерирует администратор
+        if action == "request_family_plan":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
-            plan = (body.get("plan") or "").strip()
-            if plan not in VALID_PLANS:
-                return resp(400, {"error": "Неизвестный тариф"})
+            code_word = (body.get("code_word") or "").strip()
+            if not code_word:
+                return resp(400, {"error": "Введите кодовое слово"})
             cur.execute("SELECT user_id FROM user_sessions WHERE token = %s AND (expires_at IS NULL OR expires_at > NOW())", (token,))
             s = cur.fetchone()
             if not s:
                 return resp(401, {"error": "Сессия истекла"})
             uid = s[0]
-            cur.execute("UPDATE users SET plan = %s WHERE id = %s", (plan, uid))
-            cur.execute(f"SELECT {USER_COLS} FROM users WHERE id = %s", (uid,))
-            urow = cur.fetchone()
+            cur.execute("SELECT id FROM family_requests WHERE user_id = %s AND status = 'pending'", (uid,))
+            if cur.fetchone():
+                return resp(409, {"error": "Заявка уже отправлена, ожидайте подтверждения"})
+            cur.execute("INSERT INTO family_requests (user_id, code_word) VALUES (%s, %s)", (uid, code_word))
             conn.commit()
-            return resp(200, {"ok": True, "user": user_public(urow, USER_KEYS)})
+            return resp(200, {"ok": True})
 
         # 9. Выход
         if action == "logout":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
             cur.execute("UPDATE user_sessions SET expires_at = NOW() WHERE token = %s", (token,))
+            conn.commit()
+            return resp(200, {"ok": True})
+
+        # 10. Админ: список заявок на тариф «Для родных»
+        if action == "admin_list_family_requests":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute(
+                "SELECT fr.id, fr.user_id, u.full_name, u.phone, fr.code_word, fr.status, fr.created_at "
+                "FROM family_requests fr JOIN users u ON u.id = fr.user_id ORDER BY fr.created_at DESC LIMIT 200"
+            )
+            rows = cur.fetchall()
+            items = [
+                {
+                    "id": r[0], "user_id": r[1], "full_name": r[2], "phone": r[3],
+                    "code_word": r[4], "status": r[5], "created_at": str(r[6]) if r[6] else None,
+                }
+                for r in rows
+            ]
+            return resp(200, {"ok": True, "items": items})
+
+        # 11. Админ: подтвердить/отклонить заявку на тариф «Для родных»
+        if action == "admin_decide_family_request":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            request_id = body.get("request_id")
+            decision = body.get("decision")
+            if decision not in ("approved", "rejected"):
+                return resp(400, {"error": "Некорректное решение"})
+            cur.execute("SELECT user_id FROM family_requests WHERE id = %s", (request_id,))
+            fr = cur.fetchone()
+            if not fr:
+                return resp(404, {"error": "Заявка не найдена"})
+            cur.execute("UPDATE family_requests SET status = %s, decided_at = NOW() WHERE id = %s", (decision, request_id))
+            if decision == "approved":
+                cur.execute("UPDATE users SET plan = 'family', plan_expires_at = NULL WHERE id = %s", (fr[0],))
             conn.commit()
             return resp(200, {"ok": True})
 
