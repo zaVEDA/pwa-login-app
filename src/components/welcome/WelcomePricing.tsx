@@ -5,9 +5,9 @@ const PRESALE_UNTIL = new Date("2026-07-15T23:59:59");
 const isPresale = new Date() <= PRESALE_UNTIL;
 
 const paidPlans = [
-  { id: "start", label: "Опора", desc: "До 15 документов в месяц, до 9 подписей по ПЭП, шаблоны из базы", icon: "Sprout", month: 1444, halfYear: 6868, presaleHalfYear: 5955 },
-  { id: "medium", label: "Рост", desc: "Безграничное создание документов, до 33 подписей по ПЭП в месяц", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333, popular: true },
-  { id: "pro", label: "Творец", desc: "До 88 подписей по ПЭП в месяц, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
+  { id: "start", label: "Опора", desc: "До 15 документов в месяц, до 9 подписей по смс, шаблоны из базы", icon: "Sprout", month: 1444, halfYear: 6868, presaleHalfYear: 5955 },
+  { id: "medium", label: "Рост", desc: "Безграничное создание документов, до 33 подписей по смс в месяц", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333, popular: true },
+  { id: "pro", label: "Творец", desc: "До 88 подписей по смс в месяц, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
 ];
 
 export default function WelcomePricing() {
