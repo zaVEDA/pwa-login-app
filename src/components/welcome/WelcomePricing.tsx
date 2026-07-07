@@ -25,9 +25,17 @@ export default function WelcomePricing() {
       </p>
 
       {isPresale && (
-        <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 mb-8 max-w-md mx-auto">
-          <Icon name="Sparkles" size={14} className="text-primary flex-shrink-0" />
-          <p className="text-xs text-primary font-medium">Предпродажа по сниженной цене на подписку 6 месяцев — до 15 июля</p>
+        <div className="relative overflow-hidden rounded-2xl mb-10 px-6 py-5 text-center shadow-md"
+          style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))" }}>
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20"
+            style={{ background: "radial-gradient(circle, white, transparent)", transform: "translate(25%, -25%)" }} />
+          <div className="relative z-10 flex items-center justify-center gap-2 mb-1">
+            <Icon name="Sparkles" size={20} className="text-white flex-shrink-0" />
+            <p className="text-lg font-bold text-white">Предпродажа — только до 15 июля!</p>
+          </div>
+          <p className="relative z-10 text-sm text-white/90 font-medium">
+            Успейте оформить подписку на 6 месяцев по сниженной цене
+          </p>
         </div>
       )}
 
