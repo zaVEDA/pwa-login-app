@@ -52,7 +52,7 @@ export default function WelcomeHero() {
           <span style={{ color: "hsl(35 72% 48%)" }}>без бумажной волокиты</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
-          Договоры, чеки и согласия за пару минут с телефона. Клиент подписывает документ электронной подписью — без встреч и распечаток.
+          Договоры, чеки и согласия за пару минут с телефона. Клиент подписывает документ электронной подписью по СМС — без встреч и распечаток.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
