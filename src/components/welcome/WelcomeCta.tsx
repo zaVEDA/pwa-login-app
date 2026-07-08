@@ -32,8 +32,14 @@ export default function WelcomeCta() {
 
       {/* Footer */}
       <footer className="px-5 py-8 text-center border-t" style={{ borderColor: "hsl(36 28% 82%)" }}>
-        <p className="font-cormorant text-lg font-medium mb-1" style={{ color: "hsl(35 72% 42%)" }}>ООО «ЗаВедующая»</p>
-        <p className="text-xs text-muted-foreground">Документы и подписи для помогающих специалистов · 2026</p>
+        <p className="font-cormorant text-lg font-medium mb-1" style={{ color: "hsl(35 72% 42%)" }}>ЗаВедующая вашими документами</p>
+        <p className="text-xs text-muted-foreground mb-2">Документы и подписи для помогающих специалистов · 2026</p>
+        <p className="text-xs text-muted-foreground">
+          Кузнецова Юлия Владимировна · ИНН 380125982200 · самозанятая
+        </p>
+        <p className="text-xs text-muted-foreground">
+          e-mail: 89016625752@mail.ru · тел.: +7 901 662-57-52
+        </p>
       </footer>
     </>
   );
