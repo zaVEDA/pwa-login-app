@@ -251,6 +251,8 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     header_data = [
         [Paragraph("Грузоотправитель и его адрес, банковские реквизиты", tiny_b), Paragraph(seller_line, tiny),
          Paragraph("Форма по ОКУД", tiny), Paragraph("0330212", tiny_bc)],
+        [Paragraph("Структурное подразделение", tiny_b), Paragraph("—", tiny),
+         Paragraph("по ОКПО", tiny), Paragraph(seller_okpo or "—", tiny_c)],
         [Paragraph("Грузополучатель и его адрес, банковские реквизиты", tiny_b), Paragraph(client_line, tiny),
          Paragraph("по ОКПО", tiny), Paragraph("—", tiny_c)],
         [Paragraph("Поставщик и его адрес, банковские реквизиты", tiny_b), Paragraph(seller_line, tiny),
@@ -259,12 +261,15 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
          Paragraph("по ОКПО", tiny), Paragraph("—", tiny_c)],
         [Paragraph("Основание", tiny_b), Paragraph(basis_line, tiny),
          Paragraph("Вид деятельности по ОКДП", tiny), Paragraph("—", tiny_c)],
+        [Paragraph("Транспортная накладная", tiny_b), Paragraph("—", tiny),
+         Paragraph("номер / дата", tiny), Paragraph("—", tiny_c)],
+        [Paragraph("Вид операции", tiny_b), Paragraph("—", tiny),
+         Paragraph("", tiny), Paragraph("", tiny_c)],
     ]
     header_table = Table(header_data, colWidths=[LABEL_W, VALUE_W, CODE_LABEL_W, CODE_VALUE_W])
     header_table.setStyle(TableStyle([
         ("GRID", (0, 0), (-1, -1), 0.5, grid_color),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("BACKGROUND", (3, 0), (3, 0), colors.HexColor("#FBE4C4")),
         ("TOPPADDING", (0, 0), (-1, -1), 3),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ("LEFTPADDING", (0, 0), (-1, -1), 4),
@@ -322,7 +327,8 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     ]
     number_row = [Paragraph(str(n), tiny_bc) for n in range(1, 16)]
 
-    col_pct = [3, 24, 4, 6, 5, 5, 5, 5, 6, 7, 8, 9, 5, 7, 9]
+    # Пропорции колонок взяты 1:1 из официального бланка (границы столбцов строки 25 листа Excel)
+    col_pct = [4, 17, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
     col_widths = [PAGE_W * p / sum(col_pct) for p in col_pct]
 
     table_data = [group_headers, sub_headers, number_row]
@@ -371,8 +377,6 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
         ("SPAN", (11, 0), (11, 1)),  # Сумма без НДС
         ("SPAN", (12, 0), (13, 0)),  # НДС
         ("SPAN", (14, 0), (14, 1)),  # Сумма с учётом НДС
-        ("BACKGROUND", (0, 0), (-1, 1), colors.HexColor("#F5F0E8")),
-        ("BACKGROUND", (0, 2), (-1, 2), colors.HexColor("#EDEDED")),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("ALIGN", (1, 3), (1, -2), "LEFT"),
