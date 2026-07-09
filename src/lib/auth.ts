@@ -77,7 +77,12 @@ export const authApi = {
   resetPassword: (password: string) => call("reset_password", { password }),
   requestFamilyPlan: (code_word: string) => call("request_family_plan", { code_word }),
   adminListFamilyRequests: () => call("admin_list_family_requests"),
-  adminDecideFamilyRequest: (request_id: number, decision: "approved" | "rejected") =>
-    call("admin_decide_family_request", { request_id, decision }),
+  adminDecideFamilyRequest: (request_id: number, decision: "approved" | "rejected", plan_expires_at?: string) =>
+    call("admin_decide_family_request", { request_id, decision, plan_expires_at }),
+  adminGetFamilyCode: () => call("admin_get_family_code"),
+  adminSetFamilyCode: (code_word: string, expires_at: string | null) =>
+    call("admin_set_family_code", { code_word, expires_at }),
+  adminSetUserPassword: (login: string, password: string) =>
+    call("admin_set_user_password", { login, password }),
   logout: () => call("logout"),
 };

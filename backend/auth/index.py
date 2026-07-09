@@ -323,6 +323,14 @@ def handler(event: dict, context) -> dict:
             if not s:
                 return resp(401, {"error": "Сессия истекла"})
             uid = s[0]
+            cur.execute("SELECT code_word, expires_at FROM family_code_settings WHERE id = 1")
+            cw = cur.fetchone()
+            if not cw or not cw[0]:
+                return resp(400, {"error": "Кодовое слово пока не назначено"})
+            if cw[1] and cw[1] < datetime.datetime.utcnow():
+                return resp(400, {"error": "Срок действия кодового слова истёк"})
+            if code_word.strip().lower() != (cw[0] or "").strip().lower():
+                return resp(400, {"error": "Неверное кодовое слово"})
             cur.execute("SELECT id FROM family_requests WHERE user_id = %s AND status = 'pending'", (uid,))
             if cur.fetchone():
                 return resp(409, {"error": "Заявка уже отправлена, ожидайте подтверждения"})
@@ -373,15 +381,89 @@ def handler(event: dict, context) -> dict:
                 return resp(403, {"error": "Доступ запрещён"})
             request_id = body.get("request_id")
             decision = body.get("decision")
+            plan_expires_at = (body.get("plan_expires_at") or "").strip() or None
             if decision not in ("approved", "rejected"):
                 return resp(400, {"error": "Некорректное решение"})
+            if decision == "approved" and not plan_expires_at:
+                return resp(400, {"error": "Укажите дату, до которой действует тариф"})
             cur.execute("SELECT user_id FROM family_requests WHERE id = %s", (request_id,))
             fr = cur.fetchone()
             if not fr:
                 return resp(404, {"error": "Заявка не найдена"})
             cur.execute("UPDATE family_requests SET status = %s, decided_at = NOW() WHERE id = %s", (decision, request_id))
             if decision == "approved":
-                cur.execute("UPDATE users SET plan = 'family', plan_expires_at = NULL WHERE id = %s", (fr[0],))
+                cur.execute("UPDATE users SET plan = 'family', plan_expires_at = %s WHERE id = %s", (plan_expires_at, fr[0]))
+            conn.commit()
+            return resp(200, {"ok": True})
+
+        # 12. Админ: получить текущее кодовое слово и срок действия тарифа «Для родных»
+        if action == "admin_get_family_code":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute("SELECT code_word, expires_at FROM family_code_settings WHERE id = 1")
+            row = cur.fetchone()
+            return resp(200, {
+                "ok": True,
+                "code_word": row[0] if row else None,
+                "expires_at": str(row[1]) if row and row[1] else None,
+            })
+
+        # 13. Админ: назначить/сменить кодовое слово и дату окончания его действия
+        if action == "admin_set_family_code":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            code_word = (body.get("code_word") or "").strip()
+            expires_at = (body.get("expires_at") or "").strip() or None
+            if not code_word:
+                return resp(400, {"error": "Введите кодовое слово"})
+            cur.execute(
+                "INSERT INTO family_code_settings (id, code_word, expires_at, updated_at) VALUES (1, %s, %s, NOW()) "
+                "ON CONFLICT (id) DO UPDATE SET code_word = %s, expires_at = %s, updated_at = NOW()",
+                (code_word, expires_at, code_word, expires_at)
+            )
+            conn.commit()
+            return resp(200, {"ok": True, "code_word": code_word, "expires_at": expires_at})
+
+        # 14. Админ: назначить пароль пользователю вручную (по логину, телефону или id)
+        if action == "admin_set_user_password":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            target_login = (body.get("login") or "").strip()
+            target_user_id = body.get("user_id")
+            password = body.get("password") or ""
+            if len(password) < 6:
+                return resp(400, {"error": "Пароль должен быть не короче 6 символов"})
+            if target_user_id:
+                cur.execute("SELECT id FROM users WHERE id = %s", (target_user_id,))
+            elif target_login:
+                cur.execute(
+                    "SELECT id FROM users WHERE login = %s OR phone = %s",
+                    (target_login, normalize_phone(target_login))
+                )
+            else:
+                return resp(400, {"error": "Укажите логин пользователя"})
+            u = cur.fetchone()
+            if not u:
+                return resp(404, {"error": "Пользователь не найден"})
+            cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hash_password(password), u[0]))
             conn.commit()
             return resp(200, {"ok": True})
 

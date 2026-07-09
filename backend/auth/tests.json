@@ -66,6 +66,27 @@
       "path": "/",
       "body": { "action": "admin_decide_family_request", "request_id": 1, "decision": "approved" },
       "expectedStatus": 403
+    },
+    {
+      "name": "Получить кодовое слово без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_get_family_code" },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Назначить кодовое слово без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_set_family_code", "code_word": "Семья2026", "expires_at": "2026-12-31" },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Назначить пароль пользователю без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_set_user_password", "login": "test", "password": "test123" },
+      "expectedStatus": 403
     }
   ]
 }
