@@ -1,18 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import AdminLogin from "@/components/admin/AdminLogin";
 import AdminTemplates from "@/components/admin/AdminTemplates";
 import AdminPhrases from "@/components/admin/AdminPhrases";
 import AdminUsers from "@/components/admin/AdminUsers";
+import { authApi, getToken } from "@/lib/auth";
 
 type AdminTab = "templates" | "phrases" | "users";
 
 export default function AdminPanel() {
-  const [isAuthed, setIsAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("templates");
 
-  if (!isAuthed) {
-    return <AdminLogin onAuth={() => setIsAuthed(true)} />;
+  useEffect(() => {
+    const token = getToken();
+    if (!token) { setChecking(false); return; }
+    authApi.me().then(({ status, data }) => {
+      setIsAdmin(status === 200 && data.user?.role === "admin");
+      setChecking(false);
+    }).catch(() => setChecking(false));
+  }, []);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(36 25% 96%)" }}>
+        <Icon name="Loader" size={24} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-5"
+        style={{ background: "linear-gradient(160deg, hsl(20 15% 10%) 0%, hsl(22 20% 14%) 100%)" }}>
+        <div className="w-full max-w-sm text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gold-gradient shadow-lg mb-4">
+            <Icon name="Lock" size={24} className="text-white" />
+          </div>
+          <h1 className="font-cormorant text-3xl font-semibold text-white mb-1">Кабинет администратора</h1>
+          <p className="text-white/40 text-sm mb-6">Войдите под учётной записью администратора в приложении</p>
+          <a href="/" className="inline-block px-5 py-2.5 rounded-xl gold-gradient text-white text-sm font-medium">
+            ← Войти в приложении
+          </a>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -27,12 +59,6 @@ export default function AdminPanel() {
             <a href="/" className="text-xs text-muted-foreground px-3 py-1.5 rounded-lg border border-border bg-white/50">
               ← В приложение
             </a>
-            <button
-              onClick={() => setIsAuthed(false)}
-              className="w-9 h-9 rounded-xl bg-amber-700/10 flex items-center justify-center"
-            >
-              <Icon name="LogOut" size={15} className="text-amber-700" />
-            </button>
           </div>
         </div>
 
