@@ -101,7 +101,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   });
 
   const handleAdmin = busy(async () => {
-    const r = await authApi.loginPassword({ login: login || "admin", password });
+    const r = await authApi.loginPassword({ login: login || "zaVed", password });
     if (r.status !== 200) return setError(r.data.error || "Неверный логин или пароль");
     setToken(r.data.token);
     onAuth(r.data.user);
