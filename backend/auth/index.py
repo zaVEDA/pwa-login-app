@@ -262,8 +262,8 @@ def handler(event: dict, context) -> dict:
             uid = s[0]
 
             full_name = body.get("full_name")
-            email = (body.get("email") or "").strip().lower() or None
-            login = (body.get("login") or "").strip() or None
+            email = (body.get("email") or "").strip().lower() if "email" in body else None
+            login = (body.get("login") or "").strip() if "login" in body else None
             password = body.get("password")
 
             if login:
@@ -275,9 +275,20 @@ def handler(event: dict, context) -> dict:
                 if cur.fetchone():
                     return resp(409, {"error": "Этот email уже используется"})
 
-            sets = ["full_name = %s", "email = %s", "login = %s", "profile_completed = TRUE"]
-            params = [full_name, email, login]
+            sets = ["profile_completed = TRUE"]
+            params = []
+            if full_name is not None:
+                sets.append("full_name = %s")
+                params.append(full_name)
+            if "email" in body:
+                sets.append("email = %s")
+                params.append(email)
+            if "login" in body:
+                sets.append("login = %s")
+                params.append(login)
             if password:
+                if len(password) < 6:
+                    return resp(400, {"error": "Пароль должен быть не короче 6 символов"})
                 sets.append("password_hash = %s")
                 params.append(hash_password(password))
             params.append(uid)

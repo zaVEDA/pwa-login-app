@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import AdminUsers from "@/components/admin/AdminUsers";
 import PlanModal from "@/components/app/PlanModal";
+import ChangePasswordModal from "@/components/app/ChangePasswordModal";
 import { AuthUser, PlanType } from "@/lib/auth";
 import { themes } from "./constants";
 
@@ -45,6 +46,7 @@ export default function AccountTab({
   onUserUpdated,
 }: Props) {
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   return (
     <>
       {userRole === "admin" && (
@@ -109,6 +111,13 @@ export default function AccountTab({
             />
           )}
 
+          {showPasswordModal && (
+            <ChangePasswordModal
+              onClose={() => setShowPasswordModal(false)}
+              onSaved={(u) => onUserUpdated?.(u)}
+            />
+          )}
+
           {/* Цветовая тема */}
           <div className="card-warm rounded-2xl p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
@@ -166,6 +175,7 @@ export default function AccountTab({
           <div className="space-y-2">
             {[
               { icon: "User", label: "Профиль и деятельность", danger: false },
+              { icon: "KeyRound", label: "Сменить пароль", danger: false },
               { icon: "FileSignature", label: "Настройки подписи (ПЭП)", danger: false },
               { icon: "Bell", label: "Уведомления", danger: false },
               { icon: "BarChart3", label: "Учёт и налоги", danger: false },
@@ -174,7 +184,7 @@ export default function AccountTab({
             ].map((item) => (
               <button
                 key={item.label}
-                onClick={item.label === "Выйти" ? onLogout : undefined}
+                onClick={item.label === "Выйти" ? onLogout : item.label === "Сменить пароль" ? () => setShowPasswordModal(true) : undefined}
                 className={`w-full card-warm rounded-xl p-3.5 flex items-center gap-3 text-left shadow-sm active:scale-[0.98] transition-transform ${item.danger ? "border border-red-200/50" : ""}`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? "bg-red-50" : "bg-primary/10"}`}>
