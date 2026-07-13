@@ -367,7 +367,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
             <Icon name="Receipt" size={16} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Счёт на оплату</p>
+            <p className="text-sm font-medium truncate">Счёт{invoiceNumber ? ` № ${invoiceNumber}` : " на оплату"}</p>
             <p className="text-xs text-muted-foreground">{total > 0 ? `${total.toLocaleString("ru-RU")} ₽` : "Черновик"}</p>
           </div>
           <button

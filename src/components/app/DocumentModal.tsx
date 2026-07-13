@@ -36,6 +36,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   const [formatSheet, setFormatSheet] = useState(false);
   const [formatIntent, setFormatIntent] = useState<"save" | "pdf">("save");
   const [editing, setEditing] = useState(false);
+  const [minimized, setMinimized] = useState(false);
 
   useEffect(() => {
     fetch(`${INVOICES_URL}?document_id=${docId}`, { headers: { "X-Phone": phone } })
@@ -165,6 +166,42 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   const typeLabel = docType === "act" ? "Акт выполненных работ" : "Товарная накладная";
   const readOnly = saved && !editing;
 
+  if (minimized) {
+    return (
+      <div
+        className="fixed left-4 right-4 z-[60] max-w-md mx-auto"
+        style={{ bottom: "calc(6.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <div
+          className="card-warm rounded-2xl px-4 py-3 shadow-lg border flex items-center gap-2.5"
+          style={{ borderColor: "hsl(var(--primary) / 0.3)" }}
+        >
+          <div className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center flex-shrink-0">
+            <Icon name={docType === "act" ? "FileCheck" : "FileText"} size={16} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{typeLabel}{docNumber ? ` № ${docNumber}` : ""}</p>
+            <p className="text-xs text-muted-foreground">{total > 0 ? `${total.toLocaleString("ru-RU")} ₽` : "Черновик"}</p>
+          </div>
+          <button
+            onClick={() => setMinimized(false)}
+            aria-label="Развернуть документ"
+            className="w-10 h-10 rounded-xl border border-border bg-white/60 flex items-center justify-center flex-shrink-0 active:scale-95 transition-all hover:border-primary"
+          >
+            <Icon name="ChevronUp" size={16} className="text-muted-foreground" />
+          </button>
+          <button
+            onClick={onClose}
+            aria-label="Закрыть документ"
+            className="w-10 h-10 rounded-xl border border-border bg-white/60 flex items-center justify-center flex-shrink-0 active:scale-95 transition-all hover:border-primary"
+          >
+            <Icon name="X" size={16} className="text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
       <div className="absolute inset-0 bg-background" />
@@ -179,6 +216,13 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
         {/* Header */}
         <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMinimized(true)}
+              aria-label="Свернуть документ"
+              className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
+            >
+              <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
+            </button>
             <div className="flex-1 min-w-0">
               <h2 className="font-cormorant text-2xl font-semibold leading-tight truncate">{typeLabel}</h2>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
