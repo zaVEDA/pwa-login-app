@@ -130,11 +130,52 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
       return;
     }
     setSaveLoading(true);
+
+    // При сохранении ИП/ООО заново проверяем и фиксируем ИНН в реестре ФНС,
+    // если данные ещё не подтверждены (клиент мог измениться при редактировании).
+    let verifiedClient = clientInfo;
+    if ((clientType === "ip" || clientType === "ooo") && clientInfo?.inn && !clientInfo.address) {
+      try {
+        const chk = await fetch(CHECK_INN_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inn: clientInfo.inn, entity_type: clientType === "ooo" ? "ooo" : "ip" }),
+        });
+        const chkData = await chk.json();
+        const chkParsed = typeof chkData === "string" ? JSON.parse(chkData) : chkData;
+        if (chkParsed.valid) {
+          verifiedClient = {
+            name: chkParsed.name || clientInfo.name,
+            inn: chkParsed.inn || clientInfo.inn,
+            ogrnip: chkParsed.ogrnip || clientInfo.ogrnip || "",
+            address: chkParsed.address || clientInfo.address || "",
+          };
+          setClientInfo(verifiedClient);
+        } else {
+          setSaveError(chkParsed.message || "ИНН не найден в реестре ФНС. Проверьте данные клиента.");
+          setSaveLoading(false);
+          return;
+        }
+      } catch {
+        setSaveError("Не удалось проверить ИНН в ФНС. Проверьте интернет.");
+        setSaveLoading(false);
+        return;
+      }
+    }
+
+    const payload = {
+      ...invoicePayload(),
+      client_name: verifiedClient?.name || "",
+      client_inn: verifiedClient?.inn || "",
+      client_ogrnip: verifiedClient?.ogrnip || "",
+      client_address: verifiedClient?.address || "",
+    };
+
     try {
       const res = await fetch(INVOICES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "save", ...invoicePayload() }),
+        body: JSON.stringify({ action: "save", ...payload }),
       });
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;

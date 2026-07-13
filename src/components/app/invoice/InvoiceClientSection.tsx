@@ -73,7 +73,7 @@ export default function InvoiceClientSection({
     <div className="space-y-3">
       <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Кому выставляем</p>
 
-      {/* Тип клиента */}
+      {/* Тип клиента — подсвечивается обводкой по выбранному клиенту / ИНН */}
       <div className="grid grid-cols-3 gap-2">
         {([
           { value: "ip", label: "ИП", icon: "Briefcase" },
@@ -83,10 +83,10 @@ export default function InvoiceClientSection({
           <button
             key={opt.value}
             onClick={() => { setClientType(opt.value); setClientInn(""); setClientInfo(null); setClientError(""); }}
-            className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border text-xs font-medium transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border-2 text-xs font-medium transition-all ${
               clientType === opt.value
-                ? "gold-gradient text-white border-transparent shadow-sm"
-                : "bg-white/60 border-border text-foreground"
+                ? "gold-gradient text-white border-primary shadow-sm ring-2 ring-primary/30"
+                : "bg-white/60 border-transparent text-foreground"
             }`}
           >
             <Icon name={opt.icon} size={13} />
@@ -95,8 +95,8 @@ export default function InvoiceClientSection({
         ))}
       </div>
 
-      {/* Быстрый выбор из справочника */}
-      {savedClients.length > 0 && !clientInfo && (
+      {/* Быстрый выбор из справочника — не сворачивается, видно что выбрано */}
+      {savedClients.length > 0 && (
         <div>
           <button
             onClick={() => setShowClientList(v => !v)}
@@ -108,21 +108,34 @@ export default function InvoiceClientSection({
           </button>
           {showClientList && (
             <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto">
-              {savedClients.map((c) => (
-                <button
-                  key={c.id ?? c.inn}
-                  onClick={() => {
-                    setClientInfo(c);
-                    setClientInn(c.inn || "");
-                    setClientType((c.client_type as ClientType) || "ip");
-                    setShowClientList(false);
-                  }}
-                  className="w-full text-left px-3 py-2.5 rounded-xl border border-border bg-white/70 hover:border-primary transition-colors"
-                >
-                  <p className="text-sm font-medium truncate">{c.name}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">ИНН {c.inn}</p>
-                </button>
-              ))}
+              {savedClients.map((c) => {
+                const selected = !!clientInfo && (
+                  (c.inn && clientInfo.inn && c.inn === clientInfo.inn) ||
+                  (!c.inn && !clientInfo.inn && c.name === clientInfo.name)
+                );
+                return (
+                  <button
+                    key={c.id ?? c.inn}
+                    onClick={() => {
+                      setClientInfo(c);
+                      setClientInn(c.inn || "");
+                      setClientType((c.client_type as ClientType) || (c.inn ? "ip" : "individual"));
+                      setClientError("");
+                    }}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl border-2 transition-colors flex items-center gap-2 ${
+                      selected
+                        ? "border-primary bg-primary/5"
+                        : "border-transparent bg-white/70 hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{c.name}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{c.inn ? `ИНН ${c.inn}` : "Физ. лицо"}</p>
+                    </div>
+                    {selected && <Icon name="CheckCircle" size={16} className="text-primary flex-shrink-0" />}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
