@@ -373,14 +373,14 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
           <button
             onClick={() => setMinimized(false)}
             aria-label="Развернуть счёт"
-            className="w-10 h-10 rounded-xl border border-border bg-white/60 flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-xl border border-border bg-white/60 flex items-center justify-center flex-shrink-0 active:scale-95 transition-all hover:border-primary"
           >
             <Icon name="ChevronUp" size={16} className="text-muted-foreground" />
           </button>
           <button
             onClick={onClose}
             aria-label="Закрыть счёт"
-            className="w-10 h-10 rounded-xl border border-border bg-white/60 flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-xl border border-border bg-white/60 flex items-center justify-center flex-shrink-0 active:scale-95 transition-all hover:border-primary"
           >
             <Icon name="X" size={16} className="text-muted-foreground" />
           </button>
