@@ -11,6 +11,7 @@ interface Props {
   savedClients: ClientInfo[];
   showClientList: boolean;
   innMaxLen: number;
+  readOnly: boolean;
   setClientType: (v: ClientType) => void;
   setClientInn: (v: string) => void;
   setClientInfo: (v: ClientInfo | null) => void;
@@ -28,6 +29,7 @@ export default function InvoiceClientSection({
   savedClients,
   showClientList,
   innMaxLen,
+  readOnly,
   setClientType,
   setClientInn,
   setClientInfo,
@@ -35,6 +37,38 @@ export default function InvoiceClientSection({
   setShowClientList,
   handleInnCheck,
 }: Props) {
+  // Режим только для чтения: показываем данные клиента без возможности редактирования
+  if (readOnly) {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Кому выставляем</p>
+        <div className="rounded-xl border border-border bg-white/60 p-3 space-y-2">
+          <p className="text-sm font-medium">{clientInfo?.name || "—"}</p>
+          {clientInfo?.inn && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-[10px] text-muted-foreground">ИНН</p>
+                <p className="text-sm font-medium mt-0.5">{clientInfo.inn}</p>
+              </div>
+              {clientInfo.ogrnip && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{clientType === "ooo" ? "ОГРН" : "ОГРНИП"}</p>
+                  <p className="text-sm font-medium mt-0.5">{clientInfo.ogrnip}</p>
+                </div>
+              )}
+            </div>
+          )}
+          {clientInfo?.address && (
+            <div>
+              <p className="text-[10px] text-muted-foreground">Адрес</p>
+              <p className="text-sm mt-0.5">{clientInfo.address}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Кому выставляем</p>

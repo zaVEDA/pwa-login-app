@@ -9,6 +9,7 @@ interface Props {
   autocompleteIndex: number | null;
   dueDate: string;
   comment: string;
+  readOnly: boolean;
   setShowServiceList: Dispatch<SetStateAction<number | null>>;
   setAutocompleteIndex: Dispatch<SetStateAction<number | null>>;
   setDueDate: (v: string) => void;
@@ -26,6 +27,7 @@ export default function InvoiceItemsSection({
   autocompleteIndex,
   dueDate,
   comment,
+  readOnly,
   setShowServiceList,
   setAutocompleteIndex,
   setDueDate,
@@ -44,7 +46,7 @@ export default function InvoiceItemsSection({
           <div key={i} className="card-warm rounded-xl p-3 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Позиция {i + 1}</p>
-              {items.length > 1 && (
+              {items.length > 1 && !readOnly && (
                 <button onClick={() => removeItem(i)}>
                   <Icon name="Trash2" size={13} className="text-red-400" />
                 </button>
@@ -56,16 +58,17 @@ export default function InvoiceItemsSection({
                 type="text"
                 value={item.name}
                 onChange={(e) => { updateItem(i, "name", e.target.value); setAutocompleteIndex(i); }}
-                onFocus={() => setAutocompleteIndex(i)}
+                onFocus={() => !readOnly && setAutocompleteIndex(i)}
                 onBlur={() => {
                   setTimeout(() => setAutocompleteIndex((cur) => cur === i ? null : cur), 150);
                   if (item.name.trim()) saveService(item.name, item.price);
                 }}
+                readOnly={readOnly}
                 placeholder="Название услуги или товара"
-                className={`w-full px-3 py-2 text-sm outline-none rounded-lg border border-border bg-white/70 focus:border-primary transition-colors ${savedServices.length > 0 ? "pr-9" : ""}`}
+                className={`w-full px-3 py-2 text-sm outline-none rounded-lg border border-border bg-white/70 focus:border-primary transition-colors ${savedServices.length > 0 && !readOnly ? "pr-9" : ""}`}
               />
               {/* Иконка справочника — справа внутри поля */}
-              {savedServices.length > 0 && (
+              {savedServices.length > 0 && !readOnly && (
                 <div className="absolute right-1 top-1/2 -translate-y-1/2">
                   <button
                     onMouseDown={(e) => e.preventDefault()}
@@ -141,6 +144,7 @@ export default function InvoiceItemsSection({
                   inputMode="decimal"
                   value={item.qty}
                   onChange={(e) => updateItem(i, "qty", e.target.value)}
+                  readOnly={readOnly}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
               </div>
@@ -152,6 +156,7 @@ export default function InvoiceItemsSection({
                   value={item.price}
                   onChange={(e) => updateItem(i, "price", e.target.value)}
                   onBlur={() => { if (item.name.trim()) saveService(item.name, item.price); }}
+                  readOnly={readOnly}
                   placeholder="0"
                   className="w-full px-3 py-2 rounded-lg border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
@@ -159,37 +164,45 @@ export default function InvoiceItemsSection({
             </div>
           </div>
         ))}
-        <button
-          onClick={addItem}
-          className="w-full py-2.5 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-center justify-center gap-1.5"
-        >
-          <Icon name="Plus" size={13} />
-          Добавить позицию
-        </button>
+        {!readOnly && (
+          <button
+            onClick={addItem}
+            className="w-full py-2.5 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-center justify-center gap-1.5"
+          >
+            <Icon name="Plus" size={13} />
+            Добавить позицию
+          </button>
+        )}
       </div>
 
       {/* Срок оплаты */}
-      <div>
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Срок оплаты</p>
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-        />
-      </div>
+      {(!readOnly || dueDate) && (
+        <div>
+          <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Срок оплаты</p>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            readOnly={readOnly}
+            className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+          />
+        </div>
+      )}
 
       {/* Комментарий */}
-      <div>
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Комментарий</p>
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Дополнительные условия..."
-          rows={3}
-          className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors resize-none"
-        />
-      </div>
+      {(!readOnly || comment) && (
+        <div>
+          <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Комментарий</p>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            readOnly={readOnly}
+            placeholder="Дополнительные условия..."
+            rows={3}
+            className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors resize-none"
+          />
+        </div>
+      )}
     </>
   );
 }

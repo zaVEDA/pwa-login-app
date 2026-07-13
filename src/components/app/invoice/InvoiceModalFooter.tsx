@@ -3,6 +3,8 @@ import Icon from "@/components/ui/icon";
 interface Props {
   total: number;
   saved: boolean;
+  editing: boolean;
+  readOnly: boolean;
   saveLoading: boolean;
   saveError: string;
   pdfLoading: boolean;
@@ -18,6 +20,8 @@ interface Props {
 export default function InvoiceModalFooter({
   total,
   saved,
+  editing,
+  readOnly,
   saveLoading,
   saveError,
   pdfLoading,
@@ -92,7 +96,7 @@ export default function InvoiceModalFooter({
             </p>
           </div>
           {/* Кнопка Сохранить */}
-          {!saved ? (
+          {!saved || editing ? (
             <button
               onClick={handleSave}
               disabled={saveLoading}
@@ -102,7 +106,7 @@ export default function InvoiceModalFooter({
                 ? <Icon name="Loader" size={15} className="animate-spin" />
                 : <Icon name="Save" size={15} />
               }
-              {saveLoading ? "Сохраняю..." : "Сохранить"}
+              {saveLoading ? "Сохраняю..." : editing ? "Сохранить изменения" : "Сохранить"}
             </button>
           ) : (
             <div className="flex-shrink-0 flex items-center gap-1.5 text-green-600">
@@ -112,8 +116,8 @@ export default function InvoiceModalFooter({
           )}
         </div>
 
-        {/* Кнопки действий — появляются после сохранения */}
-        {saved && (
+        {/* Кнопки действий — появляются после сохранения (кроме режима редактирования) */}
+        {readOnly && (
           <div className="flex gap-2">
             <button
               onClick={handleCreatePdf}

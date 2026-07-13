@@ -42,6 +42,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
 
   // Состояния сохранения и действий
   const [saved, setSaved] = useState(false);        // счёт сохранён (номер зафиксирован)
+  const [editing, setEditing] = useState(false);    // режим редактирования сохранённого счёта
   const [savedId, setSavedId] = useState<number | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -139,6 +140,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       if (parsed.ok) {
         setSaved(true);
+        setEditing(false);
         setSavedId(parsed.id);
         if (parsed.invoice_number) setInvoiceNumber(parsed.invoice_number);
         onSaved?.();
@@ -308,6 +310,8 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
     return sum + qty * price;
   }, 0);
 
+  const readOnly = saved && !editing;
+
   if (minimized) {
     return (
       <div
@@ -360,6 +364,8 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
           invoiceNumber={invoiceNumber}
           invoiceDate={invoiceDate}
           saved={saved}
+          readOnly={readOnly}
+          onEdit={() => setEditing(true)}
           setInvoiceNumber={setInvoiceNumber}
           setInvoiceDate={setInvoiceDate}
           setMinimized={setMinimized}
@@ -379,6 +385,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
             savedClients={savedClients}
             showClientList={showClientList}
             innMaxLen={innMaxLen}
+            readOnly={readOnly}
             setClientType={setClientType}
             setClientInn={setClientInn}
             setClientInfo={setClientInfo}
@@ -395,6 +402,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
             autocompleteIndex={autocompleteIndex}
             dueDate={dueDate}
             comment={comment}
+            readOnly={readOnly}
             setShowServiceList={setShowServiceList}
             setAutocompleteIndex={setAutocompleteIndex}
             setDueDate={setDueDate}
@@ -410,6 +418,8 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
         <InvoiceModalFooter
           total={total}
           saved={saved}
+          editing={editing}
+          readOnly={readOnly}
           saveLoading={saveLoading}
           saveError={saveError}
           pdfLoading={pdfLoading}

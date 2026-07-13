@@ -4,6 +4,8 @@ interface Props {
   invoiceNumber: string;
   invoiceDate: string;
   saved: boolean;
+  readOnly: boolean;
+  onEdit: () => void;
   setInvoiceNumber: (v: string) => void;
   setInvoiceDate: (v: string) => void;
   setMinimized: (v: boolean) => void;
@@ -14,6 +16,8 @@ export default function InvoiceModalHeader({
   invoiceNumber,
   invoiceDate,
   saved,
+  readOnly,
+  onEdit,
   setInvoiceNumber,
   setInvoiceDate,
   setMinimized,
@@ -43,11 +47,21 @@ export default function InvoiceModalHeader({
             <input
               type="date"
               value={invoiceDate}
-              onChange={(e) => setInvoiceDate(e.target.value)}
-              className="text-xs text-foreground bg-transparent outline-none border-b border-dashed border-border focus:border-primary"
+              onChange={(e) => !readOnly && setInvoiceDate(e.target.value)}
+              readOnly={readOnly}
+              className={`text-xs text-foreground bg-transparent outline-none border-b border-dashed ${readOnly ? "border-transparent cursor-default" : "border-border focus:border-primary"}`}
             />
           </div>
         </div>
+        {readOnly && (
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-lg px-3 py-1.5 shadow-sm active:scale-95 transition-transform flex-shrink-0"
+          >
+            <Icon name="Pencil" size={13} />
+            Изменить
+          </button>
+        )}
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center"
