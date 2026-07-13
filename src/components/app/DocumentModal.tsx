@@ -38,6 +38,10 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   const [editing, setEditing] = useState(false);
   const [minimized, setMinimized] = useState(false);
 
+  // ВРЕМЕННО: формы ТОРГ-12 и УПД не доработаны — доступны только тестовому пользователю.
+  // Остальным при накладной оставляем только обычную форму.
+  const isTestUser = (phone || "").replace(/\D/g, "") === "70000000002";
+
   useEffect(() => {
     fetch(`${INVOICES_URL}?document_id=${docId}`, { headers: { "X-Phone": phone } })
       .then(r => r.json())
@@ -84,7 +88,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
 
   const doSave = async (format?: "simple" | "torg12" | "upd") => {
     setSaveError(""); setSaving(true);
-    const fmt = format ?? docFormat;
+    const fmt = isTestUser ? (format ?? docFormat) : "simple";
     try {
       const res = await fetch(INVOICES_URL, {
         method: "POST",
@@ -115,11 +119,12 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   };
 
   const openPdf = () => {
-    if (docType === "invoice_note") {
+    // Для накладной выбор формы показываем только тестовому (ТОРГ-12/УПД пока не доработаны).
+    if (docType === "invoice_note" && isTestUser) {
       setFormatIntent("pdf");
       setFormatSheet(true);
     } else {
-      handlePdf();
+      handlePdf("simple");
     }
   };
 
@@ -165,10 +170,6 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
 
   const typeLabel = docType === "act" ? "Акт выполненных работ" : "Товарная накладная";
   const readOnly = saved && !editing;
-
-  // ВРЕМЕННО: скачивание PDF накладной (ТОРГ-12/УПД не доработаны) доступно только тестовому пользователю.
-  const isTestUser = (phone || "").replace(/\D/g, "") === "70000000002";
-  const canDownloadPdf = docType === "act" || isTestUser;
 
   if (minimized) {
     return (
@@ -352,8 +353,10 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Форма накладной</p>
               {[
                 { id: "simple" as const, icon: "FileText", label: "Обычная накладная", desc: "Простая форма без унифицированного шаблона" },
-                { id: "torg12" as const, icon: "FileSpreadsheet", label: "ТОРГ-12", desc: "Унифицированная форма товарной накладной" },
-                { id: "upd" as const, icon: "FileCheck2", label: "УПД", desc: "Универсальный передаточный документ" },
+                ...(isTestUser ? [
+                  { id: "torg12" as const, icon: "FileSpreadsheet", label: "ТОРГ-12", desc: "Унифицированная форма товарной накладной" },
+                  { id: "upd" as const, icon: "FileCheck2", label: "УПД", desc: "Универсальный передаточный документ" },
+                ] : []),
               ].map(f => (
                 <button key={f.id} onClick={() => handleChooseFormat(f.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform text-left">
@@ -428,13 +431,11 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
           )}
           {readOnly && (
             <div className="flex gap-2">
-              {canDownloadPdf && (
-                <button onClick={openPdf} disabled={pdfLoading || !userPlan}
-                  className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
-                  {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name={userPlan ? "FileDown" : "Lock"} size={14} />}
-                  {pdfLoading ? "Генерирую..." : "Скачать PDF"}
-                </button>
-              )}
+              <button onClick={openPdf} disabled={pdfLoading || !userPlan}
+                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
+                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name={userPlan ? "FileDown" : "Lock"} size={14} />}
+                {pdfLoading ? "Генерирую..." : "Скачать PDF"}
+              </button>
               <button onClick={() => setShareSheet(true)} disabled={!userPlan}
                 className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
                 <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
