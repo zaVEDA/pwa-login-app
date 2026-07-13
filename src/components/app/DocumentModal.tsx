@@ -178,12 +178,9 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
 
         {/* Header */}
         <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
-          <div className="flex items-center gap-3">
-            <button onClick={onClose} className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center">
-              <Icon name="X" size={16} className="text-muted-foreground" />
-            </button>
+          <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <h2 className="font-cormorant text-2xl font-semibold leading-tight">{typeLabel}</h2>
+              <h2 className="font-cormorant text-2xl font-semibold leading-tight truncate">{typeLabel}</h2>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className="text-xs text-muted-foreground">№</span>
                 <span className="text-xs font-medium text-primary">{docNumber}</span>
@@ -195,7 +192,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
               /* Кнопка Изменить */
               <button
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-lg px-3 py-1.5 shadow-sm active:scale-95 transition-transform flex-shrink-0"
+                className="h-9 flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-xl px-3.5 shadow-sm active:scale-95 transition-transform flex-shrink-0"
               >
                 <Icon name="Pencil" size={13} />
                 Изменить
@@ -204,11 +201,17 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
               /* Переключатель типа */
               <button
                 onClick={() => setDocType(t => t === "act" ? "invoice_note" : "act")}
-                className="text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 flex-shrink-0"
+                className="h-9 text-[11px] text-primary border border-primary/30 rounded-xl px-2.5 flex-shrink-0 hover:border-primary transition-colors"
               >
                 {docType === "act" ? "Накладная" : "Акт"}
               </button>
             )}
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
+            >
+              <Icon name="X" size={16} className="text-muted-foreground" />
+            </button>
           </div>
         </div>
 
