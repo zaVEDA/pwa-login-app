@@ -28,7 +28,7 @@ export default function InvoiceModalHeader({
       <div className="flex items-center gap-3">
         <button
           onClick={() => setMinimized(true)}
-          className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center"
+          className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
         >
           <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
         </button>
@@ -64,7 +64,7 @@ export default function InvoiceModalHeader({
         )}
         <button
           onClick={onClose}
-          className="w-9 h-9 rounded-xl border border-border bg-white/60 flex items-center justify-center"
+          className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
         >
           <Icon name="X" size={16} className="text-muted-foreground" />
         </button>
