@@ -166,6 +166,10 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   const typeLabel = docType === "act" ? "Акт выполненных работ" : "Товарная накладная";
   const readOnly = saved && !editing;
 
+  // ВРЕМЕННО: скачивание PDF накладной (ТОРГ-12/УПД не доработаны) доступно только тестовому пользователю.
+  const isTestUser = (phone || "").replace(/\D/g, "") === "70000000002";
+  const canDownloadPdf = docType === "act" || isTestUser;
+
   if (minimized) {
     return (
       <div
@@ -424,11 +428,13 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
           )}
           {readOnly && (
             <div className="flex gap-2">
-              <button onClick={openPdf} disabled={pdfLoading || !userPlan}
-                className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
-                {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name={userPlan ? "FileDown" : "Lock"} size={14} />}
-                {pdfLoading ? "Генерирую..." : "Скачать PDF"}
-              </button>
+              {canDownloadPdf && (
+                <button onClick={openPdf} disabled={pdfLoading || !userPlan}
+                  className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
+                  {pdfLoading ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name={userPlan ? "FileDown" : "Lock"} size={14} />}
+                  {pdfLoading ? "Генерирую..." : "Скачать PDF"}
+                </button>
+              )}
               <button onClick={() => setShareSheet(true)} disabled={!userPlan}
                 className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50">
                 <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
