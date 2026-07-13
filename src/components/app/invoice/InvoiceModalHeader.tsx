@@ -25,15 +25,15 @@ export default function InvoiceModalHeader({
 }: Props) {
   return (
     <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => setMinimized(true)}
           className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
         >
           <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
         </button>
-        <div className="flex-1">
-          <h2 className="font-cormorant text-2xl font-semibold leading-tight">Счёт на оплату</h2>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-cormorant text-2xl font-semibold leading-tight truncate">Счёт на оплату</h2>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-muted-foreground">№</span>
             <input
