@@ -2,6 +2,7 @@ import WelcomeHero from "@/components/welcome/WelcomeHero";
 import WelcomeBenefits from "@/components/welcome/WelcomeBenefits";
 import WelcomePricing from "@/components/welcome/WelcomePricing";
 import WelcomeCta from "@/components/welcome/WelcomeCta";
+import CookieBanner from "@/components/welcome/CookieBanner";
 
 export default function Welcome() {
   return (
@@ -10,6 +11,7 @@ export default function Welcome() {
       <WelcomeBenefits />
       <WelcomePricing />
       <WelcomeCta />
+      <CookieBanner />
     </div>
   );
 }
