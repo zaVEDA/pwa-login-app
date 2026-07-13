@@ -86,10 +86,13 @@ def handler(event: dict, context) -> dict:
     try:
         # 1. Запрос кода (на телефон или email)
         if action == "request_code":
-            purpose = body.get("purpose", "login")  # login | reset
+            purpose = body.get("purpose", "login")  # login | reset | register
             channel = body.get("channel", "sms")    # sms | email
             phone = normalize_phone(body.get("phone", ""))
             email = (body.get("email") or "").strip().lower()
+
+            reg_email = None
+            reg_password_hash = None
 
             user_id = None
             if channel == "sms":
@@ -100,6 +103,25 @@ def handler(event: dict, context) -> dict:
                 user_id = r[0] if r else None
                 if purpose == "reset" and not user_id:
                     return resp(404, {"error": "Аккаунт с таким номером не найден"})
+
+                # Регистрация нового пользователя: телефон+email+пароль+согласие,
+                # аккаунт создастся ТОЛЬКО после подтверждения кода из SMS
+                if purpose == "register":
+                    if user_id:
+                        return resp(409, {"error": "Аккаунт с таким номером уже существует"})
+                    reg_email = (body.get("email") or "").strip().lower()
+                    password = body.get("password") or ""
+                    consent = bool(body.get("consent"))
+                    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", reg_email):
+                        return resp(400, {"error": "Введите корректный email"})
+                    if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{1,6}$", password):
+                        return resp(400, {"error": "Пароль: латиница, цифры и знаки, до 6 символов"})
+                    if not consent:
+                        return resp(400, {"error": "Нужно согласие на обработку персональных данных"})
+                    cur.execute("SELECT id FROM users WHERE email = %s", (reg_email,))
+                    if cur.fetchone():
+                        return resp(409, {"error": "Аккаунт с таким email уже существует"})
+                    reg_password_hash = hash_password(password)
             else:
                 if not email:
                     return resp(400, {"error": "Введите email"})
@@ -112,8 +134,9 @@ def handler(event: dict, context) -> dict:
             code = gen_code()
             expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
             cur.execute(
-                "INSERT INTO auth_codes (user_id, phone, email, code, purpose, channel, expires_at) VALUES (%s,%s,%s,%s,%s,%s,%s)",
-                (user_id, phone or None, email or None, code, purpose, channel, expires)
+                "INSERT INTO auth_codes (user_id, phone, email, code, purpose, channel, expires_at, reg_email, reg_password_hash) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (user_id, phone or None, email or None, code, purpose, channel, expires, reg_email, reg_password_hash)
             )
             conn.commit()
             # ЗАГЛУШКА: реальная отправка SMS/email подключается позже
@@ -130,17 +153,19 @@ def handler(event: dict, context) -> dict:
 
             if channel == "sms":
                 cur.execute(
-                    "SELECT id, code FROM auth_codes WHERE phone = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+                    "SELECT id, code, reg_email, reg_password_hash FROM auth_codes WHERE phone = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
                     (phone, purpose)
                 )
             else:
                 cur.execute(
-                    "SELECT id, code FROM auth_codes WHERE email = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+                    "SELECT id, code, reg_email, reg_password_hash FROM auth_codes WHERE email = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
                     (email, purpose)
                 )
             row = cur.fetchone()
             if not row or row[1] != code:
                 return resp(400, {"error": "Неверный или просроченный код"})
+            reg_email = row[2]
+            reg_password_hash = row[3]
             cur.execute("UPDATE auth_codes SET used = TRUE WHERE id = %s", (row[0],))
 
             # Находим или создаём пользователя
@@ -150,6 +175,17 @@ def handler(event: dict, context) -> dict:
                 if ex:
                     uid = ex[0]
                     cur.execute("UPDATE users SET last_login_at = NOW() WHERE id = %s", (uid,))
+                elif purpose == "register" and reg_email and reg_password_hash:
+                    # Аккаунт создаётся ТОЛЬКО сейчас — после подтверждения кода из SMS
+                    cur.execute("SELECT id FROM users WHERE email = %s", (reg_email,))
+                    if cur.fetchone():
+                        return resp(409, {"error": "Аккаунт с таким email уже существует"})
+                    cur.execute(
+                        "INSERT INTO users (phone, email, login, password_hash, consent_pep, consent_at, last_login_at, created_at) "
+                        "VALUES (%s, %s, %s, %s, TRUE, NOW(), NOW(), NOW()) RETURNING id",
+                        (phone, reg_email, reg_email, reg_password_hash)
+                    )
+                    uid = cur.fetchone()[0]
                 else:
                     cur.execute(
                         "INSERT INTO users (phone, consent_pep, consent_at, last_login_at, created_at) VALUES (%s, TRUE, NOW(), NOW(), NOW()) RETURNING id",
@@ -184,52 +220,6 @@ def handler(event: dict, context) -> dict:
             conn.commit()
 
             # reset: разрешаем установить новый пароль этим же токеном
-            return resp(200, {"ok": True, "token": token, "user": user})
-
-        # 2b. Регистрация сразу по телефону + email + пароль (с согласием ПЭП)
-        if action == "register":
-            phone = normalize_phone(body.get("phone", ""))
-            email = (body.get("email") or "").strip().lower()
-            password = body.get("password") or ""
-            consent = bool(body.get("consent"))
-
-            if len(phone) < 12:
-                return resp(400, {"error": "Введите корректный номер телефона"})
-            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-                return resp(400, {"error": "Введите корректный email"})
-            if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{1,6}$", password):
-                return resp(400, {"error": "Пароль: латиница, цифры и знаки, до 6 символов"})
-            if not consent:
-                return resp(400, {"error": "Нужно согласие на обработку персональных данных"})
-
-            cur.execute("SELECT id FROM users WHERE phone = %s", (phone,))
-            if cur.fetchone():
-                return resp(409, {"error": "Аккаунт с таким номером уже существует"})
-            cur.execute("SELECT id FROM users WHERE email = %s", (email,))
-            if cur.fetchone():
-                return resp(409, {"error": "Аккаунт с таким email уже существует"})
-
-            cur.execute(
-                "INSERT INTO users (phone, email, login, password_hash, consent_pep, consent_at, last_login_at, created_at) "
-                "VALUES (%s, %s, %s, %s, TRUE, NOW(), NOW(), NOW()) RETURNING id",
-                (phone, email, email, hash_password(password))
-            )
-            uid = cur.fetchone()[0]
-
-            if device_id:
-                cur.execute(
-                    "INSERT INTO user_devices (user_id, device_id, user_agent) VALUES (%s,%s,%s) "
-                    "ON CONFLICT (user_id, device_id) DO UPDATE SET last_seen_at = NOW(), trusted = TRUE",
-                    (uid, device_id, headers.get("user-agent", ""))
-                )
-            token = gen_token()
-            cur.execute(
-                "INSERT INTO user_sessions (user_id, token, device_id, expires_at) VALUES (%s,%s,%s, NOW() + INTERVAL '90 days')",
-                (uid, token, device_id or None)
-            )
-            cur.execute(f"SELECT {USER_COLS} FROM users WHERE id = %s", (uid,))
-            user = user_public(cur.fetchone(), USER_KEYS)
-            conn.commit()
             return resp(200, {"ok": True, "token": token, "user": user})
 
         # 3. Вход по логину/паролю

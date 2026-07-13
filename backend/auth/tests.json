@@ -43,28 +43,28 @@
       "name": "Регистрация без телефона",
       "method": "POST",
       "path": "/",
-      "body": { "action": "register", "phone": "", "email": "a@b.ru", "password": "abc12", "consent": true },
+      "body": { "action": "request_code", "purpose": "register", "channel": "sms", "phone": "", "email": "a@b.ru", "password": "abc12", "consent": true },
       "expectedStatus": 400
     },
     {
       "name": "Регистрация с некорректным email",
       "method": "POST",
       "path": "/",
-      "body": { "action": "register", "phone": "+79990001122", "email": "bad", "password": "abc12", "consent": true },
+      "body": { "action": "request_code", "purpose": "register", "channel": "sms", "phone": "+79995558877", "email": "bad", "password": "abc12", "consent": true },
       "expectedStatus": 400
     },
     {
       "name": "Регистрация с длинным паролем",
       "method": "POST",
       "path": "/",
-      "body": { "action": "register", "phone": "+79990001122", "email": "a@b.ru", "password": "abc1234", "consent": true },
+      "body": { "action": "request_code", "purpose": "register", "channel": "sms", "phone": "+79995558877", "email": "a@b.ru", "password": "abc1234", "consent": true },
       "expectedStatus": 400
     },
     {
       "name": "Регистрация без согласия",
       "method": "POST",
       "path": "/",
-      "body": { "action": "register", "phone": "+79990001122", "email": "a@b.ru", "password": "abc12", "consent": false },
+      "body": { "action": "request_code", "purpose": "register", "channel": "sms", "phone": "+79995558877", "email": "a@b.ru", "password": "abc12", "consent": false },
       "expectedStatus": 400
     },
     {

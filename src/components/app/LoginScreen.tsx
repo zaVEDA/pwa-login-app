@@ -40,6 +40,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [devCode, setDevCode] = useState("");
+  const [codePurpose, setCodePurpose] = useState<"login" | "register">("login");
 
   const busy = (fn: () => Promise<void>) => async () => {
     setError("");
@@ -57,7 +58,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, до 6 символов");
     if (!consent) return setError("Поставьте галочку согласия на обработку данных");
 
-    // Если аккаунт уже есть — уводим на вход по паролю / SMS
+    // Если аккаунт уже есть — вход по паролю (если задан) или по SMS
     const chk = await authApi.checkDevice(phone);
     if (chk.data.exists) {
       if (chk.data.has_password) {
@@ -68,18 +69,28 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
       const r = await authApi.requestCode({ purpose: "login", channel: "sms", phone });
       if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
       setDevCode(r.data.dev_code || "");
+      setCodePurpose("login");
       setMode("code");
       return;
     }
 
-    const reg = await authApi.register({ phone, email: email.trim().toLowerCase(), password, consent });
-    if (reg.status !== 200) return setError(reg.data.error || "Не удалось зарегистрироваться");
-    setToken(reg.data.token);
-    onAuth(reg.data.user);
+    // Новый пользователь: отправляем SMS-код. Аккаунт создастся только после его подтверждения.
+    const r = await authApi.requestCode({
+      purpose: "register",
+      channel: "sms",
+      phone,
+      email: email.trim().toLowerCase(),
+      password,
+      consent,
+    });
+    if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
+    setDevCode(r.data.dev_code || "");
+    setCodePurpose("register");
+    setMode("code");
   });
 
   const handleVerifyCode = busy(async () => {
-    const r = await authApi.verifyCode({ purpose: "login", channel: "sms", phone, code });
+    const r = await authApi.verifyCode({ purpose: codePurpose, channel: "sms", phone, code });
     if (r.status !== 200) return setError(r.data.error || "Неверный код");
     setToken(r.data.token);
     onAuth(r.data.user);
