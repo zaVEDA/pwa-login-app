@@ -56,7 +56,7 @@ export default function InvoiceModalHeader({
         {readOnly && (
           <button
             onClick={onEdit}
-            className="flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-lg px-3 py-1.5 shadow-sm active:scale-95 transition-transform flex-shrink-0"
+            className="h-9 flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-xl px-3.5 shadow-sm active:scale-95 transition-transform flex-shrink-0"
           >
             <Icon name="Pencil" size={13} />
             Изменить
