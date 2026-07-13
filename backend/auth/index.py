@@ -186,6 +186,52 @@ def handler(event: dict, context) -> dict:
             # reset: разрешаем установить новый пароль этим же токеном
             return resp(200, {"ok": True, "token": token, "user": user})
 
+        # 2b. Регистрация сразу по телефону + email + пароль (с согласием ПЭП)
+        if action == "register":
+            phone = normalize_phone(body.get("phone", ""))
+            email = (body.get("email") or "").strip().lower()
+            password = body.get("password") or ""
+            consent = bool(body.get("consent"))
+
+            if len(phone) < 12:
+                return resp(400, {"error": "Введите корректный номер телефона"})
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+                return resp(400, {"error": "Введите корректный email"})
+            if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{1,6}$", password):
+                return resp(400, {"error": "Пароль: латиница, цифры и знаки, до 6 символов"})
+            if not consent:
+                return resp(400, {"error": "Нужно согласие на обработку персональных данных"})
+
+            cur.execute("SELECT id FROM users WHERE phone = %s", (phone,))
+            if cur.fetchone():
+                return resp(409, {"error": "Аккаунт с таким номером уже существует"})
+            cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+            if cur.fetchone():
+                return resp(409, {"error": "Аккаунт с таким email уже существует"})
+
+            cur.execute(
+                "INSERT INTO users (phone, email, login, password_hash, consent_pep, consent_at, last_login_at, created_at) "
+                "VALUES (%s, %s, %s, %s, TRUE, NOW(), NOW(), NOW()) RETURNING id",
+                (phone, email, email, hash_password(password))
+            )
+            uid = cur.fetchone()[0]
+
+            if device_id:
+                cur.execute(
+                    "INSERT INTO user_devices (user_id, device_id, user_agent) VALUES (%s,%s,%s) "
+                    "ON CONFLICT (user_id, device_id) DO UPDATE SET last_seen_at = NOW(), trusted = TRUE",
+                    (uid, device_id, headers.get("user-agent", ""))
+                )
+            token = gen_token()
+            cur.execute(
+                "INSERT INTO user_sessions (user_id, token, device_id, expires_at) VALUES (%s,%s,%s, NOW() + INTERVAL '90 days')",
+                (uid, token, device_id or None)
+            )
+            cur.execute(f"SELECT {USER_COLS} FROM users WHERE id = %s", (uid,))
+            user = user_public(cur.fetchone(), USER_KEYS)
+            conn.commit()
+            return resp(200, {"ok": True, "token": token, "user": user})
+
         # 3. Вход по логину/паролю
         if action == "login_password":
             login = (body.get("login") or "").strip()

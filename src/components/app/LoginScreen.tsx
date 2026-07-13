@@ -36,6 +36,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   const [recoverChannel, setRecoverChannel] = useState<"sms" | "email">("sms");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
+  const [showConsent, setShowConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [devCode, setDevCode] = useState("");
@@ -47,19 +48,34 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     finally { setLoading(false); }
   };
 
-  const handlePhoneNext = busy(async () => {
-    if (phone.replace(/\D/g, "").length < 10) return setError("Введите корректный номер");
-    if (!consent) return setError("Нужно согласие на обработку данных");
+  const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  const passwordValid = /^[A-Za-z0-9!-/:-@[-`{-~]{1,6}$/.test(password);
+
+  const handleRegister = busy(async () => {
+    if (phone.replace(/\D/g, "").length < 10) return setError("Введите корректный номер телефона");
+    if (!emailValid) return setError("Введите корректный email");
+    if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, до 6 символов");
+    if (!consent) return setError("Поставьте галочку согласия на обработку данных");
+
+    // Если аккаунт уже есть — уводим на вход по паролю / SMS
     const chk = await authApi.checkDevice(phone);
-    if (chk.data.exists && chk.data.trusted && chk.data.has_password) {
-      setMode("password");
-      setLogin(phone);
+    if (chk.data.exists) {
+      if (chk.data.has_password) {
+        setMode("password");
+        setLogin(phone);
+        return;
+      }
+      const r = await authApi.requestCode({ purpose: "login", channel: "sms", phone });
+      if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
+      setDevCode(r.data.dev_code || "");
+      setMode("code");
       return;
     }
-    const r = await authApi.requestCode({ purpose: "login", channel: "sms", phone });
-    if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
-    setDevCode(r.data.dev_code || "");
-    setMode("code");
+
+    const reg = await authApi.register({ phone, email: email.trim().toLowerCase(), password, consent });
+    if (reg.status !== 200) return setError(reg.data.error || "Не удалось зарегистрироваться");
+    setToken(reg.data.token);
+    onAuth(reg.data.user);
   });
 
   const handleVerifyCode = busy(async () => {
@@ -119,7 +135,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   );
 
   const titles: Record<Mode, string> = {
-    phone: "Войти в аккаунт",
+    phone: "Регистрация и вход",
     code: "Введите код из SMS",
     password: "Вход по паролю",
     recover: "Восстановление доступа",
@@ -188,7 +204,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
           <div>
             <h2 className="font-cormorant text-2xl font-semibold mb-1">{titles[mode]}</h2>
             <p className="text-muted-foreground text-sm">
-              {mode === "phone" && "Первый вход — по номеру телефона через ПЭП"}
+              {mode === "phone" && "Телефон, email и пароль — вход через ПЭП"}
               {mode === "code" && `Код отправлен на ${phone}`}
               {mode === "password" && "Устройство распознано — введите пароль"}
               {mode === "recover" && "Выберите способ восстановления"}
@@ -200,7 +216,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
 
           {errBlock}
 
-          {/* PHONE */}
+          {/* PHONE / REGISTER */}
           {mode === "phone" && (
             <>
               <div className="relative">
@@ -213,6 +229,28 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
                 />
               </div>
+              <input
+                type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                placeholder="Электронная почта (логин)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
+              />
+              <div>
+                <input
+                  type="password"
+                  autoCapitalize="none"
+                  placeholder="Пароль (до 6 символов)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
+                  Латинские буквы, цифры и знаки, до 6 символов
+                </p>
+              </div>
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
@@ -221,17 +259,24 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                   className="mt-0.5 w-4 h-4 accent-primary flex-shrink-0"
                 />
                 <span className="text-[11px] text-muted-foreground leading-relaxed">
-                  Я подписываю простой электронной подписью (ПЭП) согласие на обработку персональных данных и принимаю{" "}
-                  <span className="text-primary">условия использования</span>
+                  Я подписываю простой электронной подписью (ПЭП){" "}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setShowConsent(true); }}
+                    className="text-primary underline underline-offset-2"
+                  >
+                    согласие на обработку персональных данных
+                  </button>{" "}
+                  и принимаю условия использования
                 </span>
               </label>
               <button
-                onClick={handlePhoneNext}
-                disabled={loading}
-                className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+                onClick={handleRegister}
+                disabled={loading || !consent}
+                className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}
-                Продолжить
+                Зарегистрироваться
               </button>
             </>
           )}
@@ -368,6 +413,45 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
           </>
         )}
       </div>
+
+      {/* Модалка: текст согласия на обработку персональных данных */}
+      {showConsent && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/40" onClick={() => setShowConsent(false)}>
+          <div className="card-warm rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
+              <h3 className="font-cormorant text-xl font-semibold">Согласие на обработку персональных данных</h3>
+              <button onClick={() => setShowConsent(false)} className="text-muted-foreground">
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+            <div className="px-5 py-4 overflow-y-auto text-sm text-muted-foreground leading-relaxed space-y-3">
+              <p>
+                Регистрируясь в сервисе «ЗаВедующая», я даю согласие на обработку моих персональных
+                данных (номер телефона, адрес электронной почты, ФИО и иные данные, которые я укажу)
+                в целях регистрации, идентификации и предоставления мне услуг сервиса.
+              </p>
+              <p>
+                Обработка включает сбор, запись, систематизацию, накопление, хранение, уточнение,
+                использование, передачу (в объёме, необходимом для оказания услуг), блокирование
+                и удаление данных, как автоматизированным, так и неавтоматизированным способом.
+              </p>
+              <p>
+                Я подтверждаю, что подписываю настоящее согласие простой электронной подписью (ПЭП),
+                и принимаю условия использования сервиса. Согласие действует до его отзыва.
+                Отозвать согласие можно, обратившись в поддержку сервиса.
+              </p>
+            </div>
+            <div className="px-5 py-4 border-t border-border/60">
+              <button
+                onClick={() => { setConsent(true); setShowConsent(false); }}
+                className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform"
+              >
+                Согласен(а) и принимаю
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

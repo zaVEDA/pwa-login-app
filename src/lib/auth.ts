@@ -69,6 +69,8 @@ export const authApi = {
     call("request_code", p),
   verifyCode: (p: { purpose: string; channel: string; phone?: string; email?: string; code: string }) =>
     call("verify_code", p),
+  register: (p: { phone: string; email: string; password: string; consent: boolean }) =>
+    call("register", p),
   loginPassword: (p: { login: string; password: string }) => call("login_password", p),
   checkDevice: (phone: string) => call("check_device", { phone }),
   me: () => call("me"),
