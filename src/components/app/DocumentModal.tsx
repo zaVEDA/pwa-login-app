@@ -352,17 +352,24 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
             <div className="bg-background rounded-t-3xl p-5 pb-10 space-y-3 shadow-2xl border-t border-border/50" onClick={e => e.stopPropagation()}>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Форма накладной</p>
               {[
-                { id: "simple" as const, icon: "FileText", label: "Обычная накладная", desc: "Простая форма без унифицированного шаблона" },
+                { id: "simple" as const, icon: "FileText", label: "Обычная накладная", desc: "Простая форма без унифицированного шаблона", wip: false },
                 ...(isTestUser ? [
-                  { id: "torg12" as const, icon: "FileSpreadsheet", label: "ТОРГ-12", desc: "Унифицированная форма товарной накладной" },
-                  { id: "upd" as const, icon: "FileCheck2", label: "УПД", desc: "Универсальный передаточный документ" },
+                  { id: "torg12" as const, icon: "FileSpreadsheet", label: "ТОРГ-12", desc: "Унифицированная форма товарной накладной", wip: true },
+                  { id: "upd" as const, icon: "FileCheck2", label: "УПД", desc: "Универсальный передаточный документ", wip: true },
                 ] : []),
               ].map(f => (
                 <button key={f.id} onClick={() => handleChooseFormat(f.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform text-left">
                   <Icon name={f.icon} size={18} className="text-primary flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{f.label}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium">{f.label}</p>
+                      {f.wip && (
+                        <span className="flex-shrink-0 text-[10px] font-medium text-amber-700 bg-amber-100 border border-amber-200 rounded-full px-2 py-0.5">
+                          в разработке
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground truncate">{f.desc}</p>
                   </div>
                 </button>
