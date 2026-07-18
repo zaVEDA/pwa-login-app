@@ -2,12 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import DocumentModal from "@/components/app/DocumentModal";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { formatDate } from "@/lib/date";
 import { INVOICES_URL, HELP_URL, HelpTip, Invoice, RealizationDoc } from "./constants";
 import type { DateRange } from "react-day-picker";
 import { PlanType } from "@/lib/auth";
+import DocsFilters from "./docs/DocsFilters";
+import InvoiceCard from "./docs/InvoiceCard";
+import RealizationDocCard from "./docs/RealizationDocCard";
 
 interface Props {
   phone: string;
@@ -320,102 +321,20 @@ export default function DocsTab({ phone, userPlan }: Props) {
           </button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
-          {["Все", "Счета", "Акты", "Накладные", "Черновики"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setDocFilter(f)}
-              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                docFilter === f
-                  ? "gold-gradient text-white border-transparent"
-                  : "bg-white/60 border-border text-foreground"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Доп. фильтры: по дате и по клиенту */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
-          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-            <PopoverTrigger asChild>
-              <button
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  dateRange?.from ? "bg-primary/10 border-primary/40 text-primary" : "bg-white/60 border-border text-foreground"
-                }`}
-              >
-                <Icon name="CalendarDays" size={13} />
-                {dateFilterLabel}
-                {dateRange?.from && (
-                  <span
-                    role="button"
-                    onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }}
-                    className="ml-0.5"
-                  >
-                    <Icon name="X" size={12} />
-                  </span>
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2" align="start">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={1}
-                defaultMonth={dateRange?.from}
-              />
-              {dateRange?.from && (
-                <button
-                  onClick={() => { setDateRange(undefined); setDatePickerOpen(false); }}
-                  className="w-full mt-1 py-2 rounded-lg text-xs text-muted-foreground hover:bg-amber-50 transition-colors"
-                >
-                  Сбросить дату
-                </button>
-              )}
-            </PopoverContent>
-          </Popover>
-
-          <Popover open={clientPickerOpen} onOpenChange={setClientPickerOpen}>
-            <PopoverTrigger asChild>
-              <button
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all max-w-[160px] ${
-                  clientFilter ? "bg-primary/10 border-primary/40 text-primary" : "bg-white/60 border-border text-foreground"
-                }`}
-              >
-                <Icon name="User" size={13} className="flex-shrink-0" />
-                <span className="truncate">{clientFilter || "Клиент"}</span>
-                {clientFilter && (
-                  <span
-                    role="button"
-                    onClick={(e) => { e.stopPropagation(); setClientFilter(""); }}
-                    className="flex-shrink-0"
-                  >
-                    <Icon name="X" size={12} />
-                  </span>
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-1 max-h-64 overflow-y-auto" align="start">
-              {clientOptions.length === 0 && (
-                <p className="text-xs text-muted-foreground px-2.5 py-2">Пока нет клиентов</p>
-              )}
-              {clientOptions.map((name) => (
-                <button
-                  key={name}
-                  onClick={() => { setClientFilter(name); setClientPickerOpen(false); }}
-                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left transition-colors ${
-                    clientFilter === name ? "bg-primary/10 text-primary font-medium" : "hover:bg-amber-50 text-foreground"
-                  }`}
-                >
-                  {name}
-                  {clientFilter === name && <Icon name="Check" size={13} className="ml-auto" />}
-                </button>
-              ))}
-            </PopoverContent>
-          </Popover>
-        </div>
+        <DocsFilters
+          docFilter={docFilter}
+          setDocFilter={setDocFilter}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          datePickerOpen={datePickerOpen}
+          setDatePickerOpen={setDatePickerOpen}
+          dateFilterLabel={dateFilterLabel}
+          clientFilter={clientFilter}
+          setClientFilter={setClientFilter}
+          clientPickerOpen={clientPickerOpen}
+          setClientPickerOpen={setClientPickerOpen}
+          clientOptions={clientOptions}
+        />
 
         {invoicesLoading && (
           <div className="flex items-center justify-center py-8">
@@ -442,185 +361,29 @@ export default function DocsTab({ phone, userPlan }: Props) {
         {!invoicesLoading && showInvoicesList && filteredInvoices.length > 0 && (
           <div className="space-y-3">
             {filteredInvoices.map((inv) => (
-              <div
+              <InvoiceCard
                 key={inv.id}
-                className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${inv.status === "deleted" ? "opacity-50" : ""}`}
-              >
-                {/* Иконка */}
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${inv.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
-                  <span className={`font-cormorant font-bold text-xl leading-none ${inv.status === "deleted" ? "text-gray-400" : "text-primary"}`}>₽</span>
-                </div>
-
-                {/* Текст — кликабельная зона */}
-                <button
-                  onClick={() => { setOpenInvoiceId(inv.id); setShowInvoice(true); }}
-                  className="flex-1 min-w-0 text-left"
-                >
-                  <p className={`text-sm font-medium ${inv.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
-                    Счёт № {inv.invoice_number}
-                  </p>
-                  <p className={`text-xs text-muted-foreground mt-0.5 ${inv.status === "deleted" ? "line-through" : ""}`}>
-                    {formatDate(inv.invoice_date)}
-                  </p>
-                  <p className={`text-xs text-muted-foreground mt-0.5 truncate ${inv.status === "deleted" ? "line-through" : ""}`}>
-                    {inv.client_name || "Без клиента"}
-                  </p>
-                </button>
-
-                {/* Правый блок: сумма + кнопки + статус */}
-                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <p className={`font-cormorant text-xl font-semibold leading-none tabular-nums text-left ${inv.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                      {inv.total != null ? inv.total.toLocaleString("ru-RU") : "—"}
-                    </p>
-                    <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => downloadPdf(inv.id, inv.invoice_number)}
-                      disabled={pdfLoadingId === inv.id || inv.status === "deleted" || !userPlan}
-                      aria-label={userPlan ? "Скачать PDF" : "Выберите тариф в Аккаунте"}
-                      className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                    >
-                      <Icon name={pdfLoadingId === inv.id ? "Loader" : userPlan ? "FileDown" : "Lock"} size={15} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
-                    </button>
-                    <button
-                      onClick={() => setShareMenuId(shareMenuId === inv.id ? null : inv.id)}
-                      disabled={inv.status === "deleted" || !userPlan}
-                      aria-label={userPlan ? "Отправить счёт" : "Выберите тариф в Аккаунте"}
-                      className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                    >
-                      <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
-                    </button>
-                    <button
-                      onClick={() => setBasisMenuId(basisMenuId === inv.id ? null : inv.id)}
-                      disabled={docLoadingId === inv.id || inv.status === "deleted"}
-                      aria-label="Создать на основании"
-                      className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                    >
-                      <Icon name={docLoadingId === inv.id ? "Loader" : "FilePlus"} size={15} className={docLoadingId === inv.id ? "animate-spin" : ""} />
-                    </button>
-                    </div>
-                  </div>
-
-                  {basisMenuId === inv.id && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => { setBasisMenuId(null); setBasisHelp(false); }} />
-                      <div className="absolute right-3 top-12 z-40 w-64 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                        <div className="flex items-center justify-between px-3.5 pt-2.5 pb-1">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Создать на основании</p>
-                          <button
-                            onClick={() => setBasisHelp((v) => !v)}
-                            aria-label="Справка"
-                            className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${basisHelp ? "bg-primary text-white" : "bg-primary/10 text-primary hover:bg-primary/20"}`}
-                          >
-                            <Icon name="HelpCircle" size={13} />
-                          </button>
-                        </div>
-                        <button
-                          onClick={() => createDocument(inv, "act")}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
-                        >
-                          <Icon name="FileCheck" size={15} className="text-primary flex-shrink-0" />
-                          Акт выполненных работ
-                        </button>
-                        {basisHelp && docTips["doc_act"] && (
-                          <p className="px-3.5 pb-2 -mt-1 text-[11px] leading-snug text-muted-foreground bg-amber-50/60">
-                            {docTips["doc_act"]}
-                          </p>
-                        )}
-                        <button
-                          onClick={() => createDocument(inv, "invoice_note")}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
-                        >
-                          <Icon name="Package" size={15} className="text-primary flex-shrink-0" />
-                          Товарная накладная
-                        </button>
-                        {basisHelp && docTips["doc_invoice_note"] && (
-                          <p className="px-3.5 pb-2 -mt-1 text-[11px] leading-snug text-muted-foreground bg-amber-50/60">
-                            {docTips["doc_invoice_note"]}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {shareMenuId === inv.id && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => setShareMenuId(null)} />
-                      <div className="absolute right-3 top-12 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                        {([
-                          { key: "telegram", label: "Telegram", icon: "Send" },
-                          { key: "whatsapp", label: "WhatsApp", icon: "MessageCircle" },
-                          { key: "sms", label: "SMS", icon: "Smartphone" },
-                          { key: "email", label: "Почта", icon: "Mail" },
-                        ] as const).map((c) => (
-                          <button
-                            key={c.key}
-                            onClick={() => shareInvoice(inv, c.key)}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
-                          >
-                            <Icon name={c.icon} size={15} className="text-primary" />
-                            {c.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  <button
-                    onClick={() => setStatusMenuId(statusMenuId === inv.id ? null : inv.id)}
-                    className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
-                      inv.status === "deleted" ? "bg-red-100 text-red-600" :
-                      inv.status === "issued" ? "bg-blue-100 text-blue-700" :
-                      inv.status === "paid" ? "bg-green-100 text-green-700" :
-                      "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    {inv.status === "deleted" ? "Удалён" :
-                      inv.status === "issued" ? "Выставлен" :
-                      inv.status === "paid" ? "Оплачен" : "Создан"}
-                    <Icon name="ChevronDown" size={11} />
-                  </button>
-                </div>
-
-                {statusMenuId === inv.id && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setStatusMenuId(null)} />
-                    <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                      {([
-                        { key: "created", label: "Создан", icon: "FileText" },
-                        { key: "issued", label: "Выставлен", icon: "Send" },
-                        { key: "paid", label: "Оплачен", icon: "CheckCircle" },
-                      ] as const).map((s) => (
-                        <button
-                          key={s.key}
-                          onClick={() => changeStatus(inv.id, s.key)}
-                          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${inv.status === s.key ? "text-primary font-medium" : "text-foreground"}`}
-                        >
-                          <Icon name={s.icon} size={15} className={inv.status === s.key ? "text-primary" : "text-muted-foreground"} />
-                          {s.label}
-                          {inv.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
-                        </button>
-                      ))}
-                      {inv.status === "deleted" ? (
-                        <button
-                          onClick={() => changeStatus(inv.id, "created")}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary hover:bg-amber-50 transition-colors border-t border-border"
-                        >
-                          <Icon name="RotateCcw" size={15} />
-                          Восстановить
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => deleteInvoice(inv.id)}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border"
-                        >
-                          <Icon name="Trash2" size={15} />
-                          Удалить
-                        </button>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
+                inv={inv}
+                userPlan={userPlan}
+                pdfLoadingId={pdfLoadingId}
+                docLoadingId={docLoadingId}
+                basisMenuId={basisMenuId}
+                setBasisMenuId={setBasisMenuId}
+                basisHelp={basisHelp}
+                setBasisHelp={setBasisHelp}
+                docTips={docTips}
+                shareMenuId={shareMenuId}
+                setShareMenuId={setShareMenuId}
+                statusMenuId={statusMenuId}
+                setStatusMenuId={setStatusMenuId}
+                setOpenInvoiceId={setOpenInvoiceId}
+                setShowInvoice={setShowInvoice}
+                downloadPdf={downloadPdf}
+                createDocument={createDocument}
+                shareInvoice={shareInvoice}
+                changeStatus={changeStatus}
+                deleteInvoice={deleteInvoice}
+              />
             ))}
           </div>
         )}
@@ -629,137 +392,21 @@ export default function DocsTab({ phone, userPlan }: Props) {
         {filteredDocs.length > 0 && (
           <div className="space-y-3 pt-2">
             {filteredDocs.map((doc) => (
-              <div
+              <RealizationDocCard
                 key={`doc-${doc.id}`}
-                className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${doc.status === "deleted" ? "opacity-50" : ""}`}
-              >
-                {/* Иконка */}
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${doc.status === "deleted" ? "bg-gray-200" : "bg-primary/10"}`}>
-                  <Icon name={doc.doc_type === "act" ? "FileCheck" : "Package"} size={19} className={doc.status === "deleted" ? "text-gray-400" : "text-primary"} />
-                </div>
-
-                {/* Кликабельная зона */}
-                <button
-                  onClick={() => setOpenDocId(doc.id)}
-                  className="flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
-                >
-                  <p className={`text-sm font-medium ${doc.status === "deleted" ? "line-through text-muted-foreground" : ""}`}>
-                    {doc.doc_type === "act" ? "Акт" : "Накладная"}
-                  </p>
-                  <p className={`text-xs text-muted-foreground mt-0.5 ${doc.status === "deleted" ? "line-through" : ""}`}>
-                    № {doc.doc_number}
-                  </p>
-                  <p className={`text-xs text-muted-foreground mt-0.5 ${doc.status === "deleted" ? "line-through" : ""}`}>
-                    {formatDate(doc.doc_date)}{doc.invoice_number ? ` · сч. ${doc.invoice_number}` : ""}
-                  </p>
-                  <p className={`text-xs text-muted-foreground mt-0.5 truncate ${doc.status === "deleted" ? "line-through" : ""}`}>
-                    {doc.client_name || "Без клиента"}
-                  </p>
-                </button>
-
-                {/* Правый блок: сумма + кнопки + статус */}
-                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <p className={`font-cormorant text-xl font-semibold leading-none tabular-nums ${doc.status === "deleted" ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                      {doc.total != null ? doc.total.toLocaleString("ru-RU") : "—"}
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => downloadDocPdf(doc)}
-                        disabled={docLoadingId === doc.id || doc.status === "deleted" || !userPlan}
-                        aria-label={userPlan ? "Скачать PDF" : "Выберите тариф в Аккаунте"}
-                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                      >
-                        <Icon name={docLoadingId === doc.id ? "Loader" : userPlan ? "FileDown" : "Lock"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
-                      </button>
-                      <button
-                        onClick={() => printDocPdf(doc)}
-                        disabled={docLoadingId === doc.id || doc.status === "deleted" || !userPlan}
-                        aria-label={userPlan ? "Печать" : "Выберите тариф в Аккаунте"}
-                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                      >
-                        <Icon name={userPlan ? "Printer" : "Lock"} size={15} />
-                      </button>
-                      <button
-                        onClick={() => setShareDocId(shareDocId === doc.id ? null : doc.id)}
-                        disabled={doc.status === "deleted" || !userPlan}
-                        aria-label={userPlan ? "Поделиться" : "Выберите тариф в Аккаунте"}
-                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
-                      >
-                        <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setStatusMenuId(statusMenuId === -doc.id ? null : -doc.id)}
-                    className={`doc-tag flex items-center gap-1 active:scale-95 transition-transform ${
-                      doc.status === "deleted" ? "bg-red-100 text-red-600" :
-                      doc.status === "issued" ? "bg-blue-100 text-blue-700" :
-                      doc.status === "paid" ? "bg-green-100 text-green-700" :
-                      "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    {doc.status === "deleted" ? "Удалён" :
-                      doc.status === "issued" ? "Выставлен" :
-                      doc.status === "paid" ? "Оплачен" : "Создан"}
-                    <Icon name="ChevronDown" size={11} />
-                  </button>
-                </div>
-
-                {statusMenuId === -doc.id && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setStatusMenuId(null)} />
-                    <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                      {([
-                        { key: "created", label: "Создан", icon: "FileText" },
-                        { key: "issued", label: "Выставлен", icon: "Send" },
-                        { key: "paid", label: "Оплачен", icon: "CheckCircle" },
-                      ] as const).map((s) => (
-                        <button key={s.key} onClick={() => changeDocStatus(doc.id, s.key)}
-                          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${doc.status === s.key ? "text-primary font-medium" : "text-foreground"}`}
-                        >
-                          <Icon name={s.icon} size={15} className={doc.status === s.key ? "text-primary" : "text-muted-foreground"} />
-                          {s.label}
-                          {doc.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
-                        </button>
-                      ))}
-                      {doc.status === "deleted" ? (
-                        <button onClick={() => changeDocStatus(doc.id, "created")}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary hover:bg-amber-50 transition-colors border-t border-border">
-                          <Icon name="RotateCcw" size={15} />
-                          Восстановить
-                        </button>
-                      ) : (
-                        <button onClick={() => changeDocStatus(doc.id, "deleted")}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-red-500 hover:bg-red-50 transition-colors border-t border-border">
-                          <Icon name="Trash2" size={15} />
-                          Удалить
-                        </button>
-                      )}
-                    </div>
-                  </>
-                )}
-
-                {shareDocId === doc.id && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setShareDocId(null)} />
-                    <div className="absolute right-3 top-12 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                      {([
-                        { key: "telegram", label: "Telegram", icon: "Send" },
-                        { key: "whatsapp", label: "WhatsApp", icon: "MessageCircle" },
-                        { key: "sms", label: "SMS", icon: "Smartphone" },
-                        { key: "email", label: "Почта", icon: "Mail" },
-                      ] as const).map((c) => (
-                        <button key={c.key} onClick={() => shareDoc(doc, c.key)}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors">
-                          <Icon name={c.icon} size={15} className="text-primary" />
-                          {c.label}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+                doc={doc}
+                userPlan={userPlan}
+                docLoadingId={docLoadingId}
+                statusMenuId={statusMenuId}
+                setStatusMenuId={setStatusMenuId}
+                shareDocId={shareDocId}
+                setShareDocId={setShareDocId}
+                setOpenDocId={setOpenDocId}
+                downloadDocPdf={downloadDocPdf}
+                printDocPdf={printDocPdf}
+                changeDocStatus={changeDocStatus}
+                shareDoc={shareDoc}
+              />
             ))}
           </div>
         )}
