@@ -1,0 +1,1 @@
+{"tests": [{"name": "OPTIONS CORS", "method": "OPTIONS", "path": "/", "expectedStatus": 200}, {"name": "Список без токена — 403", "method": "GET", "path": "/", "expectedStatus": 403, "expectedBody": {"error": "string"}, "bodyMatcher": "partial"}]}

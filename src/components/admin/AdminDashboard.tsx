@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 
 type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks";
 
@@ -197,8 +198,6 @@ function SupportScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-type TaskStatus = "open" | "done" | "postponed" | "irrelevant";
-
 const statusMeta: Record<TaskStatus, { label: string; cls: string }> = {
   open: { label: "В работе", cls: "bg-blue-100 text-blue-700" },
   done: { label: "Готово", cls: "bg-green-100 text-green-700" },
@@ -206,68 +205,132 @@ const statusMeta: Record<TaskStatus, { label: string; cls: string }> = {
   irrelevant: { label: "Не актуально", cls: "bg-gray-200 text-gray-500" },
 };
 
-type Task = { id: number; createdAt: string; assignee: "Я" | "Юра"; status: TaskStatus; date: string; comment: string };
-
-const initialTasks: Task[] = [
-  { id: 1, createdAt: "20.07.2025", assignee: "Юра", status: "done", date: "20.07.2025", comment: "Роль «Заведующая» и разделы кабинета" },
-  { id: 2, createdAt: "20.07.2025", assignee: "Юра", status: "open", date: "—", comment: "Подключить реальные данные в «Пользователи»" },
-  { id: 3, createdAt: "18.07.2025", assignee: "Я", status: "postponed", date: "—", comment: "Выбрать второй номер для тестового сайта" },
-];
+const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("ru-RU") : "");
 
 function TasksScreen({ onBack }: { onBack: () => void }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<AdminTask[]>([]);
+  const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [newComment, setNewComment] = useState("");
+  const [newAssignee, setNewAssignee] = useState<"Я" | "Юра">("Я");
+  const [saving, setSaving] = useState(false);
 
-  const setStatus = (id: number, status: TaskStatus) => {
-    const today = new Date().toLocaleDateString("ru-RU");
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status, date: status === "open" ? "—" : today } : t)));
+  useEffect(() => {
+    tasksApi.list().then((d) => { setTasks(d.tasks || []); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const setStatus = async (id: number, status: TaskStatus) => {
     setOpenId(null);
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+    const { task } = await tasksApi.setStatus(id, status);
+    if (task) setTasks((prev) => prev.map((t) => (t.id === id ? task : t)));
+  };
+
+  const addTask = async () => {
+    if (!newComment.trim() || saving) return;
+    setSaving(true);
+    try {
+      const { task } = await tasksApi.add(newComment.trim(), newAssignee);
+      if (task) setTasks((prev) => [task, ...prev]);
+      setNewComment("");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeTask = async (id: number) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    await tasksApi.remove(id);
   };
 
   return (
     <div className="space-y-4">
       <ScreenHeader title="Задачи" subtitle="Что делаем с Юрой · статусы можно менять" onBack={onBack} />
-      <div className="space-y-2.5">
-        {tasks.map((t) => (
-          <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <p className="flex-1 text-sm font-medium text-foreground leading-snug">{t.comment}</p>
-              <button
-                onClick={() => setOpenId(openId === t.id ? null : t.id)}
-                className={`text-[11px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1 ${statusMeta[t.status].cls}`}
-              >
-                {statusMeta[t.status].label}
-                <Icon name="ChevronDown" size={11} />
-              </button>
-            </div>
-            {openId === t.id && (
-              <div className="flex flex-wrap gap-1.5 mb-2.5 animate-slide-up">
-                {(Object.keys(statusMeta) as TaskStatus[]).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setStatus(t.id, s)}
-                    className={`text-[11px] px-2.5 py-1 rounded-full font-medium border ${
-                      t.status === s ? statusMeta[s].cls + " border-transparent" : "bg-white/60 text-muted-foreground border-border"
-                    }`}
-                  >
-                    {statusMeta[s].label}
-                  </button>
-                ))}
+
+      {loading ? (
+        <div className="flex justify-center py-8"><Icon name="Loader" size={22} className="animate-spin text-primary" /></div>
+      ) : (
+        <div className="space-y-2.5">
+          {tasks.map((t) => (
+            <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="flex-1 text-sm font-medium text-foreground leading-snug">{t.comment}</p>
+                <button
+                  onClick={() => setOpenId(openId === t.id ? null : t.id)}
+                  className={`text-[11px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1 flex-shrink-0 ${statusMeta[t.status].cls}`}
+                >
+                  {statusMeta[t.status].label}
+                  <Icon name="ChevronDown" size={11} />
+                </button>
               </div>
-            )}
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1"><Icon name="CalendarPlus" size={11} /> {t.createdAt}</span>
-              <span className="flex items-center gap-1">
-                <Icon name={t.assignee === "Юра" ? "Rocket" : "User"} size={11} /> {t.assignee}
-              </span>
-              {t.date !== "—" && <span className="flex items-center gap-1"><Icon name="CalendarCheck" size={11} /> {t.date}</span>}
+              {openId === t.id && (
+                <div className="flex flex-wrap gap-1.5 mb-2.5 animate-slide-up">
+                  {(Object.keys(statusMeta) as TaskStatus[]).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatus(t.id, s)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full font-medium border ${
+                        t.status === s ? statusMeta[s].cls + " border-transparent" : "bg-white/60 text-muted-foreground border-border"
+                      }`}
+                    >
+                      {statusMeta[s].label}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => removeTask(t.id)}
+                    className="text-[11px] px-2.5 py-1 rounded-full font-medium border border-red-200 text-red-500 bg-white/60 flex items-center gap-1"
+                  >
+                    <Icon name="Trash2" size={11} /> Удалить
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1"><Icon name="CalendarPlus" size={11} /> {fmtDate(t.created_at)}</span>
+                <span className="flex items-center gap-1">
+                  <Icon name={t.assignee === "Юра" ? "Rocket" : "User"} size={11} /> {t.assignee}
+                </span>
+                {t.status_date && <span className="flex items-center gap-1"><Icon name="CalendarCheck" size={11} /> {fmtDate(t.status_date)}</span>}
+              </div>
             </div>
+          ))}
+          {tasks.length === 0 && <p className="text-center text-sm text-muted-foreground py-6">Пока нет задач</p>}
+        </div>
+      )}
+
+      {/* Форма добавления внизу */}
+      <div className="card-warm rounded-2xl p-4 shadow-sm space-y-2.5">
+        <p className="text-sm font-semibold">Новая задача</p>
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Что нужно сделать…"
+          rows={2}
+          className="w-full text-sm rounded-xl border border-border bg-white/70 px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5 flex-1">
+            {(["Я", "Юра"] as const).map((a) => (
+              <button
+                key={a}
+                onClick={() => setNewAssignee(a)}
+                className={`flex-1 text-xs py-2 rounded-xl font-medium border flex items-center justify-center gap-1 ${
+                  newAssignee === a ? "gold-gradient text-white border-transparent" : "bg-white/60 text-muted-foreground border-border"
+                }`}
+              >
+                <Icon name={a === "Юра" ? "Rocket" : "User"} size={12} /> {a}
+              </button>
+            ))}
           </div>
-        ))}
+          <button
+            onClick={addTask}
+            disabled={!newComment.trim() || saving}
+            className="px-4 py-2 rounded-xl gold-gradient text-white text-sm font-medium flex items-center gap-1.5 disabled:opacity-40"
+          >
+            {saving ? <Icon name="Loader" size={14} className="animate-spin" /> : <Icon name="Plus" size={14} />}
+            Добавить
+          </button>
+        </div>
       </div>
-      <button className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2">
-        <Icon name="Plus" size={15} /> Добавить задачу
-      </button>
     </div>
   );
 }
