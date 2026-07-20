@@ -6,6 +6,7 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import TabContent from "@/components/app/TabContent";
 import BottomNav from "@/components/app/BottomNav";
 import ProfileSetup from "@/components/app/ProfileSetup";
+import ComingSoon from "@/components/app/ComingSoon";
 import { authApi, getToken, clearAuth, AuthUser } from "@/lib/auth";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
@@ -104,6 +105,15 @@ export default function Index() {
     setDemoMode(false);
     setActiveTab("home");
   };
+
+  // Заглушка «Скоро запуск»: доступ открывается ссылкой ?enter=1 и запоминается
+  const MAINTENANCE = true;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("enter") === "1") localStorage.setItem("earlyAccess", "1");
+  const hasAccess = localStorage.getItem("earlyAccess") === "1";
+  if (MAINTENANCE && !hasAccess) {
+    return <ComingSoon />;
+  }
 
   if (!authChecked) {
     return (
