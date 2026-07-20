@@ -22,9 +22,12 @@ def resp(code, data):
             "body": json.dumps(data, default=str)}
 
 
+COLS = "id, created_at, assignee, status, status_date, comment, note"
+
+
 def task_row(r):
     return {"id": r[0], "created_at": r[1], "assignee": r[2], "status": r[3],
-            "status_date": r[4], "comment": r[5]}
+            "status_date": r[4], "comment": r[5], "note": r[6]}
 
 
 def handler(event: dict, context) -> dict:
@@ -58,8 +61,7 @@ def handler(event: dict, context) -> dict:
 
         if action == "list":
             cur.execute(
-                "SELECT id, created_at, assignee, status, status_date, comment "
-                "FROM admin_tasks ORDER BY sort_order DESC, id DESC"
+                f"SELECT {COLS} FROM admin_tasks ORDER BY sort_order DESC, id DESC"
             )
             return resp(200, {"tasks": [task_row(r) for r in cur.fetchall()]})
 
@@ -69,8 +71,8 @@ def handler(event: dict, context) -> dict:
             if not comment:
                 return resp(400, {"error": "Введите описание задачи"})
             cur.execute(
-                "INSERT INTO admin_tasks (assignee, comment, status) VALUES (%s, %s, 'open') "
-                "RETURNING id, created_at, assignee, status, status_date, comment",
+                f"INSERT INTO admin_tasks (assignee, comment, status) VALUES (%s, %s, 'open') "
+                f"RETURNING {COLS}",
                 (assignee, comment),
             )
             row = cur.fetchone()
@@ -85,8 +87,21 @@ def handler(event: dict, context) -> dict:
             date_expr = "NULL" if status == "open" else "CURRENT_DATE"
             cur.execute(
                 f"UPDATE admin_tasks SET status = %s, status_date = {date_expr} WHERE id = %s "
-                "RETURNING id, created_at, assignee, status, status_date, comment",
+                f"RETURNING {COLS}",
                 (status, tid),
+            )
+            row = cur.fetchone()
+            if not row:
+                return resp(404, {"error": "Задача не найдена"})
+            conn.commit()
+            return resp(200, {"task": task_row(row)})
+
+        if action == "set_note":
+            tid = body.get("id")
+            note = (body.get("note") or "").strip()
+            cur.execute(
+                f"UPDATE admin_tasks SET note = %s WHERE id = %s RETURNING {COLS}",
+                (note, tid),
             )
             row = cur.fetchone()
             if not row:

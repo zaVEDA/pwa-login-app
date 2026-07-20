@@ -207,6 +207,33 @@ const statusMeta: Record<TaskStatus, { label: string; cls: string }> = {
 
 const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("ru-RU") : "");
 
+function NoteEditor({ note, onSave }: { note: string; onSave: (v: string) => void }) {
+  const [value, setValue] = useState(note);
+  const changed = value.trim() !== (note || "").trim();
+  return (
+    <div className="rounded-xl bg-white/60 border border-border p-2.5">
+      <p className="text-[11px] font-medium text-primary mb-1.5 flex items-center gap-1">
+        <Icon name="MessageSquare" size={11} /> Комментарий (Я или Юра)
+      </p>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Впишите заметку по задаче…"
+        rows={2}
+        className="w-full text-sm rounded-lg border border-border bg-white px-2.5 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+      />
+      {changed && (
+        <button
+          onClick={() => onSave(value.trim())}
+          className="mt-1.5 w-full py-1.5 rounded-lg gold-gradient text-white text-xs font-medium flex items-center justify-center gap-1.5"
+        >
+          <Icon name="Check" size={12} /> Сохранить комментарий
+        </button>
+      )}
+    </div>
+  );
+}
+
 function TasksScreen({ onBack }: { onBack: () => void }) {
   const [tasks, setTasks] = useState<AdminTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,6 +271,11 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
     await tasksApi.remove(id);
   };
 
+  const saveNote = async (id: number, note: string) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, note } : t)));
+    await tasksApi.setNote(id, note);
+  };
+
   return (
     <div className="space-y-4">
       <ScreenHeader title="Задачи" subtitle="Что делаем с Юрой · статусы можно менять" onBack={onBack} />
@@ -261,8 +293,8 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
                 >
                   <Icon
                     name="ChevronRight"
-                    size={14}
-                    className={`text-muted-foreground flex-shrink-0 mt-0.5 transition-transform ${expandedId === t.id ? "rotate-90" : ""}`}
+                    size={16}
+                    className={`text-primary flex-shrink-0 mt-0.5 transition-transform ${expandedId === t.id ? "rotate-90" : ""}`}
                   />
                   <p className={`text-sm font-medium text-foreground leading-snug ${expandedId === t.id ? "" : "line-clamp-2"}`}>
                     {t.comment}
@@ -296,6 +328,17 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
                     <Icon name="Trash2" size={11} /> Удалить
                   </button>
                 </div>
+              )}
+              {expandedId === t.id && (
+                <div className="mb-2.5 animate-slide-up">
+                  <NoteEditor note={t.note} onSave={(v) => saveNote(t.id, v)} />
+                </div>
+              )}
+              {expandedId !== t.id && t.note && (
+                <p className="text-xs text-muted-foreground italic mb-2 flex items-start gap-1.5">
+                  <Icon name="MessageSquare" size={12} className="text-primary flex-shrink-0 mt-0.5" />
+                  <span className="line-clamp-1">{t.note}</span>
+                </p>
               )}
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                 <span className="flex items-center gap-1"><Icon name="CalendarPlus" size={11} /> {fmtDate(t.created_at)}</span>

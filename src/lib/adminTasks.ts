@@ -11,6 +11,7 @@ export interface AdminTask {
   status: TaskStatus;
   status_date: string | null;
   comment: string;
+  note: string;
 }
 
 async function call(body: Record<string, unknown>): Promise<any> {
@@ -28,5 +29,7 @@ export const tasksApi = {
     call({ action: "add", comment, assignee }) as Promise<{ task: AdminTask }>,
   setStatus: (id: number, status: TaskStatus) =>
     call({ action: "set_status", id, status }) as Promise<{ task: AdminTask }>,
+  setNote: (id: number, note: string) =>
+    call({ action: "set_note", id, note }) as Promise<{ task: AdminTask }>,
   remove: (id: number) => call({ action: "delete", id }) as Promise<{ ok: boolean }>,
 };
