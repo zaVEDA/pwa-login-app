@@ -177,6 +177,7 @@ export default function Index() {
             setActiveTab={setActiveTab}
             phone={phone}
             userPlan={user?.plan ?? null}
+            userRole={user?.role}
           />
         )}
         <TabContent
@@ -201,7 +202,7 @@ export default function Index() {
         />
       </main>
 
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={user?.role} />
     </div>
   );
 }

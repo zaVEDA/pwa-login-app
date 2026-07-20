@@ -13,13 +13,17 @@ const tabs = [
 interface Props {
   activeTab: Tab;
   setActiveTab: (t: Tab) => void;
+  userRole?: string;
 }
 
-export default function BottomNav({ activeTab, setActiveTab }: Props) {
+export default function BottomNav({ activeTab, setActiveTab, userRole }: Props) {
+  const visibleTabs = userRole === "admin"
+    ? tabs.filter((t) => t.id === "home" || t.id === "account")
+    : tabs;
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-3 pb-5 z-50">
       <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-amber-900/15 border border-white/60 px-2 py-1.5 flex items-center justify-around">
-        {tabs.map((tab) => {
+        {visibleTabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
             <button

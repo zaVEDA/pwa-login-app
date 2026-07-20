@@ -54,11 +54,13 @@ interface Props {
   setActiveTab: (t: Tab) => void;
   phone: string;
   userPlan?: PlanType | null;
+  userRole?: string;
 }
 
-export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan }: Props) {
+export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole }: Props) {
   const theme = themes[colorTheme];
   const [showInvoice, setShowInvoice] = useState(false);
+  const isAdmin = userRole === "admin";
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -79,7 +81,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
       </div>
 
       {/* Quick actions */}
-      <div>
+      {!isAdmin && <div>
         <h2 className="font-cormorant text-xl font-semibold mb-3">Быстрые действия</h2>
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -120,10 +122,10 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
             <p className="text-xs text-muted-foreground mt-0.5">Доходы и налоги</p>
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* Tax reminder */}
-      <div
+      {!isAdmin && <div
         className="rounded-2xl p-4 border border-primary/30"
         style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.07))" }}
       >
@@ -142,7 +144,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
           <Icon name="ExternalLink" size={12} />
           Открыть «Мой налог»
         </a>
-      </div>
+      </div>}
     </div>
   );
 }
