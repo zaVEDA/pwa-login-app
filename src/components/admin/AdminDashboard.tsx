@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support";
+type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
   { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, оплаты, подписи ПЭП", badge: "5" },
@@ -9,6 +9,7 @@ const tiles: { id: Section; icon: string; title: string; hint: string; badge?: s
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
   { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
   { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Сообщения пользователей", badge: "2" },
+  { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой", badge: "3" },
 ];
 
 function ScreenHeader({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
@@ -196,6 +197,81 @@ function SupportScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+type TaskStatus = "open" | "done" | "postponed" | "irrelevant";
+
+const statusMeta: Record<TaskStatus, { label: string; cls: string }> = {
+  open: { label: "В работе", cls: "bg-blue-100 text-blue-700" },
+  done: { label: "Готово", cls: "bg-green-100 text-green-700" },
+  postponed: { label: "Отложили", cls: "bg-amber-100 text-amber-700" },
+  irrelevant: { label: "Не актуально", cls: "bg-gray-200 text-gray-500" },
+};
+
+type Task = { id: number; createdAt: string; assignee: "Я" | "Юра"; status: TaskStatus; date: string; comment: string };
+
+const initialTasks: Task[] = [
+  { id: 1, createdAt: "20.07.2025", assignee: "Юра", status: "done", date: "20.07.2025", comment: "Роль «Заведующая» и разделы кабинета" },
+  { id: 2, createdAt: "20.07.2025", assignee: "Юра", status: "open", date: "—", comment: "Подключить реальные данные в «Пользователи»" },
+  { id: 3, createdAt: "18.07.2025", assignee: "Я", status: "postponed", date: "—", comment: "Выбрать второй номер для тестового сайта" },
+];
+
+function TasksScreen({ onBack }: { onBack: () => void }) {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [openId, setOpenId] = useState<number | null>(null);
+
+  const setStatus = (id: number, status: TaskStatus) => {
+    const today = new Date().toLocaleDateString("ru-RU");
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status, date: status === "open" ? "—" : today } : t)));
+    setOpenId(null);
+  };
+
+  return (
+    <div className="space-y-4">
+      <ScreenHeader title="Задачи" subtitle="Что делаем с Юрой · статусы можно менять" onBack={onBack} />
+      <div className="space-y-2.5">
+        {tasks.map((t) => (
+          <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <p className="flex-1 text-sm font-medium text-foreground leading-snug">{t.comment}</p>
+              <button
+                onClick={() => setOpenId(openId === t.id ? null : t.id)}
+                className={`text-[11px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1 ${statusMeta[t.status].cls}`}
+              >
+                {statusMeta[t.status].label}
+                <Icon name="ChevronDown" size={11} />
+              </button>
+            </div>
+            {openId === t.id && (
+              <div className="flex flex-wrap gap-1.5 mb-2.5 animate-slide-up">
+                {(Object.keys(statusMeta) as TaskStatus[]).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatus(t.id, s)}
+                    className={`text-[11px] px-2.5 py-1 rounded-full font-medium border ${
+                      t.status === s ? statusMeta[s].cls + " border-transparent" : "bg-white/60 text-muted-foreground border-border"
+                    }`}
+                  >
+                    {statusMeta[s].label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1"><Icon name="CalendarPlus" size={11} /> {t.createdAt}</span>
+              <span className="flex items-center gap-1">
+                <Icon name={t.assignee === "Юра" ? "Rocket" : "User"} size={11} /> {t.assignee}
+              </span>
+              {t.date !== "—" && <span className="flex items-center gap-1"><Icon name="CalendarCheck" size={11} /> {t.date}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2">
+        <Icon name="Plus" size={15} /> Добавить задачу
+      </button>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [section, setSection] = useState<Section>("menu");
 
@@ -204,6 +280,7 @@ export default function AdminDashboard() {
   if (section === "addons") return <AddonsScreen onBack={() => setSection("menu")} />;
   if (section === "calendar") return <CalendarScreen onBack={() => setSection("menu")} />;
   if (section === "support") return <SupportScreen onBack={() => setSection("menu")} />;
+  if (section === "tasks") return <TasksScreen onBack={() => setSection("menu")} />;
 
   return (
     <div className="space-y-4 animate-slide-up">
