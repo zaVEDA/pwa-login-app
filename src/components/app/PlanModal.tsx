@@ -170,7 +170,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose, o
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Для родных</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Бесплатный доступ по кодовому слову — заявку подтверждает администратор</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Бесплатный доступ по кодовому слову — заявку подтверждает Заведующая</p>
               </div>
               {currentPlan === "family" && <Icon name="CheckCircle" size={18} className="text-primary flex-shrink-0" />}
             </div>

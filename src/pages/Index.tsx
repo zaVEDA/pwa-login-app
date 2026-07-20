@@ -138,7 +138,7 @@ export default function Index() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">
-              {user?.role === "admin" ? "Панель администратора" : "Добро пожаловать"}
+              {user?.role === "admin" ? "Кабинет Заведующей" : "Добро пожаловать"}
             </p>
             <h1 className="font-cormorant text-2xl font-semibold text-foreground">
               {user?.full_name || (demoMode ? "Гость" : "Пользователь")}

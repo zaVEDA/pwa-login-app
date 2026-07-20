@@ -37,8 +37,8 @@ export default function AdminPanel() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gold-gradient shadow-lg mb-4">
             <Icon name="Lock" size={24} className="text-white" />
           </div>
-          <h1 className="font-cormorant text-3xl font-semibold text-white mb-1">Кабинет администратора</h1>
-          <p className="text-white/40 text-sm mb-6">Войдите под учётной записью администратора в приложении</p>
+          <h1 className="font-cormorant text-3xl font-semibold text-white mb-1">Кабинет Заведующей</h1>
+          <p className="text-white/40 text-sm mb-6">Войдите под учётной записью Заведующей в приложении</p>
           <a href="/" className="inline-block px-5 py-2.5 rounded-xl gold-gradient text-white text-sm font-medium">
             ← Войти в приложении
           </a>
@@ -53,7 +53,7 @@ export default function AdminPanel() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">ЗаВедующая</p>
-            <h1 className="font-cormorant text-2xl font-semibold">Кабинет администратора</h1>
+            <h1 className="font-cormorant text-2xl font-semibold">Кабинет Заведующей</h1>
           </div>
           <div className="flex items-center gap-2">
             <a href="/" className="text-xs text-muted-foreground px-3 py-1.5 rounded-lg border border-border bg-white/50">

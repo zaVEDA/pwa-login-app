@@ -77,7 +77,7 @@ export default function AccountTab({
                 <p className="text-sm text-muted-foreground">{phone || "—"}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <Icon name={userRole === "admin" ? "Shield" : "Briefcase"} size={11} className="text-primary" />
-                  <span className="text-xs text-primary">{userRole === "admin" ? "Администратор" : "Личный кабинет"}</span>
+                  <span className="text-xs text-primary">{userRole === "admin" ? "Заведующая" : "Личный кабинет"}</span>
                 </div>
               </div>
             </div>
