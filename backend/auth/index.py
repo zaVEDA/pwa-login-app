@@ -42,6 +42,37 @@ def gen_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+def sms_text(purpose: str, code: str) -> str:
+    if purpose == "register":
+        return f"ZavDoc: kod podtverzhdeniya registracii {code}. Deystvuet 10 minut."
+    if purpose == "reset":
+        return f"ZavDoc: kod dlya vosstanovleniya dostupa {code}. Nikomu ne soobshchayte."
+    return f"ZavDoc: kod dlya vhoda {code}. Nikomu ne soobshchayte."
+
+
+def send_sms(phone: str, text: str) -> dict:
+    import urllib.request
+    import urllib.parse
+    api_id = os.environ.get("SMSRU_API_ID", "")
+    to = re.sub(r"\D", "", phone or "")
+    params = urllib.parse.urlencode({
+        "api_id": api_id,
+        "to": to,
+        "msg": text,
+        "from": "ZavDoc",
+        "json": 1,
+    })
+    url = f"https://sms.ru/sms/send?{params}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as r:
+            data = json.loads(r.read().decode())
+        print(f"[SMS.RU] to={to} status={data.get('status')} resp={data}")
+        return data
+    except Exception as e:
+        print(f"[SMS.RU ERROR] to={to} err={e}")
+        return {"status": "ERROR", "error": str(e)}
+
+
 def user_public(row, keys) -> dict:
     d = dict(zip(keys, row))
     d.pop("password_hash", None)
@@ -139,8 +170,14 @@ def handler(event: dict, context) -> dict:
                 (user_id, phone or None, email or None, code, purpose, channel, expires, reg_email, reg_password_hash)
             )
             conn.commit()
-            # ЗАГЛУШКА: реальная отправка SMS/email подключается позже
             print(f"[AUTH CODE] purpose={purpose} channel={channel} phone={phone} email={email} CODE={code}")
+
+            if channel == "sms":
+                sms_res = send_sms(phone, sms_text(purpose, code))
+                if sms_res.get("status") != "OK":
+                    return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже.", "sms_status": sms_res.get("status")})
+                return resp(200, {"ok": True, "sent": True, "channel": channel})
+
             return resp(200, {"ok": True, "sent": True, "channel": channel, "dev_code": code})
 
         # 2. Проверка кода — вход/регистрация по телефону, либо подтверждение reset

@@ -7,14 +7,12 @@
       "expectedStatus": 200
     },
     {
-      "name": "Запрос SMS-кода для входа",
+      "name": "Запрос кода без телефона",
       "method": "POST",
       "path": "/",
       "headers": { "X-Device-Id": "test-device-1" },
-      "body": { "action": "request_code", "purpose": "login", "channel": "sms", "phone": "+79991112233" },
-      "expectedStatus": 200,
-      "expectedBody": { "ok": true },
-      "bodyMatcher": "partial"
+      "body": { "action": "request_code", "purpose": "login", "channel": "sms", "phone": "" },
+      "expectedStatus": 400
     },
     {
       "name": "Проверка устройства",
