@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import LoginScreen from "@/components/app/LoginScreen";
 import HomeTab from "@/components/app/HomeTab";
+import AdminDashboard from "@/components/admin/AdminDashboard";
 import TabContent from "@/components/app/TabContent";
 import BottomNav from "@/components/app/BottomNav";
 import ProfileSetup from "@/components/app/ProfileSetup";
@@ -171,14 +172,18 @@ export default function Index() {
           </div>
         )}
         {activeTab === "home" && (
-          <HomeTab
-            colorTheme={colorTheme}
-            todayPhrase={todayPhrase}
-            setActiveTab={setActiveTab}
-            phone={phone}
-            userPlan={user?.plan ?? null}
-            userRole={user?.role}
-          />
+          user?.role === "admin" ? (
+            <AdminDashboard />
+          ) : (
+            <HomeTab
+              colorTheme={colorTheme}
+              todayPhrase={todayPhrase}
+              setActiveTab={setActiveTab}
+              phone={phone}
+              userPlan={user?.plan ?? null}
+              userRole={user?.role}
+            />
+          )
         )}
         <TabContent
           activeTab={activeTab}
