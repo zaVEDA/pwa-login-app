@@ -211,6 +211,7 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
   const [tasks, setTasks] = useState<AdminTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [newComment, setNewComment] = useState("");
   const [newAssignee, setNewAssignee] = useState<"Я" | "Юра">("Я");
   const [saving, setSaving] = useState(false);
@@ -254,7 +255,19 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
           {tasks.map((t) => (
             <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
               <div className="flex items-start justify-between gap-2 mb-2">
-                <p className="flex-1 text-sm font-medium text-foreground leading-snug">{t.comment}</p>
+                <button
+                  onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                  className="flex-1 flex items-start gap-1.5 text-left"
+                >
+                  <Icon
+                    name="ChevronRight"
+                    size={14}
+                    className={`text-muted-foreground flex-shrink-0 mt-0.5 transition-transform ${expandedId === t.id ? "rotate-90" : ""}`}
+                  />
+                  <p className={`text-sm font-medium text-foreground leading-snug ${expandedId === t.id ? "" : "line-clamp-2"}`}>
+                    {t.comment}
+                  </p>
+                </button>
                 <button
                   onClick={() => setOpenId(openId === t.id ? null : t.id)}
                   className={`text-[11px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1 flex-shrink-0 ${statusMeta[t.status].cls}`}
