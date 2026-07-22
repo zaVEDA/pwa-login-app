@@ -253,6 +253,19 @@
     }
   }
 
+  .animate-slide-up-panel {
+    animation: slideUpPanel 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes slideUpPanel {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
   .nav-pill {
     @apply flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200;
   }

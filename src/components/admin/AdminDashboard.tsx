@@ -207,29 +207,42 @@ const statusMeta: Record<TaskStatus, { label: string; cls: string }> = {
 
 const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("ru-RU") : "");
 
-function NoteEditor({ note, onSave }: { note: string; onSave: (v: string) => void }) {
+function NotePanel({ title, note, onSave, onClose }: { title: string; note: string; onSave: (v: string) => void; onClose: () => void }) {
   const [value, setValue] = useState(note);
   const changed = value.trim() !== (note || "").trim();
+  const save = () => { onSave(value.trim()); onClose(); };
   return (
-    <div className="rounded-xl bg-white/60 border border-border p-2.5">
-      <p className="text-[11px] font-medium text-primary mb-1.5 flex items-center gap-1">
-        <Icon name="MessageSquare" size={11} /> Комментарий (Я или Юра)
-      </p>
-      <textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Впишите заметку по задаче…"
-        rows={2}
-        className="w-full text-sm rounded-lg border border-border bg-white px-2.5 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
-      />
-      {changed && (
-        <button
-          onClick={() => onSave(value.trim())}
-          className="mt-1.5 w-full py-1.5 rounded-lg gold-gradient text-white text-xs font-medium flex items-center justify-center gap-1.5"
-        >
-          <Icon name="Check" size={12} /> Сохранить комментарий
-        </button>
-      )}
+    <div className="fixed inset-0 z-50 flex flex-col animate-fade-in">
+      <div className="flex-shrink-0 bg-black/40" onClick={onClose} style={{ height: "56px" }} />
+      <div className="flex-1 min-h-0 bg-white rounded-t-3xl shadow-2xl flex flex-col animate-slide-up-panel">
+        <div className="flex-shrink-0 flex items-center justify-between px-4 pt-3 pb-2 border-b border-border">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Icon name="MessageSquare" size={16} className="text-primary flex-shrink-0" />
+            <p className="text-sm font-semibold text-foreground line-clamp-1">{title}</p>
+          </div>
+          <button onClick={onClose} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted">
+            <Icon name="ChevronDown" size={20} />
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 p-4">
+          <textarea
+            autoFocus
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Впишите заметку по задаче…"
+            className="w-full h-full text-sm rounded-xl border border-border bg-white px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 leading-relaxed"
+          />
+        </div>
+        <div className="flex-shrink-0 p-4 pt-0" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}>
+          <button
+            onClick={save}
+            disabled={!changed}
+            className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-1.5 disabled:opacity-40"
+          >
+            <Icon name="Check" size={16} /> Сохранить комментарий
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -288,15 +301,11 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
             <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <button
-                  onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                  onClick={() => setExpandedId(t.id)}
                   className="flex-1 flex items-start gap-1.5 text-left"
                 >
-                  <Icon
-                    name="ChevronRight"
-                    size={16}
-                    className={`text-primary flex-shrink-0 mt-0.5 transition-transform ${expandedId === t.id ? "rotate-90" : ""}`}
-                  />
-                  <p className={`text-sm font-medium text-foreground leading-snug ${expandedId === t.id ? "" : "line-clamp-2"}`}>
+                  <Icon name="ChevronRight" size={16} className="text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">
                     {t.comment}
                   </p>
                 </button>
@@ -329,17 +338,15 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
                   </button>
                 </div>
               )}
-              {expandedId === t.id && (
-                <div className="mb-2.5 animate-slide-up">
-                  <NoteEditor note={t.note} onSave={(v) => saveNote(t.id, v)} />
-                </div>
-              )}
-              {expandedId !== t.id && t.note && (
-                <p className="text-xs text-muted-foreground italic mb-2 flex items-start gap-1.5">
-                  <Icon name="MessageSquare" size={12} className="text-primary flex-shrink-0 mt-0.5" />
-                  <span className="line-clamp-1">{t.note}</span>
-                </p>
-              )}
+              <button onClick={() => setExpandedId(t.id)} className="w-full text-left mb-2 flex items-start gap-1.5 group">
+                <Icon name="MessageSquare" size={12} className="text-primary flex-shrink-0 mt-0.5" />
+                {t.note ? (
+                  <span className="text-xs text-muted-foreground italic line-clamp-1 flex-1">{t.note}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground/60 italic flex-1">Добавить комментарий…</span>
+                )}
+                <Icon name="Maximize2" size={11} className="text-muted-foreground/50 flex-shrink-0 mt-0.5 group-hover:text-primary" />
+              </button>
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                 <span className="flex items-center gap-1"><Icon name="CalendarPlus" size={11} /> {fmtDate(t.created_at)}</span>
                 <span className="flex items-center gap-1">
@@ -387,6 +394,19 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
           </button>
         </div>
       </div>
+
+      {expandedId != null && (() => {
+        const t = tasks.find((x) => x.id === expandedId);
+        if (!t) return null;
+        return (
+          <NotePanel
+            title={t.comment}
+            note={t.note}
+            onSave={(v) => saveNote(t.id, v)}
+            onClose={() => setExpandedId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
