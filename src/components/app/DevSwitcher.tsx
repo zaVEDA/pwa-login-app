@@ -14,10 +14,13 @@ export default function DevSwitcher() {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
+    // Виден везде (предпросмотр, тестовые адреса), КРОМЕ боевого zavdoc.ru.
+    // Можно принудительно скрыть через ?dev=0 или показать через ?dev=1.
     const params = new URLSearchParams(window.location.search);
-    if (params.get("dev") === "1") localStorage.setItem("devSwitcher", "1");
-    if (params.get("dev") === "0") localStorage.removeItem("devSwitcher");
-    setEnabled(localStorage.getItem("devSwitcher") === "1");
+    if (params.get("dev") === "1") { setEnabled(true); return; }
+    if (params.get("dev") === "0") { setEnabled(false); return; }
+    const isProd = window.location.hostname.endsWith("zavdoc.ru");
+    setEnabled(!isProd);
   }, []);
 
   if (!enabled) return null;
