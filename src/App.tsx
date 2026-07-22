@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import AdminPanel from "./pages/AdminPanel";
 import Investor from "./pages/Investor";
 import Welcome from "./pages/Welcome";
+import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/investor" element={<Investor />} />
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/legal" element={<Legal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
