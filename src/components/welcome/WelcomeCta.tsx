@@ -18,7 +18,7 @@ export default function WelcomeCta() {
           </p>
           <div className="flex justify-center relative z-10">
             <a
-              href="/"
+              href="/app"
               onClick={() => reachGoal("welcome_cta_start")}
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.03]"
               style={{ background: "white", color: "hsl(35 72% 38%)" }}
@@ -35,7 +35,7 @@ export default function WelcomeCta() {
         <p className="font-cormorant text-lg font-medium mb-1" style={{ color: "hsl(35 72% 42%)" }}>ЗаВедующая вашими документами</p>
         <p className="text-xs text-muted-foreground mb-2">Документы и подписи для помогающих специалистов · 2026</p>
         <p className="text-xs text-muted-foreground">
-          Кузнецова Юлия Владимировна · ИНН 380125982200 · самозанятая
+          ООО «ЗАВЕДУЮЩАЯ» · ИНН 3801165360 · ОГРН 1253800010320
         </p>
         <p className="text-xs text-muted-foreground">
           e-mail: 89016625752@mail.ru · тел.: +7 901 662-57-52

@@ -106,14 +106,13 @@ export default function Index() {
     setActiveTab("home");
   };
 
-  // Заглушка «Скоро запуск» — только на боевом домене zavdoc.ru.
-  // Доступ открывается ссылкой ?enter=1 и запоминается. В превью/на других адресах вход открыт.
+  // Заглушка «Скоро запуск» вместо входа в приложение.
+  // Доступ открывается ссылкой ?enter=1 и запоминается (для Заведующей/тестов).
   const MAINTENANCE = true;
-  const isProdDomain = window.location.hostname.endsWith("zavdoc.ru");
   const params = new URLSearchParams(window.location.search);
   if (params.get("enter") === "1") localStorage.setItem("earlyAccess", "1");
   const hasAccess = localStorage.getItem("earlyAccess") === "1";
-  if (MAINTENANCE && isProdDomain && !hasAccess) {
+  if (MAINTENANCE && !hasAccess) {
     return <ComingSoon />;
   }
 

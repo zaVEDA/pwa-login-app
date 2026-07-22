@@ -56,7 +56,7 @@ export default function WelcomeHero() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
-            href="/"
+            href="/app"
             onClick={() => reachGoal("welcome_hero_start")}
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
             style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))", color: "white" }}

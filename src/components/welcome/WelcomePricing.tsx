@@ -43,7 +43,7 @@ export default function WelcomePricing() {
         {paidPlans.map((p) => {
           const halfYearPrice = isPresale ? p.presaleHalfYear : p.halfYear;
           return (
-            <a key={p.id} href="/"
+            <a key={p.id} href="/app"
               onClick={() => reachGoal("welcome_pricing_plan_click", { plan: p.id })}
               className={`flex flex-col h-full p-5 rounded-2xl border relative transition-transform hover:scale-[1.02] ${p.popular ? "shadow-md" : "bg-white/60"}`}
               style={{
