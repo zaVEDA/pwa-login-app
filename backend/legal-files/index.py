@@ -47,6 +47,19 @@ def handler(event: dict, context) -> dict:
             body = {}
     action = body.get("action") or ("list" if method == "GET" else "")
 
+    real_pw = os.environ.get("LEGAL_PAGE_PASSWORD", "")
+    headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
+    given_pw = headers.get("x-legal-auth") or body.get("password") or ""
+
+    # Проверка пароля страницы
+    if action == "check_password":
+        ok = bool(real_pw) and given_pw == real_pw
+        return resp(200 if ok else 401, {"ok": ok})
+
+    # Все операции с файлами требуют верного пароля
+    if not real_pw or given_pw != real_pw:
+        return resp(401, {"error": "Требуется пароль"})
+
     s3 = s3_client()
 
     if action == "list":

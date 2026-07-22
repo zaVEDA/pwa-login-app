@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/ui/icon";
+import { getLegalAuth } from "@/components/legal/LegalGate";
 
 const API = "https://functions.poehali.dev/5043035c-9bd0-4b6e-ab11-a2b1f897b997";
+
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  "X-Legal-Auth": getLegalAuth(),
+});
 
 interface LegalFile {
   id: string;
@@ -35,7 +41,11 @@ export default function LegalFilesBlock() {
 
   const load = async () => {
     try {
-      const r = await fetch(API);
+      const r = await fetch(API, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ action: "list" }),
+      });
       const d = await r.json();
       setFiles(d.files || []);
     } catch {
@@ -63,7 +73,7 @@ export default function LegalFilesBlock() {
         });
         const r = await fetch(API, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders(),
           body: JSON.stringify({ action: "upload", name: file.name, content_type: file.type, data }),
         });
         const d = await r.json();
@@ -82,7 +92,7 @@ export default function LegalFilesBlock() {
     setFiles((prev) => prev.filter((f) => f.id !== id));
     await fetch(API, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),
       body: JSON.stringify({ action: "delete", id }),
     }).catch(() => {});
   };

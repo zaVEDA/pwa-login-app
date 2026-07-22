@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import LegalFilesBlock from "@/components/legal/LegalFilesBlock";
+import LegalGate from "@/components/legal/LegalGate";
 
 type Status = "done" | "planned";
 
@@ -51,6 +52,7 @@ function Li({ children }: { children: React.ReactNode }) {
 
 export default function LegalFlow() {
   return (
+    <LegalGate>
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-5 py-10">
         <div className="mb-8">
@@ -161,5 +163,6 @@ export default function LegalFlow() {
         </div>
       </div>
     </div>
+    </LegalGate>
   );
 }

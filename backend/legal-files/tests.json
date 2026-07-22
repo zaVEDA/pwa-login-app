@@ -7,24 +7,24 @@
       "expectedStatus": 200
     },
     {
-      "name": "Список файлов",
+      "name": "Список без пароля запрещён",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200
+      "expectedStatus": 401
     },
     {
-      "name": "Загрузка без данных",
+      "name": "Проверка неверного пароля",
       "method": "POST",
       "path": "/",
-      "body": {"action": "upload", "name": "test.txt"},
-      "expectedStatus": 400
+      "body": {"action": "check_password", "password": "wrong-pass-xxx"},
+      "expectedStatus": 401
     },
     {
-      "name": "Неизвестное действие",
+      "name": "Загрузка без пароля запрещена",
       "method": "POST",
       "path": "/",
-      "body": {"action": "unknown"},
-      "expectedStatus": 400
+      "body": {"action": "upload", "name": "test.txt", "data": "eA=="},
+      "expectedStatus": 401
     }
   ]
 }
