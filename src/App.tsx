@@ -11,6 +11,7 @@ import Welcome from "./pages/Welcome";
 import Legal from "./pages/Legal";
 import LegalFlow from "./pages/LegalFlow";
 import NotFound from "./pages/NotFound";
+import DevSwitcher from "./components/app/DevSwitcher";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <DevSwitcher />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

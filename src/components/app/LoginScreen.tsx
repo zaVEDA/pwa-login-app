@@ -28,7 +28,9 @@ interface Props {
 }
 
 export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, onAuth, onDemo }: Props) {
-  const [mode, setMode] = useState<Mode>("phone");
+  const [mode, setMode] = useState<Mode>(
+    () => (new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "phone")
+  );
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [login, setLogin] = useState("");
