@@ -10,7 +10,6 @@ import Investor from "./pages/Investor";
 import Welcome from "./pages/Welcome";
 import Legal from "./pages/Legal";
 import LegalFlow from "./pages/LegalFlow";
-import Agreements from "./pages/Agreements";
 import NotFound from "./pages/NotFound";
 import DevSwitcher from "./components/app/DevSwitcher";
 
@@ -30,7 +29,6 @@ const App = () => (
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/legal-flow" element={<LegalFlow />} />
-          <Route path="/agreements" element={<Agreements />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

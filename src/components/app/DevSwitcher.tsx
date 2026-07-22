@@ -6,7 +6,6 @@ const MODES = [
   { key: "legal", label: "Юристу", sub: "скрытая страница", icon: "Scale", href: "/legal-flow" },
   { key: "guest", label: "Гость", sub: "вход + тестовые доки", icon: "UserRound", href: "/app?demo=1" },
   { key: "admin", label: "Заведующая", sub: "мой админ-вход", icon: "ShieldCheck", href: "/app?enter=1&admin=1" },
-  { key: "notes", label: "Договорённости", sub: "что мы решили", icon: "ClipboardList", href: "/agreements" },
 ] as const;
 
 export default function DevSwitcher() {
