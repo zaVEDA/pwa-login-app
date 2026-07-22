@@ -162,6 +162,24 @@ def handler(event: dict, context) -> dict:
                 if purpose == "reset" and not user_id:
                     return resp(404, {"error": "Аккаунт с таким email не найден"})
 
+            # Пауза 60 секунд между повторными отправками кода на один и тот же адрес
+            if channel == "sms":
+                cur.execute(
+                    "SELECT created_at FROM auth_codes WHERE phone = %s AND purpose = %s AND channel = 'sms' ORDER BY created_at DESC LIMIT 1",
+                    (phone, purpose)
+                )
+            else:
+                cur.execute(
+                    "SELECT created_at FROM auth_codes WHERE email = %s AND purpose = %s AND channel = 'email' ORDER BY created_at DESC LIMIT 1",
+                    (email, purpose)
+                )
+            last = cur.fetchone()
+            if last and last[0]:
+                elapsed = (datetime.datetime.utcnow() - last[0]).total_seconds()
+                if elapsed < 60:
+                    wait = int(60 - elapsed)
+                    return resp(429, {"error": f"Подождите {wait} сек перед повторной отправкой", "retry_after": wait})
+
             code = gen_code()
             expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
             cur.execute(
