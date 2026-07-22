@@ -14,7 +14,7 @@ export default function WelcomeCta() {
             Готовы навести порядок в своих документах?
           </h2>
           <p className="text-white/80 text-sm mb-6 relative z-10">
-            Запуск первой версии приложения — с 15 июля. Заходите и знакомьтесь уже сейчас
+            Запуск первой версии приложения — с 1 августа. Заходите и знакомьтесь уже сейчас
           </p>
           <div className="flex justify-center relative z-10">
             <a

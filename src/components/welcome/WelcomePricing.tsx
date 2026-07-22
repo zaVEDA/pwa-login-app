@@ -1,7 +1,7 @@
 import Icon from "@/components/ui/icon";
 import { reachGoal } from "@/lib/metrika";
 
-const PRESALE_UNTIL = new Date("2026-07-15T23:59:59");
+const PRESALE_UNTIL = new Date("2026-08-01T23:59:59");
 const isPresale = new Date() <= PRESALE_UNTIL;
 
 const paidPlans = [
@@ -21,7 +21,7 @@ export default function WelcomePricing() {
         Зайдите и ознакомьтесь с приложением уже сейчас, а оплачивать подписку начнёте, когда работа пойдёт активно.
       </p>
       <p className="text-xs font-semibold text-center mb-8" style={{ color: "hsl(35 72% 38%)" }}>
-        Запуск первой версии приложения — с 15 июля
+        Запуск первой версии приложения — с 1 августа
       </p>
 
       {isPresale && (
@@ -31,7 +31,7 @@ export default function WelcomePricing() {
             style={{ background: "radial-gradient(circle, white, transparent)", transform: "translate(25%, -25%)" }} />
           <div className="relative z-10 flex items-center justify-center gap-2 mb-1">
             <Icon name="Sparkles" size={20} className="text-white flex-shrink-0" />
-            <p className="text-lg font-bold text-white">Предпродажа — только до 15 июля!</p>
+            <p className="text-lg font-bold text-white">Предпродажа — только до 1 августа!</p>
           </div>
           <p className="relative z-10 text-sm text-white/90 font-medium">
             Успейте оформить подписку на 6 месяцев по сниженной цене
