@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "CORS OPTIONS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Список файлов",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Загрузка без данных",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "upload", "name": "test.txt"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Неизвестное действие",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "unknown"},
+      "expectedStatus": 400
+    }
+  ]
+}

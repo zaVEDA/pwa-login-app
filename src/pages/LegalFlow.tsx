@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import LegalFilesBlock from "@/components/legal/LegalFilesBlock";
 
 type Status = "done" | "planned";
 
@@ -147,6 +148,8 @@ export default function LegalFlow() {
             <Li>Переключатель виден везде, кроме боевого сайта zavdoc.ru — клиенты его не видят.</Li>
           </Section>
         </div>
+
+        <LegalFilesBlock />
 
         <div className="mt-6 flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 border border-border rounded-xl px-4 py-3">
           <Icon name="Info" size={14} className="flex-shrink-0 mt-0.5" />
