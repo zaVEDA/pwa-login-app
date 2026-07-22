@@ -2,6 +2,14 @@ import Icon from "@/components/ui/icon";
 
 type Status = "done" | "planned";
 
+const DOCS = [
+  { n: 1, name: "Публичная оферта (Пользовательское соглашение)", place: "На сайте (публично)", accept: "Начало использования сайта/сервиса = акцепт" },
+  { n: 2, name: "Политика обработки персональных данных", place: "На сайте (отдельная страница, ссылка из оферты и согласия)", accept: "Ознакомление; ссылка обязательна по 152-ФЗ" },
+  { n: 3, name: "Согласие на обработку ПДн + Соглашение об использовании ПЭП", place: "При входе в приложение", accept: "Подтверждение по СМС = простая электронная подпись (ПЭП), с логированием" },
+  { n: 4, name: "Тарифы и условия оплаты", place: "При оплате тарифа", accept: "Оплата = акцепт" },
+  { n: 5, name: "Политика безопасности (внутренняя)", place: "НЕ публикуется", accept: "Внутренний документ (шифрование, бэкапы, доступ)" },
+];
+
 function Badge({ status }: { status: Status }) {
   const map = {
     done: { label: "Реализовано", cls: "bg-green-100 text-green-700 border-green-200", icon: "CheckCircle2" },
@@ -104,10 +112,28 @@ export default function LegalFlow() {
 
           <Section n="8" title="Юридические документы" status="planned">
             <Li>Пока на сайте <b>не размещаем</b> — ждём готовности от юриста.</Li>
-            <Li>Публичная оферта (пользовательское соглашение) — на сайт.</Li>
-            <Li>Политика обработки персональных данных — на сайт.</Li>
-            <Li>Согласие на обработку ПДн + соглашение об использовании ПЭП — при входе в приложение.</Li>
-            <Li>Тарифы и условия оплаты — при оплате тарифа.</Li>
+            <div className="overflow-x-auto -mx-2 mt-2">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border border-border bg-muted px-2 py-1.5 text-left font-semibold">#</th>
+                    <th className="border border-border bg-muted px-2 py-1.5 text-left font-semibold">Документ</th>
+                    <th className="border border-border bg-muted px-2 py-1.5 text-left font-semibold">Где размещается</th>
+                    <th className="border border-border bg-muted px-2 py-1.5 text-left font-semibold">Как принимается пользователем</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {DOCS.map((d) => (
+                    <tr key={d.n}>
+                      <td className="border border-border px-2 py-1.5 align-top text-center">{d.n}</td>
+                      <td className="border border-border px-2 py-1.5 align-top font-medium text-foreground">{d.name}</td>
+                      <td className="border border-border px-2 py-1.5 align-top">{d.place}</td>
+                      <td className="border border-border px-2 py-1.5 align-top">{d.accept}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Section>
 
           <Section n="9" title="Даты и предпродажа (лендинг)" status="done">
