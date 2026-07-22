@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/icon";
 import LegalFilesBlock from "@/components/legal/LegalFilesBlock";
-import LegalGate from "@/components/legal/LegalGate";
+import LegalGate, { clearLegalAuth } from "@/components/legal/LegalGate";
 
 type Status = "done" | "planned";
 
@@ -56,7 +56,15 @@ export default function LegalFlow() {
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-5 py-10">
         <div className="mb-8">
-          <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Внутренний документ · не для клиентов</p>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Внутренний документ · не для клиентов</p>
+            <button
+              onClick={clearLegalAuth}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1.5 flex-shrink-0"
+            >
+              <Icon name="LogOut" size={13} /> Выйти
+            </button>
+          </div>
           <h1 className="font-cormorant text-3xl font-bold text-foreground mb-2">
             Порядок авторизации и подписания
           </h1>

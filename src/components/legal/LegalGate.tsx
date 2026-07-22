@@ -8,6 +8,12 @@ export function getLegalAuth(): string {
   return sessionStorage.getItem(STORE_KEY) || localStorage.getItem(STORE_KEY) || "";
 }
 
+export function clearLegalAuth() {
+  localStorage.removeItem(STORE_KEY);
+  sessionStorage.removeItem(STORE_KEY);
+  window.location.reload();
+}
+
 export default function LegalGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(() => !!getLegalAuth());
   const [pw, setPw] = useState("");
