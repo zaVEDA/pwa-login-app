@@ -182,20 +182,27 @@ def handler(event: dict, context) -> dict:
 
             # Лимиты отправки SMS на один номер
             if channel == "sms":
-                # Суточный лимит SMS: для входа — 6 (до 2 устройств), иначе — 3
+                # Суточный лимит SMS: для входа — 6 (до 2 устройств), иначе — 3.
+                # По достижении лимита — блокировка отправки на сутки.
                 day_limit = 6 if purpose == "login" else 3
                 cur.execute(
-                    "SELECT COUNT(*) FROM auth_codes WHERE phone = %s AND channel = 'sms' AND created_at > NOW() - INTERVAL '24 hours'",
+                    "SELECT COUNT(*), MIN(created_at) FROM auth_codes WHERE phone = %s AND channel = 'sms' AND created_at > NOW() - INTERVAL '24 hours'",
                     (phone,)
                 )
-                day_count = cur.fetchone()[0] or 0
-                if day_count >= day_limit:
-                    return resp(429, {
-                        "error": f"Превышен лимит: не более {day_limit} SMS в сутки на один номер. Попробуйте завтра.",
-                        "limited": True,
-                    })
+                day = cur.fetchone()
+                day_count = day[0] or 0
+                if day_count >= day_limit and day[1]:
+                    elapsed = (datetime.datetime.utcnow() - day[1]).total_seconds()
+                    wait = int(24 * 3600 - elapsed)
+                    if wait > 0:
+                        hours = (wait + 3599) // 3600
+                        return resp(429, {
+                            "error": f"Превышен суточный лимит SMS ({day_limit}). Отправка заблокирована на {hours} ч.",
+                            "limited": True,
+                            "retry_after": wait,
+                        })
 
-                # 3 отправки за 30 минут → блокировка на 30 минут
+                # 3 отправки за 30 минут → пауза 30 минут
                 cur.execute(
                     "SELECT COUNT(*), MIN(created_at) FROM auth_codes WHERE phone = %s AND channel = 'sms' AND created_at > NOW() - INTERVAL '30 minutes'",
                     (phone,)
