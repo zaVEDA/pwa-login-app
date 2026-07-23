@@ -19,7 +19,7 @@
       "method": "POST",
       "path": "/",
       "headers": { "X-Device-Id": "test-device-1" },
-      "body": { "action": "check_device", "phone": "+79991112233" },
+      "body": { "action": "check_device", "phone": "+79990000042" },
       "expectedStatus": 200
     },
     {
@@ -27,7 +27,7 @@
       "method": "POST",
       "path": "/",
       "headers": { "X-Device-Id": "test-device-1" },
-      "body": { "action": "verify_code", "purpose": "login", "channel": "sms", "phone": "+79991112233", "code": "0000" },
+      "body": { "action": "verify_code", "purpose": "login", "channel": "sms", "phone": "+79990000042", "code": "0000" },
       "expectedStatus": 400
     },
     {

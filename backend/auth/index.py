@@ -182,15 +182,16 @@ def handler(event: dict, context) -> dict:
 
             # Лимиты отправки SMS на один номер
             if channel == "sms":
-                # Не более 3 SMS в сутки на номер
+                # Суточный лимит SMS: для входа — 6 (до 2 устройств), иначе — 3
+                day_limit = 6 if purpose == "login" else 3
                 cur.execute(
                     "SELECT COUNT(*) FROM auth_codes WHERE phone = %s AND channel = 'sms' AND created_at > NOW() - INTERVAL '24 hours'",
                     (phone,)
                 )
                 day_count = cur.fetchone()[0] or 0
-                if day_count >= 3:
+                if day_count >= day_limit:
                     return resp(429, {
-                        "error": "Превышен лимит: не более 3 SMS в сутки на один номер. Попробуйте завтра.",
+                        "error": f"Превышен лимит: не более {day_limit} SMS в сутки на один номер. Попробуйте завтра.",
                         "limited": True,
                     })
 
