@@ -206,6 +206,27 @@ def handler(event: dict, context) -> dict:
             email = (body.get("email") or "").strip().lower()
             code = (body.get("code") or "").strip()
 
+            ident = phone if channel == "sms" else email
+
+            # Блокировка: 3 неверных ввода кода → блок на 30 минут
+            cur.execute(
+                "SELECT COUNT(*), MAX(created_at) FROM auth_attempts "
+                "WHERE identifier = %s AND success = FALSE AND created_at > NOW() - INTERVAL '30 minutes'",
+                (ident,)
+            )
+            att = cur.fetchone()
+            fail_count = att[0] or 0
+            if fail_count >= 3 and att[1]:
+                elapsed = (datetime.datetime.utcnow() - att[1]).total_seconds()
+                wait = int(30 * 60 - elapsed)
+                if wait > 0:
+                    mins = (wait + 59) // 60
+                    return resp(429, {
+                        "error": f"Слишком много неверных попыток. Вход заблокирован на {mins} мин.",
+                        "locked": True,
+                        "retry_after": wait,
+                    })
+
             if channel == "sms":
                 cur.execute(
                     "SELECT id, code, reg_email, reg_password_hash FROM auth_codes WHERE phone = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
@@ -218,7 +239,21 @@ def handler(event: dict, context) -> dict:
                 )
             row = cur.fetchone()
             if not row or row[1] != code:
-                return resp(400, {"error": "Неверный или просроченный код"})
+                cur.execute(
+                    "INSERT INTO auth_attempts (identifier, success) VALUES (%s, FALSE)",
+                    (ident,)
+                )
+                conn.commit()
+                left = 3 - (fail_count + 1)
+                if left <= 0:
+                    return resp(429, {
+                        "error": "Слишком много неверных попыток. Вход заблокирован на 30 мин.",
+                        "locked": True,
+                        "retry_after": 30 * 60,
+                    })
+                return resp(400, {"error": f"Неверный или просроченный код. Осталось попыток: {left}"})
+
+            cur.execute("DELETE FROM auth_attempts WHERE identifier = %s", (ident,))
             reg_email = row[2]
             reg_password_hash = row[3]
             cur.execute("UPDATE auth_codes SET used = TRUE WHERE id = %s", (row[0],))
