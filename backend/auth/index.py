@@ -180,6 +180,38 @@ def handler(event: dict, context) -> dict:
                     wait = int(60 - elapsed)
                     return resp(429, {"error": f"Подождите {wait} сек перед повторной отправкой", "retry_after": wait})
 
+            # Лимиты отправки SMS на один номер
+            if channel == "sms":
+                # Не более 3 SMS в сутки на номер
+                cur.execute(
+                    "SELECT COUNT(*) FROM auth_codes WHERE phone = %s AND channel = 'sms' AND created_at > NOW() - INTERVAL '24 hours'",
+                    (phone,)
+                )
+                day_count = cur.fetchone()[0] or 0
+                if day_count >= 3:
+                    return resp(429, {
+                        "error": "Превышен лимит: не более 3 SMS в сутки на один номер. Попробуйте завтра.",
+                        "limited": True,
+                    })
+
+                # 3 отправки за 30 минут → блокировка на 30 минут
+                cur.execute(
+                    "SELECT COUNT(*), MIN(created_at) FROM auth_codes WHERE phone = %s AND channel = 'sms' AND created_at > NOW() - INTERVAL '30 minutes'",
+                    (phone,)
+                )
+                win = cur.fetchone()
+                win_count = win[0] or 0
+                if win_count >= 3 and win[1]:
+                    elapsed = (datetime.datetime.utcnow() - win[1]).total_seconds()
+                    wait = int(30 * 60 - elapsed)
+                    if wait > 0:
+                        mins = (wait + 59) // 60
+                        return resp(429, {
+                            "error": f"Слишком много запросов кода. Отправка заблокирована на {mins} мин.",
+                            "limited": True,
+                            "retry_after": wait,
+                        })
+
             code = gen_code()
             expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
             cur.execute(
