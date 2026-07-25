@@ -17,6 +17,7 @@ export function clearLegalAuth() {
 export default function LegalGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(() => !!getLegalAuth());
   const [pw, setPw] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,14 +57,24 @@ export default function LegalGate({ children }: { children: React.ReactNode }) {
         <p className="text-sm text-muted-foreground mb-5">
           Внутренняя страница для Заведующей и юриста. Введите пароль, чтобы продолжить.
         </p>
-        <input
-          type="password"
-          value={pw}
-          onChange={(e) => setPw(e.target.value)}
-          placeholder="Пароль"
-          autoFocus
-          className="w-full border border-border rounded-xl px-4 py-3 text-sm mb-3 focus:outline-none focus:border-primary bg-background"
-        />
+        <div className="relative mb-3">
+          <input
+            type={showPw ? "text" : "password"}
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            placeholder="Пароль"
+            autoFocus
+            className="w-full border border-border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:border-primary bg-background"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPw((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={showPw ? "Скрыть пароль" : "Показать пароль"}
+          >
+            <Icon name={showPw ? "EyeOff" : "Eye"} size={18} />
+          </button>
+        </div>
         {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
         <button
           type="submit"
