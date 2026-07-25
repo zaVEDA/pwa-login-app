@@ -113,6 +113,27 @@
       "path": "/",
       "body": { "action": "admin_set_user_password", "login": "test", "password": "test123" },
       "expectedStatus": 403
+    },
+    {
+      "name": "Выдать доступ без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_grant_access", "target": "app", "login": "test", "password": "test123" },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Список доступов без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_list_access" },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Отозвать доступ без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_revoke_access", "id": 1 },
+      "expectedStatus": 403
     }
   ]
 }

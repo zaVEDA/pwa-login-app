@@ -84,5 +84,9 @@ export const authApi = {
     call("admin_set_family_code", { code_word, expires_at }),
   adminSetUserPassword: (login: string, password: string) =>
     call("admin_set_user_password", { login, password }),
+  adminGrantAccess: (p: { target: "app" | "lawyer_landing"; login: string; password: string; starts_at: string | null; expires_at: string | null }) =>
+    call("admin_grant_access", p),
+  adminListAccess: () => call("admin_list_access"),
+  adminRevokeAccess: (id: number) => call("admin_revoke_access", { id }),
   logout: () => call("logout"),
 };
