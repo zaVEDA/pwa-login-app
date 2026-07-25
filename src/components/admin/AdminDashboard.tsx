@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
+import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
 
 type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks";
 
@@ -78,7 +79,9 @@ function FamilyScreen({ onBack }: { onBack: () => void }) {
   const fam = mockUsers.filter((_, i) => i % 2 === 0);
   return (
     <div className="space-y-4">
-      <ScreenHeader title="Тариф «Для родных»" subtitle="Список · активация · срок · подписи/мес · входы" onBack={onBack} />
+      <ScreenHeader title="Тариф «Для родных»" subtitle="Кодовое слово · заявки · список · активация" onBack={onBack} />
+      <FamilyCodeSettings />
+      <FamilyRequests />
       <div className="space-y-2.5">
         {fam.map((u) => (
           <div key={u.phone} className="card-warm rounded-2xl p-4 shadow-sm">

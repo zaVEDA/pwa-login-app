@@ -122,7 +122,7 @@ function UserCard({ user, onBack }: { user: User; onBack: () => void }) {
   );
 }
 
-function FamilyCodeSettings() {
+export function FamilyCodeSettings() {
   const [codeWord, setCodeWord] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [savedCode, setSavedCode] = useState<string | null>(null);
@@ -309,7 +309,7 @@ function SetUserPassword() {
   );
 }
 
-function FamilyRequests() {
+export function FamilyRequests() {
   const [items, setItems] = useState<FamilyRequestItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -399,8 +399,6 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-4">
-      <FamilyCodeSettings />
-      <FamilyRequests />
       <SetUserPassword />
 
       <div className="grid grid-cols-2 gap-3">
