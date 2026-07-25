@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const API = "https://functions.poehali.dev/5043035c-9bd0-4b6e-ab11-a2b1f897b997";
@@ -14,36 +14,60 @@ export function clearLegalAuth() {
   window.location.reload();
 }
 
+async function verify(password: string): Promise<boolean> {
+  if (!password) return false;
+  try {
+    const r = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "check_password", password }),
+    });
+    const d = await r.json();
+    return r.ok && d.ok === true;
+  } catch {
+    return false;
+  }
+}
+
 export default function LegalGate({ children }: { children: React.ReactNode }) {
-  const [authed, setAuthed] = useState(() => !!getLegalAuth());
+  const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const saved = getLegalAuth();
+    if (!saved) { setChecking(false); return; }
+    verify(saved).then((ok) => {
+      if (ok) setAuthed(true);
+      else { localStorage.removeItem(STORE_KEY); sessionStorage.removeItem(STORE_KEY); }
+      setChecking(false);
+    });
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const r = await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "check_password", password: pw }),
-      });
-      const d = await r.json();
-      if (r.ok && d.ok) {
-        localStorage.setItem(STORE_KEY, pw);
-        setAuthed(true);
-      } else {
-        setError("Неверный пароль");
-      }
-    } catch {
-      setError("Ошибка сети. Попробуйте ещё раз.");
-    } finally {
-      setLoading(false);
+    const ok = await verify(pw);
+    if (ok) {
+      localStorage.setItem(STORE_KEY, pw);
+      setAuthed(true);
+    } else {
+      setError("Неверный пароль");
     }
+    setLoading(false);
   };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Icon name="Loader" size={24} className="animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (authed) return <>{children}</>;
 

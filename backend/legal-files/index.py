@@ -111,9 +111,13 @@ def handler(event: dict, context) -> dict:
                 name = urllib.parse.unquote(name)
             else:
                 name = key.split("/")[-1]
+            comment = meta.get("comment", "")
+            if comment:
+                comment = urllib.parse.unquote(comment)
             files.append({
                 "id": key,
                 "name": name,
+                "comment": comment,
                 "url": cdn_url(key),
                 "size": obj.get("Size", 0),
                 "content_type": head.get("ContentType", ""),
@@ -125,6 +129,7 @@ def handler(event: dict, context) -> dict:
     if action == "upload":
         name = (body.get("name") or "file").strip()
         content_type = body.get("content_type") or "application/octet-stream"
+        comment = (body.get("comment") or "").strip()[:2000]
         data_b64 = body.get("data") or ""
         if not data_b64:
             return resp(400, {"error": "Файл пуст"})
@@ -140,15 +145,37 @@ def handler(event: dict, context) -> dict:
             Key=key,
             Body=raw,
             ContentType=content_type,
-            Metadata={"origname": urllib.parse.quote(name)},
+            Metadata={
+                "origname": urllib.parse.quote(name),
+                "comment": urllib.parse.quote(comment),
+            },
         )
         return resp(200, {"file": {
             "id": key,
             "name": name,
+            "comment": comment,
             "url": cdn_url(key),
             "size": len(raw),
             "content_type": content_type,
         }})
+
+    if action == "set_comment":
+        key = body.get("id") or ""
+        comment = (body.get("comment") or "").strip()[:2000]
+        if not key.startswith(PREFIX):
+            return resp(400, {"error": "Неверный файл"})
+        head = s3.head_object(Bucket="files", Key=key)
+        meta = dict(head.get("Metadata", {}))
+        meta["comment"] = urllib.parse.quote(comment)
+        s3.copy_object(
+            Bucket="files",
+            Key=key,
+            CopySource={"Bucket": "files", "Key": key},
+            Metadata=meta,
+            MetadataDirective="REPLACE",
+            ContentType=head.get("ContentType", "application/octet-stream"),
+        )
+        return resp(200, {"ok": True, "comment": comment})
 
     if action == "delete":
         key = body.get("id") or ""

@@ -12,6 +12,7 @@ const authHeaders = () => ({
 interface LegalFile {
   id: string;
   name: string;
+  comment?: string;
   url: string;
   size: number;
   content_type: string;
@@ -37,6 +38,9 @@ export default function LegalFilesBlock() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [newComment, setNewComment] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -74,18 +78,30 @@ export default function LegalFilesBlock() {
         const r = await fetch(API, {
           method: "POST",
           headers: authHeaders(),
-          body: JSON.stringify({ action: "upload", name: file.name, content_type: file.type, data }),
+          body: JSON.stringify({ action: "upload", name: file.name, content_type: file.type, comment: newComment.trim(), data }),
         });
         const d = await r.json();
         if (d.file) setFiles((prev) => [d.file, ...prev]);
         else if (d.error) setError(d.error);
       }
+      setNewComment("");
     } catch {
       setError("Ошибка загрузки");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
     }
+  };
+
+  const saveComment = async (id: string) => {
+    const comment = editDraft.trim();
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, comment } : f)));
+    setEditingId(null);
+    await fetch(API, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ action: "set_comment", id, comment }),
+    }).catch(() => {});
   };
 
   const remove = async (id: string) => {
@@ -105,9 +121,18 @@ export default function LegalFilesBlock() {
         </div>
         <div className="flex-1">
           <h2 className="font-semibold text-foreground leading-tight">Прикреплённые файлы</h2>
-          <p className="text-xs text-muted-foreground">Документы, PDF, сканы — сохраняются в облаке</p>
+          <p className="text-xs text-muted-foreground">Word, PDF, сканы — с комментарием, сохраняются в облаке</p>
         </div>
       </div>
+
+      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Комментарий к документу (необязательно)</label>
+      <textarea
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
+        placeholder="Например: черновик оферты, прошу проверить пункт 4.2"
+        rows={2}
+        className="w-full border border-border rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:border-primary bg-background resize-none"
+      />
 
       <input
         ref={inputRef}
@@ -138,20 +163,52 @@ export default function LegalFilesBlock() {
           <p className="text-xs text-muted-foreground text-center py-4">Пока ничего не прикреплено</p>
         ) : (
           files.map((f) => (
-            <div key={f.id} className="flex items-center gap-3 border border-border rounded-xl px-3 py-2.5">
-              <Icon name={iconFor(f.name, f.content_type)} size={18} className="text-primary flex-shrink-0" />
-              <div className="min-w-0 flex-1">
-                <a href={f.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-foreground hover:text-primary truncate block">
-                  {f.name}
+            <div key={f.id} className="border border-border rounded-xl px-3 py-2.5">
+              <div className="flex items-center gap-3">
+                <Icon name={iconFor(f.name, f.content_type)} size={18} className="text-primary flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <a href={f.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-foreground hover:text-primary truncate block">
+                    {f.name}
+                  </a>
+                  <p className="text-xs text-muted-foreground">{fmtSize(f.size)}</p>
+                </div>
+                <a href={f.url} download target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" title="Скачать">
+                  <Icon name="Download" size={15} />
                 </a>
-                <p className="text-xs text-muted-foreground">{fmtSize(f.size)}</p>
+                <button onClick={() => remove(f.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Удалить">
+                  <Icon name="Trash2" size={15} />
+                </button>
               </div>
-              <a href={f.url} download target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" title="Скачать">
-                <Icon name="Download" size={15} />
-              </a>
-              <button onClick={() => remove(f.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Удалить">
-                <Icon name="Trash2" size={15} />
-              </button>
+
+              {editingId === f.id ? (
+                <div className="mt-2 pl-8">
+                  <textarea
+                    value={editDraft}
+                    onChange={(e) => setEditDraft(e.target.value)}
+                    rows={2}
+                    autoFocus
+                    className="w-full border border-border rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:border-primary bg-background resize-none"
+                  />
+                  <div className="flex gap-2 mt-1.5">
+                    <button onClick={() => saveComment(f.id)} className="text-xs px-2.5 py-1 rounded-lg gold-gradient text-white font-medium">Сохранить</button>
+                    <button onClick={() => setEditingId(null)} className="text-xs px-2.5 py-1 rounded-lg border border-border text-muted-foreground">Отмена</button>
+                  </div>
+                </div>
+              ) : f.comment ? (
+                <div className="mt-2 pl-8 flex items-start gap-1.5">
+                  <p className="flex-1 text-xs text-muted-foreground bg-muted/50 rounded-lg px-2.5 py-1.5 whitespace-pre-wrap">{f.comment}</p>
+                  <button onClick={() => { setEditingId(f.id); setEditDraft(f.comment || ""); }} className="p-1 rounded-lg hover:bg-muted text-muted-foreground flex-shrink-0" title="Изменить комментарий">
+                    <Icon name="Pencil" size={13} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setEditingId(f.id); setEditDraft(""); }}
+                  className="mt-1.5 ml-8 text-xs text-primary hover:underline flex items-center gap-1"
+                >
+                  <Icon name="MessageSquarePlus" size={13} /> Добавить комментарий
+                </button>
+              )}
             </div>
           ))
         )}
