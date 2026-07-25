@@ -2,8 +2,44 @@ import json
 import os
 import base64
 import uuid
+import hashlib
 import urllib.parse
 import boto3
+import psycopg2
+
+
+def verify_password(password: str, stored: str) -> bool:
+    if not stored or "$" not in stored:
+        return False
+    salt, h = stored.split("$", 1)
+    return hashlib.sha256((salt + password).encode()).hexdigest() == h
+
+
+def check_landing_password(given_pw: str) -> bool:
+    """Пароль лендинга юриста: статичный секрет ИЛИ активный назначенный пароль из БД (с учётом срока)."""
+    if not given_pw:
+        return False
+    real_pw = os.environ.get("LEGAL_PAGE_PASSWORD", "")
+    if real_pw and given_pw == real_pw:
+        return True
+    dsn = os.environ.get("DATABASE_URL")
+    if not dsn:
+        return False
+    conn = psycopg2.connect(dsn)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT password_hash FROM access_passwords "
+            "WHERE target = 'lawyer_landing' "
+            "AND (starts_at IS NULL OR starts_at <= NOW()) "
+            "AND (expires_at IS NULL OR expires_at > NOW())"
+        )
+        for (ph,) in cur.fetchall():
+            if verify_password(given_pw, ph):
+                return True
+        return False
+    finally:
+        conn.close()
 
 
 def s3_client():
@@ -47,17 +83,16 @@ def handler(event: dict, context) -> dict:
             body = {}
     action = body.get("action") or ("list" if method == "GET" else "")
 
-    real_pw = os.environ.get("LEGAL_PAGE_PASSWORD", "")
     headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
     given_pw = headers.get("x-legal-auth") or body.get("password") or ""
 
     # Проверка пароля страницы
     if action == "check_password":
-        ok = bool(real_pw) and given_pw == real_pw
+        ok = check_landing_password(given_pw)
         return resp(200 if ok else 401, {"ok": ok})
 
     # Все операции с файлами требуют верного пароля
-    if not real_pw or given_pw != real_pw:
+    if not check_landing_password(given_pw):
         return resp(401, {"error": "Требуется пароль"})
 
     s3 = s3_client()
