@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "@/components/ui/icon";
+import LegalGate, { clearLegalAuth } from "@/components/legal/LegalGate";
 
 const DOCS = [
   { key: "drafts", title: "Юридические документы (черновики)", md: "/legal-drafts.md", doc: "/legal-drafts.doc" },
@@ -86,11 +87,20 @@ export default function Legal() {
   }, [active]);
 
   return (
+    <LegalGate>
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Icon name="ScrollText" size={22} className="text-primary" />
-          <h1 className="text-xl font-bold">Юридические документы</h1>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <Icon name="ScrollText" size={22} className="text-primary" />
+            <h1 className="text-xl font-bold">Юридические документы</h1>
+          </div>
+          <button
+            onClick={clearLegalAuth}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1.5 flex-shrink-0"
+          >
+            <Icon name="LogOut" size={13} /> Выйти
+          </button>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
           Черновики для проверки юристом. На сайте пока не опубликованы. Можно читать здесь или скачать в Word.
@@ -125,5 +135,6 @@ export default function Legal() {
         </div>
       </div>
     </div>
+    </LegalGate>
   );
 }
