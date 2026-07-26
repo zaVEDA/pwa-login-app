@@ -54,11 +54,13 @@ def s3_client():
 CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, X-Legal-Auth",
     "Content-Type": "application/json",
 }
 
 PREFIX = "legal/"
+
+ALLOWED_STATUSES = {"new", "read", "processed", "review", "done"}
 
 
 def resp(status, body):
@@ -114,10 +116,14 @@ def handler(event: dict, context) -> dict:
             comment = meta.get("comment", "")
             if comment:
                 comment = urllib.parse.unquote(comment)
+            status = meta.get("status", "new")
+            if status not in ALLOWED_STATUSES:
+                status = "new"
             files.append({
                 "id": key,
                 "name": name,
                 "comment": comment,
+                "status": status,
                 "url": cdn_url(key),
                 "size": obj.get("Size", 0),
                 "content_type": head.get("ContentType", ""),
@@ -148,12 +154,14 @@ def handler(event: dict, context) -> dict:
             Metadata={
                 "origname": urllib.parse.quote(name),
                 "comment": urllib.parse.quote(comment),
+                "status": "new",
             },
         )
         return resp(200, {"file": {
             "id": key,
             "name": name,
             "comment": comment,
+            "status": "new",
             "url": cdn_url(key),
             "size": len(raw),
             "content_type": content_type,
@@ -176,6 +184,26 @@ def handler(event: dict, context) -> dict:
             ContentType=head.get("ContentType", "application/octet-stream"),
         )
         return resp(200, {"ok": True, "comment": comment})
+
+    if action == "set_status":
+        key = body.get("id") or ""
+        status = body.get("status") or "new"
+        if not key.startswith(PREFIX):
+            return resp(400, {"error": "Неверный файл"})
+        if status not in ALLOWED_STATUSES:
+            return resp(400, {"error": "Неверный статус"})
+        head = s3.head_object(Bucket="files", Key=key)
+        meta = dict(head.get("Metadata", {}))
+        meta["status"] = status
+        s3.copy_object(
+            Bucket="files",
+            Key=key,
+            CopySource={"Bucket": "files", "Key": key},
+            Metadata=meta,
+            MetadataDirective="REPLACE",
+            ContentType=head.get("ContentType", "application/octet-stream"),
+        )
+        return resp(200, {"ok": True, "status": status})
 
     if action == "delete":
         key = body.get("id") or ""

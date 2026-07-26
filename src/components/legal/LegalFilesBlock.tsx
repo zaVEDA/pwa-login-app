@@ -9,20 +9,42 @@ const authHeaders = () => ({
   "X-Legal-Auth": getLegalAuth(),
 });
 
+type FileStatus = "new" | "read" | "processed" | "review" | "done";
+
 interface LegalFile {
   id: string;
   name: string;
   comment?: string;
+  status?: FileStatus;
   url: string;
   size: number;
   content_type: string;
   created_at?: string;
 }
 
+const STATUSES: { key: FileStatus; label: string; cls: string }[] = [
+  { key: "new", label: "Новый", cls: "bg-gray-100 text-gray-600 border-gray-200" },
+  { key: "read", label: "Прочитано", cls: "bg-blue-100 text-blue-700 border-blue-200" },
+  { key: "processed", label: "Обработано", cls: "bg-purple-100 text-purple-700 border-purple-200" },
+  { key: "review", label: "На проверку", cls: "bg-amber-100 text-amber-700 border-amber-200" },
+  { key: "done", label: "Готово", cls: "bg-green-100 text-green-700 border-green-200" },
+];
+
+function statusMeta(s?: FileStatus) {
+  return STATUSES.find((x) => x.key === s) || STATUSES[0];
+}
+
 function fmtSize(b: number) {
   if (b < 1024) return `${b} Б`;
   if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} КБ`;
   return `${(b / 1024 / 1024).toFixed(1)} МБ`;
+}
+
+function fmtDate(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 function iconFor(name: string, type: string) {
@@ -39,8 +61,7 @@ export default function LegalFilesBlock() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [newComment, setNewComment] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState("");
+  const [statusOpen, setStatusOpen] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -93,14 +114,13 @@ export default function LegalFilesBlock() {
     }
   };
 
-  const saveComment = async (id: string) => {
-    const comment = editDraft.trim();
-    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, comment } : f)));
-    setEditingId(null);
+  const setStatus = async (id: string, status: FileStatus) => {
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, status } : f)));
+    setStatusOpen(null);
     await fetch(API, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ action: "set_comment", id, comment }),
+      body: JSON.stringify({ action: "set_status", id, status }),
     }).catch(() => {});
   };
 
@@ -121,7 +141,7 @@ export default function LegalFilesBlock() {
         </div>
         <div className="flex-1">
           <h2 className="font-semibold text-foreground leading-tight">Прикреплённые файлы</h2>
-          <p className="text-xs text-muted-foreground">Word, PDF, сканы — с комментарием, сохраняются в облаке</p>
+          <p className="text-xs text-muted-foreground">Word, PDF, сканы — с комментарием и статусом</p>
         </div>
       </div>
 
@@ -162,55 +182,57 @@ export default function LegalFilesBlock() {
         ) : files.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-4">Пока ничего не прикреплено</p>
         ) : (
-          files.map((f) => (
-            <div key={f.id} className="border border-border rounded-xl px-3 py-2.5">
-              <div className="flex items-center gap-3">
-                <Icon name={iconFor(f.name, f.content_type)} size={18} className="text-primary flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <a href={f.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-foreground hover:text-primary truncate block">
-                    {f.name}
-                  </a>
-                  <p className="text-xs text-muted-foreground">{fmtSize(f.size)}</p>
-                </div>
-                <a href={f.url} download target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" title="Скачать">
-                  <Icon name="Download" size={15} />
-                </a>
-                <button onClick={() => remove(f.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Удалить">
-                  <Icon name="Trash2" size={15} />
-                </button>
-              </div>
-
-              {editingId === f.id ? (
-                <div className="mt-2 pl-8">
-                  <textarea
-                    value={editDraft}
-                    onChange={(e) => setEditDraft(e.target.value)}
-                    rows={2}
-                    autoFocus
-                    className="w-full border border-border rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:border-primary bg-background resize-none"
-                  />
-                  <div className="flex gap-2 mt-1.5">
-                    <button onClick={() => saveComment(f.id)} className="text-xs px-2.5 py-1 rounded-lg gold-gradient text-white font-medium">Сохранить</button>
-                    <button onClick={() => setEditingId(null)} className="text-xs px-2.5 py-1 rounded-lg border border-border text-muted-foreground">Отмена</button>
+          files.map((f) => {
+            const st = statusMeta(f.status);
+            return (
+              <div key={f.id} className="border border-border rounded-xl px-3 py-2.5">
+                <div className="flex items-center gap-3">
+                  <Icon name={iconFor(f.name, f.content_type)} size={18} className="text-primary flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <a href={f.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-foreground hover:text-primary truncate block">
+                      {f.name}
+                    </a>
+                    <p className="text-xs text-muted-foreground">{fmtDate(f.created_at)} · {fmtSize(f.size)}</p>
                   </div>
-                </div>
-              ) : f.comment ? (
-                <div className="mt-2 pl-8 flex items-start gap-1.5">
-                  <p className="flex-1 text-xs text-muted-foreground bg-muted/50 rounded-lg px-2.5 py-1.5 whitespace-pre-wrap">{f.comment}</p>
-                  <button onClick={() => { setEditingId(f.id); setEditDraft(f.comment || ""); }} className="p-1 rounded-lg hover:bg-muted text-muted-foreground flex-shrink-0" title="Изменить комментарий">
-                    <Icon name="Pencil" size={13} />
+
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setStatusOpen(statusOpen === f.id ? null : f.id)}
+                      className={`text-xs font-medium px-2 py-1 rounded-full border inline-flex items-center gap-1 ${st.cls}`}
+                    >
+                      {st.label}
+                      <Icon name="ChevronDown" size={12} />
+                    </button>
+                    {statusOpen === f.id && (
+                      <div className="absolute right-0 top-full mt-1 z-10 bg-card border border-border rounded-xl shadow-lg py-1 w-36">
+                        {STATUSES.map((s) => (
+                          <button
+                            key={s.key}
+                            onClick={() => setStatus(f.id, s.key)}
+                            className="w-full text-left text-xs px-3 py-1.5 hover:bg-muted flex items-center justify-between"
+                          >
+                            {s.label}
+                            {f.status === s.key && <Icon name="Check" size={13} className="text-primary" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <a href={f.url} download target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground flex-shrink-0" title="Скачать">
+                    <Icon name="Download" size={15} />
+                  </a>
+                  <button onClick={() => remove(f.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 flex-shrink-0" title="Удалить">
+                    <Icon name="Trash2" size={15} />
                   </button>
                 </div>
-              ) : (
-                <button
-                  onClick={() => { setEditingId(f.id); setEditDraft(""); }}
-                  className="mt-1.5 ml-8 text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  <Icon name="MessageSquarePlus" size={13} /> Добавить комментарий
-                </button>
-              )}
-            </div>
-          ))
+
+                {f.comment && (
+                  <p className="mt-2 ml-8 text-xs text-muted-foreground bg-muted/50 rounded-lg px-2.5 py-1.5 whitespace-pre-wrap">{f.comment}</p>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>
