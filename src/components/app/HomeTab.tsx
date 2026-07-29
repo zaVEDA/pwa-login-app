@@ -58,9 +58,10 @@ interface Props {
   userRole?: string;
   docLimits?: DocLimits | null;
   onShowLimit?: () => void;
+  planExpiresAt?: string | null;
 }
 
-export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole, docLimits, onShowLimit }: Props) {
+export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole, docLimits, onShowLimit, planExpiresAt }: Props) {
   const theme = themes[colorTheme];
   const [showInvoice, setShowInvoice] = useState(false);
   const isAdmin = userRole === "admin";
@@ -69,9 +70,44 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
     !!docLimits && !docLimits.unlimited && docLimits.limit !== null && (docLimits.remaining ?? 0) <= 3;
   const remaining = docLimits?.remaining ?? 0;
 
+  // Подписка закончилась и не продлена: показываем предупреждение об удалении
+  // документов в течение 7 дней после окончания (кроме бесплатного тарифа «family»).
+  let expiredDaysLeft: number | null = null;
+  if (planExpiresAt && userPlan && userPlan !== "family") {
+    const expired = new Date(planExpiresAt);
+    const now = new Date();
+    if (expired.getTime() < now.getTime()) {
+      const daysSince = Math.floor((now.getTime() - expired.getTime()) / 86400000);
+      if (daysSince < 7) expiredDaysLeft = 7 - daysSince;
+    }
+  }
+
   return (
     <div className="space-y-6 animate-slide-up">
       {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} userPlan={userPlan} />}
+
+      {/* Подписка закончилась — предупреждение об удалении документов */}
+      {!isAdmin && expiredDaysLeft !== null && (
+        <div className="w-full rounded-2xl p-4 border bg-red-50 border-red-200 flex gap-3 items-start">
+          <Icon name="TriangleAlert" size={18} className="flex-shrink-0 mt-0.5 text-red-600" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-red-700">
+              Подписка закончилась
+            </p>
+            <p className="text-xs mt-0.5 text-red-600 leading-relaxed">
+              Сохраните нужные документы — через {expiredDaysLeft}{" "}
+              {expiredDaysLeft === 1 ? "день" : expiredDaysLeft < 5 ? "дня" : "дней"} они будут автоматически удалены.
+            </p>
+            <button
+              onClick={() => setActiveTab("account")}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-red-700 underline underline-offset-2"
+            >
+              <Icon name="RefreshCw" size={12} />
+              Продлить подписку
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Баннер о приближении к лимиту документов */}
       {!isAdmin && showLimitBanner && (

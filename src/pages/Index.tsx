@@ -230,6 +230,7 @@ export default function Index() {
               userRole={user?.role}
               docLimits={docLimits}
               onShowLimit={() => setLimitDialogOpen(true)}
+              planExpiresAt={user?.plan_expires_at ?? null}
             />
           )
         )}
