@@ -39,6 +39,8 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   const [editing, setEditing] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [pdfWarnOpen, setPdfWarnOpen] = useState(false);
+  const [warnAction, setWarnAction] = useState<"save" | "send">("save");
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   // ВРЕМЕННО: формы ТОРГ-12 и УПД не доработаны — доступны только тестовому пользователю.
   // Остальным при накладной оставляем только обычную форму.
@@ -130,7 +132,13 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
     }
   };
 
-  const openPdf = () => setPdfWarnOpen(true);
+  const askWarn = (fn: () => void, action: "save" | "send") => {
+    setPendingAction(() => fn);
+    setWarnAction(action);
+    setPdfWarnOpen(true);
+  };
+
+  const openPdf = () => askWarn(doOpenPdf, "save");
 
   const handlePdf = async (fmt?: "simple" | "torg12" | "upd") => {
     const useFmt = fmt ?? docFormat;
@@ -160,6 +168,10 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
 
   const handleShare = (channel: "telegram" | "whatsapp" | "sms" | "email") => {
     setShareSheet(false);
+    askWarn(() => doShare(channel), "send");
+  };
+
+  const doShare = (channel: "telegram" | "whatsapp" | "sms" | "email") => {
     const label = docType === "act" ? "Акт" : "Накладная";
     const text = `${label} № ${docNumber}${clientName ? ` для ${clientName}` : ""}${total ? ` на сумму ${total.toLocaleString("ru-RU")} ₽` : ""}`;
     const msg = encodeURIComponent(`${text}\nДля получения документа обратитесь к исполнителю.`);
@@ -459,8 +471,9 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
 
       <PdfWarnDialog
         open={pdfWarnOpen}
-        onOpenChange={setPdfWarnOpen}
-        onConfirm={doOpenPdf}
+        onOpenChange={(o) => { setPdfWarnOpen(o); if (!o) setPendingAction(null); }}
+        onConfirm={() => { pendingAction?.(); setPendingAction(null); }}
+        action={warnAction}
       />
     </div>
   );

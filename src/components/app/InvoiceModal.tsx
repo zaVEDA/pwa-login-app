@@ -50,6 +50,8 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [pdfWarnOpen, setPdfWarnOpen] = useState(false);
+  const [warnAction, setWarnAction] = useState<"save" | "send">("save");
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   // Клиент
   const [clientType, setClientType] = useState<ClientType>(null);
@@ -228,7 +230,13 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
     }
   };
 
-  const handleCreatePdf = () => setPdfWarnOpen(true);
+  const askWarn = (fn: () => void, action: "save" | "send") => {
+    setPendingAction(() => fn);
+    setWarnAction(action);
+    setPdfWarnOpen(true);
+  };
+
+  const handleCreatePdf = () => askWarn(doCreatePdf, "save");
 
   const shareText = () => {
     const who = clientInfo?.name ? ` для ${clientInfo.name}` : "";
@@ -237,6 +245,11 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
   };
 
   const handleShare = (channel: "email" | "telegram" | "whatsapp" | "sms") => {
+    setShowShareSheet(false);
+    askWarn(() => doShare(channel), "send");
+  };
+
+  const doShare = (channel: "email" | "telegram" | "whatsapp" | "sms") => {
     const text = shareText();
     const note = "Для оплаты скачайте PDF из приложения.";
     const msg = encodeURIComponent(`${text}\n${note}`);
@@ -247,7 +260,6 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
       email: `mailto:?subject=${encodeURIComponent(`Счёт № ${invoiceNumber}`)}&body=${msg}`,
     };
     window.open(urls[channel], "_blank");
-    setShowShareSheet(false);
   };
 
   // Загружаем справочники
@@ -480,8 +492,9 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
 
       <PdfWarnDialog
         open={pdfWarnOpen}
-        onOpenChange={setPdfWarnOpen}
-        onConfirm={doCreatePdf}
+        onOpenChange={(o) => { setPdfWarnOpen(o); if (!o) setPendingAction(null); }}
+        onConfirm={() => { pendingAction?.(); setPendingAction(null); }}
+        action={warnAction}
       />
     </div>
   );

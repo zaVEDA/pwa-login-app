@@ -25,9 +25,11 @@ export default function DocsTab({ phone, userPlan }: Props) {
   const [pdfLoadingId, setPdfLoadingId] = useState<number | null>(null);
   const [pdfWarnOpen, setPdfWarnOpen] = useState(false);
   const [pendingPdf, setPendingPdf] = useState<(() => void) | null>(null);
+  const [warnAction, setWarnAction] = useState<"save" | "send">("save");
 
-  const askPdfConfirm = (fn: () => void) => {
+  const askPdfConfirm = (fn: () => void, action: "save" | "send" = "save") => {
     setPendingPdf(() => fn);
+    setWarnAction(action);
     setPdfWarnOpen(true);
   };
 
@@ -123,6 +125,10 @@ export default function DocsTab({ phone, userPlan }: Props) {
 
   const shareInvoice = (inv: Invoice, channel: "telegram" | "whatsapp" | "sms" | "email") => {
     setShareMenuId(null);
+    askPdfConfirm(() => doShareInvoice(inv, channel), "send");
+  };
+
+  const doShareInvoice = (inv: Invoice, channel: "telegram" | "whatsapp" | "sms" | "email") => {
     const who = inv.client_name ? ` для ${inv.client_name}` : "";
     const sum = inv.total ? ` на сумму ${inv.total.toLocaleString("ru-RU")} ₽` : "";
     const text = `Счёт № ${inv.invoice_number}${who}${sum}`;
@@ -284,6 +290,10 @@ export default function DocsTab({ phone, userPlan }: Props) {
 
   const shareDoc = (doc: RealizationDoc, channel: "telegram" | "whatsapp" | "sms" | "email") => {
     setShareDocId(null);
+    askPdfConfirm(() => doShareDoc(doc, channel), "send");
+  };
+
+  const doShareDoc = (doc: RealizationDoc, channel: "telegram" | "whatsapp" | "sms" | "email") => {
     const label = doc.doc_type === "act" ? "Акт" : "Накладная";
     const who = doc.client_name ? ` для ${doc.client_name}` : "";
     const sum = doc.total ? ` на сумму ${doc.total.toLocaleString("ru-RU")} ₽` : "";
@@ -430,6 +440,7 @@ export default function DocsTab({ phone, userPlan }: Props) {
         open={pdfWarnOpen}
         onOpenChange={(o) => { setPdfWarnOpen(o); if (!o) setPendingPdf(null); }}
         onConfirm={() => { pendingPdf?.(); setPendingPdf(null); }}
+        action={warnAction}
       />
     </>
   );
