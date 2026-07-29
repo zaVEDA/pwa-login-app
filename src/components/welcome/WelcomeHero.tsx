@@ -13,6 +13,12 @@ const audienceMore = [
   { emoji: "👶", label: "Няни" },
   { emoji: "📚", label: "Репетиторы" },
   { emoji: "🏠", label: "Арендодатели" },
+  { emoji: "🎨", label: "Дизайнеры" },
+  { emoji: "🚕", label: "Водители такси" },
+  { emoji: "💻", label: "Программисты" },
+  { emoji: "⚡", label: "Электрики" },
+  { emoji: "🔧", label: "Сантехники" },
+  { emoji: "🧹", label: "Феи чистоты" },
 ];
 
 export default function WelcomeHero() {
