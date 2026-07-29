@@ -14,6 +14,7 @@ import InvoiceModalHeader from "./invoice/InvoiceModalHeader";
 import InvoiceClientSection from "./invoice/InvoiceClientSection";
 import InvoiceItemsSection from "./invoice/InvoiceItemsSection";
 import InvoiceModalFooter from "./invoice/InvoiceModalFooter";
+import PdfWarnDialog from "./PdfWarnDialog";
 import { PlanType } from "@/lib/auth";
 
 interface Props {
@@ -48,6 +49,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
   const [saveError, setSaveError] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
+  const [pdfWarnOpen, setPdfWarnOpen] = useState(false);
 
   // Клиент
   const [clientType, setClientType] = useState<ClientType>(null);
@@ -196,7 +198,7 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
     }
   };
 
-  const handleCreatePdf = async () => {
+  const doCreatePdf = async () => {
     setPdfLoading(true);
     try {
       const res = await fetch(INVOICES_URL, {
@@ -225,6 +227,8 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
       setPdfLoading(false);
     }
   };
+
+  const handleCreatePdf = () => setPdfWarnOpen(true);
 
   const shareText = () => {
     const who = clientInfo?.name ? ` для ${clientInfo.name}` : "";
@@ -473,6 +477,12 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
           noPlan={!userPlan}
         />
       </div>
+
+      <PdfWarnDialog
+        open={pdfWarnOpen}
+        onOpenChange={setPdfWarnOpen}
+        onConfirm={doCreatePdf}
+      />
     </div>
   );
 }

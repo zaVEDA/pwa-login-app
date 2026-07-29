@@ -9,6 +9,7 @@ import { PlanType } from "@/lib/auth";
 import DocsFilters from "./docs/DocsFilters";
 import InvoiceCard from "./docs/InvoiceCard";
 import RealizationDocCard from "./docs/RealizationDocCard";
+import PdfWarnDialog from "@/components/app/PdfWarnDialog";
 
 interface Props {
   phone: string;
@@ -22,8 +23,18 @@ export default function DocsTab({ phone, userPlan }: Props) {
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [statusMenuId, setStatusMenuId] = useState<number | null>(null);
   const [pdfLoadingId, setPdfLoadingId] = useState<number | null>(null);
+  const [pdfWarnOpen, setPdfWarnOpen] = useState(false);
+  const [pendingPdf, setPendingPdf] = useState<(() => void) | null>(null);
 
-  const downloadPdf = async (id: number, invoiceNumber: string) => {
+  const askPdfConfirm = (fn: () => void) => {
+    setPendingPdf(() => fn);
+    setPdfWarnOpen(true);
+  };
+
+  const downloadPdf = (id: number, invoiceNumber: string) =>
+    askPdfConfirm(() => doDownloadPdf(id, invoiceNumber));
+
+  const doDownloadPdf = async (id: number, invoiceNumber: string) => {
     if (pdfLoadingId) return;
     setPdfLoadingId(id);
     try {
@@ -208,7 +219,10 @@ export default function DocsTab({ phone, userPlan }: Props) {
     } catch { loadDocuments(); }
   };
 
-  const downloadDocPdf = async (doc: RealizationDoc) => {
+  const downloadDocPdf = (doc: RealizationDoc) => askPdfConfirm(() => doDownloadDocPdf(doc));
+  const printDocPdf = (doc: RealizationDoc) => askPdfConfirm(() => doPrintDocPdf(doc));
+
+  const doDownloadDocPdf = async (doc: RealizationDoc) => {
     if (docLoadingId) return;
     setDocLoadingId(doc.id);
     try {
@@ -239,7 +253,7 @@ export default function DocsTab({ phone, userPlan }: Props) {
     finally { setDocLoadingId(null); }
   };
 
-  const printDocPdf = async (doc: RealizationDoc) => {
+  const doPrintDocPdf = async (doc: RealizationDoc) => {
     if (docLoadingId) return;
     setDocLoadingId(doc.id);
     try {
@@ -411,6 +425,12 @@ export default function DocsTab({ phone, userPlan }: Props) {
           </div>
         )}
       </div>
+
+      <PdfWarnDialog
+        open={pdfWarnOpen}
+        onOpenChange={(o) => { setPdfWarnOpen(o); if (!o) setPendingPdf(null); }}
+        onConfirm={() => { pendingPdf?.(); setPendingPdf(null); }}
+      />
     </>
   );
 }

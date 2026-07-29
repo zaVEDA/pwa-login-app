@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { formatDate } from "@/lib/date";
 import { PlanType } from "@/lib/auth";
+import PdfWarnDialog from "./PdfWarnDialog";
 
 const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
 
@@ -37,6 +38,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
   const [formatIntent, setFormatIntent] = useState<"save" | "pdf">("save");
   const [editing, setEditing] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [pdfWarnOpen, setPdfWarnOpen] = useState(false);
 
   // ВРЕМЕННО: формы ТОРГ-12 и УПД не доработаны — доступны только тестовому пользователю.
   // Остальным при накладной оставляем только обычную форму.
@@ -118,7 +120,7 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
     setFormatIntent("save");
   };
 
-  const openPdf = () => {
+  const doOpenPdf = () => {
     // Для накладной выбор формы показываем только тестовому (ТОРГ-12/УПД пока не доработаны).
     if (docType === "invoice_note" && isTestUser) {
       setFormatIntent("pdf");
@@ -127,6 +129,8 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
       handlePdf("simple");
     }
   };
+
+  const openPdf = () => setPdfWarnOpen(true);
 
   const handlePdf = async (fmt?: "simple" | "torg12" | "upd") => {
     const useFmt = fmt ?? docFormat;
@@ -452,6 +456,12 @@ export default function DocumentModal({ docId, onClose, onSaved, phone, userPlan
           )}
         </div>
       </div>
+
+      <PdfWarnDialog
+        open={pdfWarnOpen}
+        onOpenChange={setPdfWarnOpen}
+        onConfirm={doOpenPdf}
+      />
     </div>
   );
 }
