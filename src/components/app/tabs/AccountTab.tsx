@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import AdminUsers from "@/components/admin/AdminUsers";
 import PlanModal from "@/components/app/PlanModal";
 import ChangePasswordModal from "@/components/app/ChangePasswordModal";
 import { AuthUser, PlanType } from "@/lib/auth";
+import { fetchDocLimits, DocLimits } from "@/lib/limits";
 import { themes } from "./constants";
 
 const planLabels: Record<PlanType, string> = {
@@ -47,6 +48,12 @@ export default function AccountTab({
 }: Props) {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [limits, setLimits] = useState<DocLimits | null>(null);
+
+  useEffect(() => {
+    if (phone) fetchDocLimits(phone).then(setLimits);
+  }, [phone]);
+
   return (
     <>
       {userRole === "admin" && (
@@ -101,6 +108,46 @@ export default function AccountTab({
             </div>
             <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
           </button>
+
+          {/* Остаток документов на месяц */}
+          {limits && !limits.unlimited && limits.limit !== null && (
+            <div className="card-warm rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  (limits.remaining ?? 0) <= 3 ? "bg-amber-100" : "bg-primary/10"
+                }`}>
+                  <Icon name="FileText" size={16} className={(limits.remaining ?? 0) <= 3 ? "text-amber-600" : "text-primary"} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Документы в этом месяце</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Осталось {limits.remaining ?? 0} из {limits.limit}
+                  </p>
+                </div>
+                <p className="font-cormorant text-2xl font-semibold text-foreground flex-shrink-0">
+                  {limits.remaining ?? 0}
+                </p>
+              </div>
+              <div className="mt-3 h-1.5 rounded-full bg-border/60 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${(limits.remaining ?? 0) <= 3 ? "bg-amber-500" : "bg-primary"}`}
+                  style={{ width: `${Math.min(100, Math.round((limits.used / limits.limit) * 100))}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {limits && limits.unlimited && userPlan && (
+            <div className="card-warm rounded-2xl p-4 shadow-sm flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon name="Infinity" size={16} className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Документы</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Без ограничений на вашем тарифе</p>
+              </div>
+            </div>
+          )}
 
           {showPlanModal && (
             <PlanModal
