@@ -86,6 +86,108 @@ def next_document_number(cur, user_id: int) -> str:
     return f"{year}-{max_seq + 1:04d}"
 
 
+# Месячные лимиты на создание документов (счета + акты + накладные, а в дальнейшем
+# договоры и соглашения) по тарифам. None означает безлимит.
+PLAN_DOC_LIMITS = {
+    "start": 15,
+    "medium": 150,
+    "pro": 150,
+    "family": 150,
+}
+
+# Дата старта тарификации для тех, кто оплатил по предпродаже (полугодовой период).
+PRESALE_START = datetime.date(2026, 9, 1)
+
+
+def _add_months(d: datetime.date, months: int) -> datetime.date:
+    """Прибавляет месяцы к дате, аккуратно обрабатывая переход через год."""
+    month_index = d.month - 1 + months
+    year = d.year + month_index // 12
+    month = month_index % 12 + 1
+    return datetime.date(year, month, 1)
+
+
+def compute_limits(cur, user_id: int, plan, plan_expires_at):
+    """Считает лимит документов за текущий расчётный период.
+
+    Правила периода:
+    - Предпродажа (полугодовой период): отсчёт стартует с 1 сентября 2026,
+      далее сброс каждое 1-е число месяца.
+    - Обычная оплата (месяц): каждые 30 дней от даты оплаты.
+    - Без оплаты / бесплатный тариф: календарный месяц.
+
+    Возвращает dict с лимитом, использованным и остатком, либо limit=None (безлимит).
+    """
+    limit = PLAN_DOC_LIMITS.get(plan) if plan else None
+    today = datetime.date.today()
+
+    # Последний оплаченный заказ тарифа — по нему определяем тип и дату оплаты
+    cur.execute(
+        "SELECT period, paid_at FROM plan_orders "
+        "WHERE user_id = %s AND status = 'paid' AND paid_at IS NOT NULL "
+        "ORDER BY paid_at DESC LIMIT 1",
+        (user_id,)
+    )
+    order = cur.fetchone()
+
+    period_start = None
+    period_end = None
+
+    if order and order[0] == "half_year":
+        # Предпродажа: помесячные окна начиная с 1 сентября 2026
+        if today < PRESALE_START:
+            period_start = PRESALE_START
+            period_end = _add_months(PRESALE_START, 1)
+        else:
+            months_passed = (today.year - PRESALE_START.year) * 12 + (today.month - PRESALE_START.month)
+            period_start = _add_months(PRESALE_START, months_passed)
+            period_end = _add_months(PRESALE_START, months_passed + 1)
+    elif order and order[1]:
+        # Обычная оплата: 30-дневные окна от даты оплаты
+        paid_date = order[1].date() if hasattr(order[1], "date") else order[1]
+        days_passed = (today - paid_date).days
+        cycles = days_passed // 30
+        period_start = paid_date + datetime.timedelta(days=cycles * 30)
+        period_end = period_start + datetime.timedelta(days=30)
+    else:
+        # Без оплаты — календарный месяц
+        period_start = datetime.date(today.year, today.month, 1)
+        period_end = _add_months(period_start, 1)
+
+    # Считаем созданные документы за период (счета + документы реализации),
+    # исключая удалённые
+    cur.execute(
+        "SELECT COUNT(*) FROM invoices WHERE user_id = %s AND status != 'deleted' "
+        "AND created_at >= %s AND created_at < %s",
+        (user_id, period_start, period_end)
+    )
+    used_invoices = cur.fetchone()[0]
+    cur.execute(
+        "SELECT COUNT(*) FROM documents WHERE user_id = %s AND status != 'deleted' "
+        "AND created_at >= %s AND created_at < %s",
+        (user_id, period_start, period_end)
+    )
+    used_docs = cur.fetchone()[0]
+    used = used_invoices + used_docs
+
+    result = {
+        "plan": plan,
+        "limit": limit,
+        "used": used,
+        "unlimited": limit is None,
+        "period_start": str(period_start),
+        "period_end": str(period_end),
+    }
+    if limit is not None:
+        remaining = limit - used
+        result["remaining"] = remaining if remaining > 0 else 0
+        result["reached"] = used >= limit
+    else:
+        result["remaining"] = None
+        result["reached"] = False
+    return result
+
+
 def fmt_date(value) -> str:
     if not value:
         return ""
@@ -792,6 +894,16 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"invoice_number": num})}
 
+        # Лимиты документов по тарифу за текущий расчётный период
+        if qs.get("limits"):
+            cur.execute("SELECT plan, plan_expires_at FROM users WHERE id = %s", (user_id,))
+            u = cur.fetchone()
+            plan = u[0] if u else None
+            plan_expires_at = u[1] if u else None
+            data = compute_limits(cur, user_id, plan, plan_expires_at)
+            cur.close(); conn.close()
+            return {"statusCode": 200, "headers": cors, "body": json.dumps(data, ensure_ascii=False)}
+
         # Список документов реализации (акты и накладные)
         if qs.get("documents"):
             cur.execute(
@@ -1052,6 +1164,13 @@ def handler(event: dict, context) -> dict:
                 cur.execute("UPDATE documents SET doc_format=%s, updated_at=NOW() WHERE id=%s AND user_id=%s", (doc_format, doc_id, user_id))
                 conn.commit()
             else:
+                # Проверка лимита: новый документ нельзя создать, если период исчерпан
+                cur.execute("SELECT plan, plan_expires_at FROM users WHERE id = %s", (user_id,))
+                _u = cur.fetchone()
+                _lim = compute_limits(cur, user_id, _u[0] if _u else None, _u[1] if _u else None)
+                if _lim.get("reached"):
+                    cur.close(); conn.close()
+                    return {"statusCode": 403, "headers": cors, "body": json.dumps({"error": "limit_reached", "limits": _lim}, ensure_ascii=False)}
                 # Новый документ — сквозной номер (общий для актов и накладных)
                 doc_number = next_document_number(cur, user_id)
                 doc_date_val = str(datetime.date.today())
@@ -1124,6 +1243,13 @@ def handler(event: dict, context) -> dict:
                 existing_id, user_id,
             ))
         else:
+            # Проверка лимита: новый счёт нельзя создать, если период исчерпан
+            cur.execute("SELECT plan, plan_expires_at FROM users WHERE id = %s", (user_id,))
+            _u = cur.fetchone()
+            _lim = compute_limits(cur, user_id, _u[0] if _u else None, _u[1] if _u else None)
+            if _lim.get("reached"):
+                cur.close(); conn.close()
+                return {"statusCode": 403, "headers": cors, "body": json.dumps({"error": "limit_reached", "limits": _lim}, ensure_ascii=False)}
             # Новый счёт — присваиваем свежий порядковый номер
             inv_number = next_invoice_number(cur, user_id)
             cur.execute("""

@@ -23,6 +23,7 @@ interface Props {
   planExpiresAt?: string | null;
   familyRequestStatus?: "pending" | "approved" | "rejected" | null;
   onUserUpdated?: (user: AuthUser) => void;
+  onDocCreated?: () => void;
 }
 
 export default function TabContent({
@@ -44,10 +45,11 @@ export default function TabContent({
   planExpiresAt,
   familyRequestStatus,
   onUserUpdated,
+  onDocCreated,
 }: Props) {
   return (
     <>
-      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} />}
+      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} onDocCreated={onDocCreated} />}
 
       <TemplatesTab activeTab={activeTab} />
 

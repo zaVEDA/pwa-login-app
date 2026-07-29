@@ -2,6 +2,7 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import { PlanType } from "@/lib/auth";
+import { DocLimits } from "@/lib/limits";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -55,16 +56,46 @@ interface Props {
   phone: string;
   userPlan?: PlanType | null;
   userRole?: string;
+  docLimits?: DocLimits | null;
+  onShowLimit?: () => void;
 }
 
-export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole }: Props) {
+export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole, docLimits, onShowLimit }: Props) {
   const theme = themes[colorTheme];
   const [showInvoice, setShowInvoice] = useState(false);
   const isAdmin = userRole === "admin";
 
+  const showLimitBanner =
+    !!docLimits && !docLimits.unlimited && docLimits.limit !== null && (docLimits.remaining ?? 0) <= 3;
+  const remaining = docLimits?.remaining ?? 0;
+
   return (
     <div className="space-y-6 animate-slide-up">
       {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} userPlan={userPlan} />}
+
+      {/* Баннер о приближении к лимиту документов */}
+      {!isAdmin && showLimitBanner && (
+        <button
+          onClick={onShowLimit}
+          className={`w-full text-left rounded-2xl p-4 border flex gap-3 items-start active:scale-[0.99] transition-transform ${
+            remaining <= 0 ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
+          }`}
+        >
+          <Icon
+            name={remaining <= 0 ? "OctagonAlert" : "TriangleAlert"}
+            size={18}
+            className={`flex-shrink-0 mt-0.5 ${remaining <= 0 ? "text-red-600" : "text-amber-600"}`}
+          />
+          <div className="min-w-0">
+            <p className={`text-sm font-medium ${remaining <= 0 ? "text-red-700" : "text-amber-800"}`}>
+              {remaining <= 0 ? "Лимит документов исчерпан" : `Осталось ${remaining} документов в этом месяце`}
+            </p>
+            <p className={`text-xs mt-0.5 ${remaining <= 0 ? "text-red-600" : "text-amber-700"}`}>
+              Нажмите, чтобы докупить пакет или сменить тариф
+            </p>
+          </div>
+        </button>
+      )}
       {/* Мотивирующая фраза дня */}
       <div className="rounded-2xl p-4 relative overflow-hidden"
         style={{ background: theme.phraseBg, border: `1px solid ${theme.phraseBorder}` }}>

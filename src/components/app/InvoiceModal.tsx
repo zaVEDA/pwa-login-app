@@ -181,6 +181,11 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
         headers: { "Content-Type": "application/json", "X-Phone": phone },
         body: JSON.stringify({ action: "save", ...payload }),
       });
+      if (res.status === 403) {
+        setSaveError("Лимит документов на этом месяце исчерпан. Докупите пакет или смените тариф.");
+        setSaveLoading(false);
+        return;
+      }
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       if (parsed.ok) {
@@ -208,6 +213,10 @@ export default function InvoiceModal({ onClose, phone, onSaved, invoiceId, userP
         headers: { "Content-Type": "application/json", "X-Phone": phone },
         body: JSON.stringify({ action: "pdf", ...invoicePayload() }),
       });
+      if (res.status === 403) {
+        setPdfLoading(false);
+        return;
+      }
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       if (parsed.pdf_base64) {

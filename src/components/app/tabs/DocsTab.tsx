@@ -10,13 +10,15 @@ import DocsFilters from "./docs/DocsFilters";
 import InvoiceCard from "./docs/InvoiceCard";
 import RealizationDocCard from "./docs/RealizationDocCard";
 import PdfWarnDialog from "@/components/app/PdfWarnDialog";
+import { toast } from "sonner";
 
 interface Props {
   phone: string;
   userPlan?: PlanType | null;
+  onDocCreated?: () => void;
 }
 
-export default function DocsTab({ phone, userPlan }: Props) {
+export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -98,9 +100,14 @@ export default function DocsTab({ phone, userPlan }: Props) {
         headers: { "Content-Type": "application/json", "X-Phone": phone },
         body: JSON.stringify({ action: "document", doc_type: docType, invoice_id: inv.id, no_pdf: true, ...full }),
       });
+      if (res.status === 403) {
+        toast("Лимит документов на этом месяце исчерпан. Докупите пакет или смените тариф.", { icon: "📦" });
+        return;
+      }
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       loadDocuments();
+      onDocCreated?.();
       setDocFilter(docType === "act" ? "Акты" : "Накладные");
       if (parsed.id) setOpenDocId(parsed.id);
     } catch { /* ignore */ }
@@ -319,7 +326,7 @@ export default function DocsTab({ phone, userPlan }: Props) {
         <InvoiceModal
           onClose={() => { setShowInvoice(false); setOpenInvoiceId(null); }}
           phone={phone}
-          onSaved={loadInvoices}
+          onSaved={() => { loadInvoices(); onDocCreated?.(); }}
           invoiceId={openInvoiceId}
           userPlan={userPlan}
         />

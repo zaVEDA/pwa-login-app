@@ -7,7 +7,10 @@ import TabContent from "@/components/app/TabContent";
 import BottomNav from "@/components/app/BottomNav";
 import ProfileSetup from "@/components/app/ProfileSetup";
 import ComingSoon from "@/components/app/ComingSoon";
+import LimitDialog from "@/components/app/LimitDialog";
 import { authApi, getToken, clearAuth, AuthUser } from "@/lib/auth";
+import { fetchDocLimits, DocLimits } from "@/lib/limits";
+import { toast } from "sonner";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -65,6 +68,9 @@ export default function Index() {
 
   const phone = user?.phone || (demoMode ? "+70000000000" : "");
 
+  const [docLimits, setDocLimits] = useState<DocLimits | null>(null);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+
   const [inn, setInn] = useState("");
   const [fullName, setFullName] = useState(() => {
     try { return JSON.parse(localStorage.getItem("requisites") || "{}").fullName || ""; } catch { return ""; }
@@ -91,6 +97,35 @@ export default function Index() {
       window.history.replaceState({}, "", url.toString());
     }
   }, []);
+
+  const reloadLimits = () => {
+    if (!phone) return;
+    fetchDocLimits(phone).then((data) => {
+      if (data) setDocLimits(data);
+    });
+  };
+
+  // Загружаем лимиты при входе и показываем окно, если осталось 3 и меньше
+  useEffect(() => {
+    if (!phone) return;
+    fetchDocLimits(phone).then((data) => {
+      if (!data) return;
+      setDocLimits(data);
+      if (!data.unlimited && data.limit !== null && (data.remaining ?? 0) <= 3) {
+        setLimitDialogOpen(true);
+      }
+    });
+  }, [phone]);
+
+  const handleChangePlan = () => {
+    setLimitDialogOpen(false);
+    setActiveTab("account");
+    toast("Откройте «Тариф», чтобы сменить план", { icon: "💳" });
+  };
+
+  const handleBuyPack = () => {
+    toast("Докупка пакета документов скоро появится", { icon: "📦" });
+  };
 
   const handleAuth = (u: AuthUser) => {
     setUser(u);
@@ -193,6 +228,8 @@ export default function Index() {
               phone={phone}
               userPlan={user?.plan ?? null}
               userRole={user?.role}
+              docLimits={docLimits}
+              onShowLimit={() => setLimitDialogOpen(true)}
             />
           )
         )}
@@ -215,10 +252,19 @@ export default function Index() {
           planExpiresAt={user?.plan_expires_at ?? null}
           familyRequestStatus={user?.family_request_status ?? null}
           onUserUpdated={setUser}
+          onDocCreated={reloadLimits}
         />
       </main>
 
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={user?.role} />
+
+      <LimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        limits={docLimits}
+        onChangePlan={handleChangePlan}
+        onBuyPack={handleBuyPack}
+      />
     </div>
   );
 }
