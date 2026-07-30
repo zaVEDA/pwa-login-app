@@ -40,13 +40,22 @@ export default function WelcomeCta() {
         <p className="text-xs text-muted-foreground">
           e-mail: 89016625752@mail.ru · тел.: +7 901 662-57-52
         </p>
-        <a
-          href="/offer"
-          className="inline-block mt-3 text-xs underline underline-offset-2 hover:text-foreground transition-colors"
-          style={{ color: "hsl(35 72% 42%)" }}
-        >
-          Публичная оферта
-        </a>
+        <div className="flex items-center justify-center gap-4 mt-3">
+          <a
+            href="/offer"
+            className="text-xs underline underline-offset-2 hover:text-foreground transition-colors"
+            style={{ color: "hsl(35 72% 42%)" }}
+          >
+            Публичная оферта
+          </a>
+          <a
+            href="/privacy"
+            className="text-xs underline underline-offset-2 hover:text-foreground transition-colors"
+            style={{ color: "hsl(35 72% 42%)" }}
+          >
+            Политика обработки персональных данных
+          </a>
+        </div>
       </footer>
     </>
   );
