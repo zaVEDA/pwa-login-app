@@ -70,12 +70,22 @@ export default function Offer() {
       style={{ background: "linear-gradient(160deg, hsl(36 25% 96%) 0%, hsl(36 20% 91%) 100%)" }}
     >
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <a
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-5"
-        >
-          <Icon name="ArrowLeft" size={16} /> На главную
-        </a>
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <a
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Icon name="ArrowLeft" size={16} /> На главную
+          </a>
+          <a
+            href="/offer.pdf"
+            download="Оферта-Заведующая.pdf"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.03]"
+            style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 40%))" }}
+          >
+            <Icon name="Download" size={16} /> Скачать PDF
+          </a>
+        </div>
 
         <div className="bg-card border border-border rounded-2xl p-5 sm:p-8 shadow-sm">
           {loading ? (
