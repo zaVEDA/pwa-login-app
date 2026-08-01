@@ -13,6 +13,7 @@ import Offer from "./pages/Offer";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import DevSwitcher from "./components/app/DevSwitcher";
+import MetrikaTracker from "./components/MetrikaTracker";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <MetrikaTracker />
         <Routes>
           <Route path="/" element={<Welcome />} />
           <Route path="/app" element={<Index />} />
