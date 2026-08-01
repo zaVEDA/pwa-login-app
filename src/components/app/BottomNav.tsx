@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { reachGoal } from "@/lib/metrika";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -28,7 +29,7 @@ export default function BottomNav({ activeTab, setActiveTab, userRole }: Props) 
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { reachGoal("tab_opened", { tab: tab.id }); setActiveTab(tab.id); }}
               className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-200 ${
                 active ? "text-primary" : "text-muted-foreground"
               }`}

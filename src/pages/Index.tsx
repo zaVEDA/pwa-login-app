@@ -10,6 +10,7 @@ import ComingSoon from "@/components/app/ComingSoon";
 import LimitDialog from "@/components/app/LimitDialog";
 import { authApi, getToken, clearAuth, AuthUser } from "@/lib/auth";
 import { fetchDocLimits, DocLimits } from "@/lib/limits";
+import { reachGoal } from "@/lib/metrika";
 import { toast } from "sonner";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
@@ -92,6 +93,7 @@ export default function Index() {
     }).catch(() => setAuthChecked(true));
 
     if (paymentResult) {
+      reachGoal(paymentResult === "success" ? "payment_success" : "payment_fail");
       const url = new URL(window.location.href);
       url.searchParams.delete("payment");
       window.history.replaceState({}, "", url.toString());

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi, AuthUser, PlanType, getToken } from "@/lib/auth";
+import { reachGoal } from "@/lib/metrika";
 
 const PLAN_PAYMENT_URL = "https://functions.poehali.dev/5c0694ef-904a-425c-b8f9-2e179922854b";
 const PRESALE_UNTIL = new Date("2026-08-01T23:59:59");
@@ -39,6 +40,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose, o
   const payPlan = async (plan: PaidPlanOption["id"], period: "month" | "half_year") => {
     setError("");
     setLoading(true);
+    reachGoal("payment_started", { plan, period });
     try {
       const res = await fetch(PLAN_PAYMENT_URL, {
         method: "POST",

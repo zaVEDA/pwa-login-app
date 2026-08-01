@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-
-const COUNTER_ID = 111226635;
+import { COUNTER_ID } from "@/lib/metrika";
 
 declare global {
   interface Window {

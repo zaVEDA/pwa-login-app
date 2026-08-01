@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi, setToken, AuthUser } from "@/lib/auth";
+import { reachGoal } from "@/lib/metrika";
 
 const specialtyColors = [
   { emoji: "🧠", label: "Психолог", bg: "linear-gradient(135deg, #FDCEDF, #F17EAA)" },
@@ -95,6 +96,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     const r = await authApi.verifyCode({ purpose: codePurpose, channel: "sms", phone, code });
     if (r.status !== 200) return setError(r.data.error || "Неверный код");
     setToken(r.data.token);
+    reachGoal(codePurpose === "register" ? "registration_success" : "login_success", { method: "sms" });
     onAuth(r.data.user);
   });
 
@@ -102,6 +104,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     const r = await authApi.loginPassword({ login, password });
     if (r.status !== 200) return setError(r.data.error || "Неверный логин или пароль");
     setToken(r.data.token);
+    reachGoal("login_success", { method: "password" });
     onAuth(r.data.user);
   });
 
