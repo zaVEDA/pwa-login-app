@@ -1,0 +1,25 @@
+{
+  "tests": [
+    {
+      "name": "Список статей базы знаний доступен всем",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Управление статьями закрыто без токена Заведующей",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "list_all"},
+      "expectedStatus": 403,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

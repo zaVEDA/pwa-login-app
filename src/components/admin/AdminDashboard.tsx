@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
+import KnowledgeManager from "@/components/admin/KnowledgeManager";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks";
+type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
   { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, оплаты, подписи ПЭП", badge: "5" },
   { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Список, активации, подписи" },
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
+  { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
   { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
   { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Сообщения пользователей", badge: "2" },
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой", badge: "3" },
@@ -414,11 +416,25 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+function KnowledgeScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader
+        title="База знаний"
+        subtitle="Видео · текст · порядок · публикация"
+        onBack={onBack}
+      />
+      <KnowledgeManager />
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [section, setSection] = useState<Section>("menu");
 
   if (section === "users") return <UsersScreen onBack={() => setSection("menu")} />;
   if (section === "family") return <FamilyScreen onBack={() => setSection("menu")} />;
+  if (section === "knowledge") return <KnowledgeScreen onBack={() => setSection("menu")} />;
   if (section === "addons") return <AddonsScreen onBack={() => setSection("menu")} />;
   if (section === "calendar") return <CalendarScreen onBack={() => setSection("menu")} />;
   if (section === "support") return <SupportScreen onBack={() => setSection("menu")} />;
