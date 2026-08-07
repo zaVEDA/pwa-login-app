@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import Icon from "@/components/ui/icon";
 import { TemplateDoc } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
+import TemplateFillHeader from "./TemplateFillHeader";
+import TemplateFillFields from "./TemplateFillFields";
+import TemplateFillFooter from "./TemplateFillFooter";
 
 interface Props {
   doc: TemplateDoc;
@@ -231,288 +233,52 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       <div className="absolute inset-0 bg-background" />
 
       <div className="relative flex flex-col h-full">
-        <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <h2 className="font-cormorant text-xl font-semibold leading-tight truncate">{doc.title}</h2>
-              <div className="flex items-center gap-2 mt-0.5">
-                {savedNumber && <span className="text-xs font-medium text-primary">№ {savedNumber}</span>}
-                {savedId ? (
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                      locked ? "bg-green-100 text-green-700"
-                        : status === "sent" ? "bg-sky-100 text-sky-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    <Icon name={locked ? "ShieldCheck" : status === "sent" ? "Send" : "FilePlus2"} size={10} />
-                    {locked ? "Подписан" : status === "sent" ? "Отправлен" : "Создан"}
-                  </span>
-                ) : (
-                  <span className="text-xs text-muted-foreground truncate">Заполните поля</span>
-                )}
-              </div>
-            </div>
-            {!locked && (
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="h-9 flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-xl px-3.5 shadow-sm active:scale-95 transition-transform flex-shrink-0 disabled:opacity-60"
-              >
-                <Icon name={saving ? "Loader" : "Save"} size={13} className={saving ? "animate-spin" : ""} />
-                {saving ? "Сохраняю" : "Сохранить"}
-              </button>
-            )}
-            <button
-              onClick={tryClose}
-              aria-label="Закрыть"
-              className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
-            >
-              <Icon name="X" size={16} className="text-muted-foreground" />
-            </button>
-          </div>
-        </div>
+        <TemplateFillHeader
+          title={doc.title}
+          savedNumber={savedNumber}
+          savedId={savedId}
+          status={status}
+          locked={locked}
+          saving={saving}
+          onSave={handleSave}
+          onClose={tryClose}
+        />
 
-        <div className="flex-1 overflow-y-auto px-5 py-5 pb-40">
-          {restoredNotice && !locked && (
-            <div className="mb-3 px-3 py-2.5 rounded-xl bg-primary/10 border border-primary/20 flex items-start gap-2">
-              <Icon name="History" size={14} className="text-primary flex-shrink-0 mt-0.5" />
-              <p className="text-[11px] text-foreground/80">
-                Восстановили несохранённые данные с прошлого раза. Нажмите «Сохранить», чтобы закрепить их.
-              </p>
-            </div>
-          )}
-          {error && (
-            <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
-              <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
-              <p className="text-[11px] text-red-600">{error}</p>
-            </div>
-          )}
+        <TemplateFillFields
+          doc={doc}
+          contract={contract}
+          visibleFields={visibleFields}
+          values={values}
+          text={text}
+          preview={preview}
+          locked={locked}
+          restoredNotice={restoredNotice}
+          error={error}
+          performerAutofill={performerAutofill}
+          userProfile={userProfile}
+          onSet={set}
+        />
 
-          {locked && (
-            <div className="mb-3 px-3.5 py-3 rounded-xl bg-blue-50 border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon name="ShieldCheck" size={15} className="text-blue-700 flex-shrink-0" />
-                <p className="text-xs font-semibold text-blue-800">Подписан простой электронной подписью</p>
-              </div>
-              <div className="space-y-0.5 text-[11px] text-blue-800/90">
-                <p>Подписант: {contract?.signer_name || "—"}</p>
-                <p>Телефон: {contract?.signer_phone || "—"}</p>
-                <p>Дата и время: {contract?.signed_at ? contract.signed_at.replace("T", " ").slice(0, 19) : "—"}</p>
-                <p>Идентификатор: {contract?.sign_id || "—"}</p>
-                <p className="break-all">Отпечаток: {contract?.sign_hash || "—"}</p>
-              </div>
-            </div>
-          )}
-
-          {!preview ? (
-            <div className="space-y-3">
-              {visibleFields.map((f) => {
-                if (f.type === "checkbox") {
-                  return (
-                    <button
-                      key={f.key}
-                      onClick={() => set(f.key, values[f.key] === "1" ? "" : "1")}
-                      disabled={locked}
-                      className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform disabled:opacity-60"
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 border ${
-                          values[f.key] === "1" ? "gold-gradient border-transparent" : "border-border bg-white"
-                        }`}
-                      >
-                        {values[f.key] === "1" && <Icon name="Check" size={13} className="text-white" />}
-                      </div>
-                      <span className="text-sm">{f.label}</span>
-                    </button>
-                  );
-                }
-
-                if (f.type === "radio") {
-                  return (
-                    <div key={f.key}>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{f.label}</label>
-                      <div className="space-y-2">
-                        {(f.options || []).map((opt) => (
-                          <button
-                            key={opt.value}
-                            onClick={() => set(f.key, opt.value)}
-                            disabled={locked}
-                            className="w-full flex items-start gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform disabled:opacity-60"
-                          >
-                            <div
-                              className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
-                                values[f.key] === opt.value ? "border-primary" : "border-border"
-                              }`}
-                            >
-                              {values[f.key] === opt.value && <div className="w-2.5 h-2.5 rounded-full gold-gradient" />}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-sm block">{opt.label}</span>
-                              {opt.description && (
-                                <span className="text-[11px] text-muted-foreground block mt-0.5">{opt.description}</span>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-
-                const autofilled = f.autofill === "performer"
-                  ? !!performerAutofill && values[f.key] === performerAutofill
-                  : f.autofill && userProfile?.[f.autofill] && values[f.key] === userProfile[f.autofill];
-
-                return (
-                  <div key={f.key}>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
-                      {f.label}
-                      {f.optional && <span className="text-muted-foreground/60"> — необязательно</span>}
-                      {autofilled && (
-                        <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
-                          <Icon name="UserCheck" size={9} />
-                          из профиля
-                        </span>
-                      )}
-                    </label>
-                    <input
-                      type={f.type}
-                      value={values[f.key] || ""}
-                      onChange={(e) => set(f.key, e.target.value)}
-                      readOnly={locked}
-                      placeholder={f.placeholder}
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
-                    />
-                    {f.hint && <p className="text-[11px] text-muted-foreground mt-1">{f.hint}</p>}
-                  </div>
-                );
-              })}
-
-              <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/50 border border-border rounded-xl px-3.5 py-3 mt-4">
-                <Icon name="Info" size={13} className="flex-shrink-0 mt-0.5" />
-                <span>Незаполненные поля останутся в тексте в квадратных скобках — их можно дописать от руки.</span>
-              </div>
-            </div>
-          ) : (
-            <div className="card-warm rounded-2xl p-4 border">
-              <p className="text-sm font-semibold text-center mb-3 leading-snug">{doc.heading}</p>
-              <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{text}</p>
-            </div>
-          )}
-        </div>
-
-        <div
-          className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pt-4 bg-background border-t border-border/50"
-          style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          {!preview ? (
-            <button
-              onClick={() => setPreview(true)}
-              className="w-full py-3.5 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-            >
-              <Icon name="FileText" size={16} />
-              Показать документ
-            </button>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={locked ? downloadPdf : downloadDoc}
-                  disabled={pdfLoading}
-                  className={`flex-1 py-3 rounded-xl text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 ${locked ? "bg-blue-700" : "gold-gradient"}`}
-                >
-                  <Icon name={pdfLoading ? "Loader" : locked ? "Stamp" : "Download"} size={15} className={pdfLoading ? "animate-spin" : ""} />
-                  {locked ? "PDF с печатью" : "Скачать Word"}
-                </button>
-                <button
-                  onClick={() => savedId ? setShareOpen(true) : copy()}
-                  disabled={pdfLoading}
-                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
-                >
-                  <Icon name={savedId ? "Share2" : copied ? "Check" : "Copy"} size={15} className={copied && !savedId ? "text-green-600" : ""} />
-                  {savedId ? "Отправить" : copied ? "Скопировано" : "Копировать"}
-                </button>
-              </div>
-              {!locked && (
-                <button
-                  onClick={() => setPreview(false)}
-                  className="w-full py-2.5 text-sm text-muted-foreground flex items-center justify-center gap-1.5"
-                >
-                  <Icon name="ChevronLeft" size={14} />
-                  Вернуться к заполнению
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {shareOpen && (
-          <div className="absolute inset-0 z-20 flex flex-col justify-end" onClick={() => setShareOpen(false)}>
-            <div className="absolute inset-0 bg-black/30" />
-            <div
-              className="relative bg-background rounded-t-3xl p-5 pb-10 space-y-2 shadow-2xl border-t border-border/50"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Отправить {locked ? "подписанный документ" : "документ"}
-              </p>
-              {[
-                { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
-                { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
-                { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
-                { id: "email" as const, icon: "Mail", label: "Электронная почта", color: "text-orange-500" },
-              ].map((ch) => (
-                <button
-                  key={ch.id}
-                  onClick={() => share(ch.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform"
-                >
-                  <Icon name={ch.icon} size={18} className={ch.color} />
-                  <span className="text-sm font-medium">{ch.label}</span>
-                </button>
-              ))}
-              <button onClick={copy} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60">
-                <Icon name={copied ? "Check" : "Copy"} size={18} className={copied ? "text-green-600" : "text-muted-foreground"} />
-                <span className="text-sm font-medium">{copied ? "Текст скопирован" : "Скопировать текст"}</span>
-              </button>
-              <button onClick={() => setShareOpen(false)} className="w-full py-3 text-sm text-muted-foreground">
-                Отмена
-              </button>
-            </div>
-          </div>
-        )}
-
-        {confirmClose && (
-          <div className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center px-6">
-            <div className="bg-background rounded-2xl p-5 w-full max-w-xs shadow-2xl">
-              <p className="text-sm font-medium mb-1">Сохранить изменения?</p>
-              <p className="text-xs text-muted-foreground mb-4">
-                Документ попадёт в раздел «Договоры». Если закрыть без сохранения — данные никуда не денутся, найдёте их здесь же при следующем открытии.
-              </p>
-              <div className="space-y-2">
-                <button
-                  onClick={async () => { await handleSave(); setConfirmClose(false); onClose(); }}
-                  className="w-full py-2.5 rounded-xl gold-gradient text-white text-sm font-medium"
-                >
-                  Сохранить и закрыть
-                </button>
-                <button
-                  onClick={onClose}
-                  className="w-full py-2.5 rounded-xl border border-border bg-white/70 text-sm"
-                >
-                  Закрыть без сохранения
-                </button>
-                <button
-                  onClick={() => setConfirmClose(false)}
-                  className="w-full py-2 text-sm text-muted-foreground"
-                >
-                  Отмена
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <TemplateFillFooter
+          preview={preview}
+          locked={locked}
+          pdfLoading={pdfLoading}
+          savedId={savedId}
+          copied={copied}
+          shareOpen={shareOpen}
+          confirmClose={confirmClose}
+          saving={saving}
+          onShowPreview={() => setPreview(true)}
+          onBackToFill={() => setPreview(false)}
+          onDownload={locked ? downloadPdf : downloadDoc}
+          onOpenShare={() => setShareOpen(true)}
+          onCopy={copy}
+          onCloseShare={() => setShareOpen(false)}
+          onShare={share}
+          onSaveAndClose={async () => { await handleSave(); setConfirmClose(false); onClose(); }}
+          onCloseWithoutSaving={onClose}
+          onCancelClose={() => setConfirmClose(false)}
+        />
       </div>
     </div>
   );
