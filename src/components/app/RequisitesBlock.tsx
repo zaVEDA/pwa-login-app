@@ -67,6 +67,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [identityConfirmOpen, setIdentityConfirmOpen] = useState(false);
   const [identityConfirmMessage, setIdentityConfirmMessage] = useState("");
   const [identityLockedMessage, setIdentityLockedMessage] = useState("");
+  const [showHint, setShowHint] = useState(false);
 
   const readOnly = saved && !editing;
 
@@ -257,15 +258,37 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
 
   return (
     <div ref={rootRef} className="card-warm rounded-2xl p-4 shadow-sm">
-      <button
-        className="w-full flex items-center gap-2"
-        onClick={() => setIsOpen((v) => !v)}
-      >
-        <Icon name="FileText" size={15} className="text-primary" />
-        <p className="text-sm font-medium flex-1 text-left">Мои реквизиты</p>
-        {saved && <span className="doc-tag bg-green-100 text-green-700 text-[10px]">Сохранено</span>}
-        <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={15} className="text-muted-foreground" />
-      </button>
+      <div className="w-full flex items-center gap-2">
+        <button
+          className="flex items-center gap-2 flex-1 min-w-0"
+          onClick={() => setIsOpen((v) => !v)}
+        >
+          <Icon name="FileText" size={15} className="text-primary flex-shrink-0" />
+          <p className="text-sm font-medium text-left truncate">Мои реквизиты</p>
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowHint((v) => !v); }}
+          aria-label="Справка"
+          className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+            showHint ? "bg-primary text-white" : "bg-primary/10 text-primary hover:bg-primary/20"
+          }`}
+        >
+          <Icon name="HelpCircle" size={13} />
+        </button>
+        {saved && <span className="doc-tag bg-green-100 text-green-700 text-[10px] flex-shrink-0">Сохранено</span>}
+        <button onClick={() => setIsOpen((v) => !v)} className="flex-shrink-0">
+          <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={15} className="text-muted-foreground" />
+        </button>
+      </div>
+
+      {showHint && (
+        <div className="mt-2.5 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-2">
+          <Icon name="Info" size={13} className="text-primary flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-foreground/80 leading-relaxed">
+            Мои данные для подстановки в документы
+          </p>
+        </div>
+      )}
 
       {isOpen && (
         <div className="mt-4 space-y-4">
