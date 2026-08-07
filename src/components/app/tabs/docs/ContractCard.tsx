@@ -8,6 +8,8 @@ interface Props {
   setMenuId: (id: number | null) => void;
   onOpen: (c: Contract) => void;
   onStatus: (id: number, status: string) => void;
+  onPdf: (c: Contract) => void;
+  pdfLoadingId: number | null;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -24,7 +26,7 @@ const STATUS_STYLE: Record<string, string> = {
   deleted: "bg-gray-200 text-gray-500",
 };
 
-export default function ContractCard({ contract, menuId, setMenuId, onOpen, onStatus }: Props) {
+export default function ContractCard({ contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId }: Props) {
   const signed = contract.status === "signed";
   const deleted = contract.status === "deleted";
 
@@ -47,12 +49,20 @@ export default function ContractCard({ contract, menuId, setMenuId, onOpen, onSt
         <p className="text-xs text-muted-foreground mt-0.5 truncate">
           {contract.client_name || "Без клиента"}
         </p>
-        <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_STYLE[contract.status] || STATUS_STYLE.draft}`}>
-          {STATUS_LABEL[contract.status] || contract.status}
-        </span>
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_STYLE[contract.status] || STATUS_STYLE.draft}`}>
+            {STATUS_LABEL[contract.status] || contract.status}
+          </span>
+          {signed && contract.sign_id && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+              <Icon name="BadgeCheck" size={10} />
+              ПЭП
+            </span>
+          )}
+        </div>
       </button>
 
-      <div className="flex-shrink-0 flex flex-col items-end justify-between">
+      <div className="flex-shrink-0 flex flex-col items-end justify-between gap-2">
         <button
           onClick={() => setMenuId(menuId === contract.id ? null : contract.id)}
           className="w-8 h-8 rounded-lg border border-border bg-white/60 flex items-center justify-center"
@@ -60,9 +70,18 @@ export default function ContractCard({ contract, menuId, setMenuId, onOpen, onSt
         >
           <Icon name="MoreVertical" size={15} className="text-muted-foreground" />
         </button>
-        {!signed && !deleted && (
-          <Icon name="Pencil" size={13} className="text-muted-foreground mb-1" />
-        )}
+        <button
+          onClick={() => onPdf(contract)}
+          disabled={pdfLoadingId === contract.id || deleted}
+          aria-label="Скачать PDF"
+          className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40 ${signed ? "bg-blue-50 text-blue-700" : "bg-primary/10 text-primary"}`}
+        >
+          <Icon
+            name={pdfLoadingId === contract.id ? "Loader" : signed ? "Stamp" : "FileDown"}
+            size={15}
+            className={pdfLoadingId === contract.id ? "animate-spin" : ""}
+          />
+        </button>
       </div>
 
       {menuId === contract.id && (
@@ -90,8 +109,8 @@ export default function ContractCard({ contract, menuId, setMenuId, onOpen, onSt
                 onClick={() => { setMenuId(null); onStatus(contract.id, "signed"); }}
                 className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"
               >
-                <Icon name="ShieldCheck" size={14} className="text-green-600" />
-                Клиент подписал
+                <Icon name="PenLine" size={14} className="text-blue-700" />
+                Подписать (ПЭП)
               </button>
             )}
             {signed && (
@@ -103,6 +122,13 @@ export default function ContractCard({ contract, menuId, setMenuId, onOpen, onSt
                 Снять подпись
               </button>
             )}
+            <button
+              onClick={() => { setMenuId(null); onPdf(contract); }}
+              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"
+            >
+              <Icon name={signed ? "Stamp" : "FileDown"} size={14} className={signed ? "text-blue-700" : "text-muted-foreground"} />
+              {signed ? "Скачать PDF с печатью" : "Скачать PDF"}
+            </button>
             <button
               onClick={() => { setMenuId(null); onStatus(contract.id, "deleted"); }}
               className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left text-red-600 hover:bg-red-50"

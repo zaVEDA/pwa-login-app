@@ -26,6 +26,7 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
   const [error, setError] = useState("");
   const [dirty, setDirty] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const locked = status === "signed";
 
@@ -89,6 +90,31 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
     } catch { /* ignore */ }
   };
 
+  const downloadPdf = async () => {
+    if (!savedId || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "pdf", id: savedId }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (ch) => ch.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${doc.title}_${savedNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { setError("Не удалось сформировать PDF"); }
+    finally { setPdfLoading(false); }
+  };
+
   const downloadDoc = () => {
     const html = `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body style="font-family:Times New Roman,serif;font-size:12pt;line-height:1.5"><p style="text-align:center;font-weight:bold">${doc.heading}</p>${text
       .split("\n\n")
@@ -148,9 +174,18 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
           )}
 
           {locked && (
-            <div className="mb-3 px-3 py-2.5 rounded-lg bg-green-50 border border-green-200 flex items-center gap-2">
-              <Icon name="ShieldCheck" size={14} className="text-green-600 flex-shrink-0" />
-              <p className="text-[11px] text-green-700">Документ подписан клиентом — редактирование закрыто</p>
+            <div className="mb-3 px-3.5 py-3 rounded-xl bg-blue-50 border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon name="ShieldCheck" size={15} className="text-blue-700 flex-shrink-0" />
+                <p className="text-xs font-semibold text-blue-800">Подписан простой электронной подписью</p>
+              </div>
+              <div className="space-y-0.5 text-[11px] text-blue-800/90">
+                <p>Подписант: {contract?.signer_name || "—"}</p>
+                <p>Телефон: {contract?.signer_phone || "—"}</p>
+                <p>Дата и время: {contract?.signed_at ? contract.signed_at.replace("T", " ").slice(0, 19) : "—"}</p>
+                <p>Идентификатор: {contract?.sign_id || "—"}</p>
+                <p className="break-all">Отпечаток: {contract?.sign_hash || "—"}</p>
+              </div>
             </div>
           )}
 
@@ -221,11 +256,12 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
             <div className="space-y-2">
               <div className="flex gap-2">
                 <button
-                  onClick={downloadDoc}
-                  className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                  onClick={locked ? downloadPdf : downloadDoc}
+                  disabled={pdfLoading}
+                  className={`flex-1 py-3 rounded-xl text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 ${locked ? "bg-blue-700" : "gold-gradient"}`}
                 >
-                  <Icon name="Download" size={15} />
-                  Скачать Word
+                  <Icon name={pdfLoading ? "Loader" : locked ? "Stamp" : "Download"} size={15} className={pdfLoading ? "animate-spin" : ""} />
+                  {locked ? "PDF с печатью" : "Скачать Word"}
                 </button>
                 <button
                   onClick={copy}

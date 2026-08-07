@@ -5,6 +5,7 @@ import DocumentModal from "@/components/app/DocumentModal";
 import { formatDate } from "@/lib/date";
 import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract } from "./constants";
 import ContractCard from "./docs/ContractCard";
+import SignDialog from "@/components/app/templates/SignDialog";
 import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
 import { templateDocs } from "@/components/app/templates/docs";
 import type { DateRange } from "react-day-picker";
@@ -168,6 +169,8 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [contractMenuId, setContractMenuId] = useState<number | null>(null);
   const [openContract, setOpenContract] = useState<Contract | null>(null);
+  const [signTarget, setSignTarget] = useState<Contract | null>(null);
+  const [contractPdfId, setContractPdfId] = useState<number | null>(null);
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
   const [openDocId, setOpenDocId] = useState<number | null>(null);
   const [docFilter, setDocFilter] = useState("Все");
@@ -333,6 +336,11 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
   };
 
   const changeContractStatus = async (id: number, status: string) => {
+    if (status === "signed") {
+      const c = contracts.find((x) => x.id === id);
+      if (c) setSignTarget(c);
+      return;
+    }
     setContracts((prev) => status === "deleted"
       ? prev.filter((c) => c.id !== id)
       : prev.map((c) => c.id === id ? { ...c, status } : c));
@@ -343,6 +351,51 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
         body: JSON.stringify({ action: "set_status", id, status }),
       });
     } catch { loadContracts(); }
+  };
+
+  const doSign = async (name: string, signerPhone: string) => {
+    if (!signTarget) return;
+    try {
+      await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({
+          action: "set_status",
+          id: signTarget.id,
+          status: "signed",
+          signer_name: name,
+          signer_phone: signerPhone,
+        }),
+      });
+      loadContracts();
+      toast("Документ подписан. Скачайте PDF с печатью.", { icon: "🔵" });
+    } catch { /* ignore */ }
+    finally { setSignTarget(null); }
+  };
+
+  const downloadContractPdf = async (c: Contract) => {
+    if (contractPdfId) return;
+    setContractPdfId(c.id);
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "pdf", id: c.id }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed.pdf_base64) {
+        const bytes = Uint8Array.from(atob(parsed.pdf_base64), (ch) => ch.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${c.title}_${c.contract_number}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ }
+    finally { setContractPdfId(null); }
   };
 
   const showContracts = docFilter === "Все" || docFilter === "Договоры" || docFilter === "Черновики";
@@ -368,6 +421,13 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
           onSaved={() => { loadInvoices(); onDocCreated?.(); }}
           invoiceId={openInvoiceId}
           userPlan={userPlan}
+        />
+      )}
+      {signTarget && (
+        <SignDialog
+          contract={signTarget}
+          onCancel={() => setSignTarget(null)}
+          onConfirm={doSign}
         />
       )}
       {openContract && templateDocs[openContract.template_key] && (
@@ -447,6 +507,8 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
                 setMenuId={setContractMenuId}
                 onOpen={setOpenContract}
                 onStatus={changeContractStatus}
+                onPdf={downloadContractPdf}
+                pdfLoadingId={contractPdfId}
               />
             ))}
           </div>

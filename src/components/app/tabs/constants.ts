@@ -13,6 +13,11 @@ export interface Contract {
   body: string;
   status: string;
   signed_at: string | null;
+  signer_name?: string | null;
+  signer_phone?: string | null;
+  signer_ip?: string | null;
+  sign_id?: string | null;
+  sign_hash?: string | null;
 }
 
 export interface HelpTip { key: string; title: string; body: string; category: string; }
