@@ -27,6 +27,7 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
   const [dirty, setDirty] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const locked = status === "signed";
 
@@ -112,6 +113,33 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
         URL.revokeObjectURL(url);
       }
     } catch { setError("Не удалось сформировать PDF"); }
+    finally { setPdfLoading(false); }
+  };
+
+  const share = async (channel: "telegram" | "whatsapp" | "sms" | "email") => {
+    setShareOpen(false);
+    if (!savedId || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "share_link", id: savedId }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!parsed.url) { setError("Не удалось подготовить ссылку"); return; }
+      const note = locked ? " (подписан электронной подписью)" : "";
+      const subject = `${doc.title} № ${savedNumber}${note}`;
+      const msg = encodeURIComponent(`${subject}\n${parsed.url}`);
+      const urls: Record<string, string> = {
+        telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(subject)}`,
+        whatsapp: `https://wa.me/?text=${msg}`,
+        sms: `sms:?body=${msg}`,
+        email: `mailto:?subject=${encodeURIComponent(subject)}&body=${msg}`,
+      };
+      window.open(urls[channel], "_blank");
+    } catch { setError("Нет связи с сервером"); }
     finally { setPdfLoading(false); }
   };
 
@@ -264,11 +292,12 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
                   {locked ? "PDF с печатью" : "Скачать Word"}
                 </button>
                 <button
-                  onClick={copy}
-                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                  onClick={() => savedId ? setShareOpen(true) : copy()}
+                  disabled={pdfLoading}
+                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
                 >
-                  <Icon name={copied ? "Check" : "Copy"} size={15} className={copied ? "text-green-600" : ""} />
-                  {copied ? "Скопировано" : "Копировать"}
+                  <Icon name={savedId ? "Share2" : copied ? "Check" : "Copy"} size={15} className={copied && !savedId ? "text-green-600" : ""} />
+                  {savedId ? "Отправить" : copied ? "Скопировано" : "Копировать"}
                 </button>
               </div>
               {!locked && (
@@ -283,6 +312,42 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
             </div>
           )}
         </div>
+
+        {shareOpen && (
+          <div className="absolute inset-0 z-20 flex flex-col justify-end" onClick={() => setShareOpen(false)}>
+            <div className="absolute inset-0 bg-black/30" />
+            <div
+              className="relative bg-background rounded-t-3xl p-5 pb-10 space-y-2 shadow-2xl border-t border-border/50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Отправить {locked ? "подписанный документ" : "документ"}
+              </p>
+              {[
+                { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
+                { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
+                { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
+                { id: "email" as const, icon: "Mail", label: "Электронная почта", color: "text-orange-500" },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => share(ch.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform"
+                >
+                  <Icon name={ch.icon} size={18} className={ch.color} />
+                  <span className="text-sm font-medium">{ch.label}</span>
+                </button>
+              ))}
+              <button onClick={copy} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60">
+                <Icon name={copied ? "Check" : "Copy"} size={18} className={copied ? "text-green-600" : "text-muted-foreground"} />
+                <span className="text-sm font-medium">{copied ? "Текст скопирован" : "Скопировать текст"}</span>
+              </button>
+              <button onClick={() => setShareOpen(false)} className="w-full py-3 text-sm text-muted-foreground">
+                Отмена
+              </button>
+            </div>
+          </div>
+        )}
 
         {confirmClose && (
           <div className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center px-6">

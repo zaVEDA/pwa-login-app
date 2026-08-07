@@ -290,7 +290,7 @@ def handler(event: dict, context) -> dict:
         conn.close()
         return {"statusCode": 200, "headers": cors, "body": json.dumps({"contract": row_to_dict(row)}, ensure_ascii=False)}
 
-    if action == "pdf":
+    if action in ("pdf", "share_link"):
         cid = int(body.get("id"))
         cur.execute(f"SELECT {COLS} FROM contracts WHERE id = %s AND user_id = %s", (cid, user_id))
         row = cur.fetchone()
@@ -303,7 +303,23 @@ def handler(event: dict, context) -> dict:
         performer = (urow[0] if urow else "") or ""
         cur.close()
         conn.close()
-        pdf = build_pdf(row_to_dict(row), performer)
+        c = row_to_dict(row)
+        pdf = build_pdf(c, performer)
+
+        if action == "share_link":
+            import boto3
+            s3 = boto3.client(
+                "s3",
+                endpoint_url="https://bucket.poehali.dev",
+                aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+                aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+            )
+            token = hashlib.sha256(f"{user_id}|{cid}|{c.get('sign_hash') or ''}".encode()).hexdigest()[:20]
+            key = f"contracts/{user_id}/{cid}-{token}.pdf"
+            s3.put_object(Bucket="files", Key=key, Body=pdf, ContentType="application/pdf")
+            url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+            return {"statusCode": 200, "headers": cors, "body": json.dumps({"url": url})}
+
         return {
             "statusCode": 200,
             "headers": cors,

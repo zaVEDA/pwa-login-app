@@ -10,6 +10,9 @@ interface Props {
   onStatus: (id: number, status: string) => void;
   onPdf: (c: Contract) => void;
   pdfLoadingId: number | null;
+  shareId: number | null;
+  setShareId: (id: number | null) => void;
+  onShare: (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email") => void;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -26,7 +29,16 @@ const STATUS_STYLE: Record<string, string> = {
   deleted: "bg-gray-200 text-gray-500",
 };
 
-export default function ContractCard({ contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId }: Props) {
+const CHANNELS = [
+  { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
+  { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
+  { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
+  { id: "email" as const, icon: "Mail", label: "Почта", color: "text-orange-500" },
+];
+
+export default function ContractCard({
+  contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId, shareId, setShareId, onShare,
+}: Props) {
   const signed = contract.status === "signed";
   const deleted = contract.status === "deleted";
 
@@ -70,19 +82,46 @@ export default function ContractCard({ contract, menuId, setMenuId, onOpen, onSt
         >
           <Icon name="MoreVertical" size={15} className="text-muted-foreground" />
         </button>
-        <button
-          onClick={() => onPdf(contract)}
-          disabled={pdfLoadingId === contract.id || deleted}
-          aria-label="Скачать PDF"
-          className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40 ${signed ? "bg-blue-50 text-blue-700" : "bg-primary/10 text-primary"}`}
-        >
-          <Icon
-            name={pdfLoadingId === contract.id ? "Loader" : signed ? "Stamp" : "FileDown"}
-            size={15}
-            className={pdfLoadingId === contract.id ? "animate-spin" : ""}
-          />
-        </button>
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => setShareId(shareId === contract.id ? null : contract.id)}
+            disabled={pdfLoadingId === contract.id || deleted}
+            aria-label="Отправить"
+            className="w-8 h-8 rounded-lg gold-gradient text-white flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
+          >
+            <Icon name={pdfLoadingId === contract.id ? "Loader" : "Share2"} size={14} className={pdfLoadingId === contract.id ? "animate-spin" : ""} />
+          </button>
+          <button
+            onClick={() => onPdf(contract)}
+            disabled={pdfLoadingId === contract.id || deleted}
+            aria-label="Скачать PDF"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40 ${signed ? "bg-blue-50 text-blue-700" : "bg-primary/10 text-primary"}`}
+          >
+            <Icon name={signed ? "Stamp" : "FileDown"} size={15} />
+          </button>
+        </div>
       </div>
+
+      {shareId === contract.id && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setShareId(null)} />
+          <div className="absolute right-3 bottom-14 z-20 w-48 bg-background rounded-xl border border-border shadow-xl p-1">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide px-2.5 py-1.5">
+              Отправить {signed ? "подписанный" : "документ"}
+            </p>
+            {CHANNELS.map((ch) => (
+              <button
+                key={ch.id}
+                onClick={() => onShare(contract, ch.id)}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"
+              >
+                <Icon name={ch.icon} size={15} className={ch.color} />
+                {ch.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {menuId === contract.id && (
         <>
@@ -122,6 +161,13 @@ export default function ContractCard({ contract, menuId, setMenuId, onOpen, onSt
                 Снять подпись
               </button>
             )}
+            <button
+              onClick={() => { setMenuId(null); setShareId(contract.id); }}
+              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"
+            >
+              <Icon name="Share2" size={14} className="text-muted-foreground" />
+              Отправить клиенту
+            </button>
             <button
               onClick={() => { setMenuId(null); onPdf(contract); }}
               className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"

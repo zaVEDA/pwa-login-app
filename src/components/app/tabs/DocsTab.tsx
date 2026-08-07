@@ -171,6 +171,7 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
   const [openContract, setOpenContract] = useState<Contract | null>(null);
   const [signTarget, setSignTarget] = useState<Contract | null>(null);
   const [contractPdfId, setContractPdfId] = useState<number | null>(null);
+  const [contractShareId, setContractShareId] = useState<number | null>(null);
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
   const [openDocId, setOpenDocId] = useState<number | null>(null);
   const [docFilter, setDocFilter] = useState("Все");
@@ -373,6 +374,34 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
     finally { setSignTarget(null); }
   };
 
+  const shareContract = async (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email") => {
+    setContractShareId(null);
+    if (contractPdfId) return;
+    setContractPdfId(c.id);
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "share_link", id: c.id }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!parsed.url) { toast("Не удалось подготовить ссылку"); return; }
+
+      const signedNote = c.status === "signed" ? " (подписан электронной подписью)" : "";
+      const text = `${c.title} № ${c.contract_number}${signedNote}\n${parsed.url}`;
+      const msg = encodeURIComponent(text);
+      const urls: Record<string, string> = {
+        telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(`${c.title} № ${c.contract_number}${signedNote}`)}`,
+        whatsapp: `https://wa.me/?text=${msg}`,
+        sms: `sms:?body=${msg}`,
+        email: `mailto:?subject=${encodeURIComponent(`${c.title} № ${c.contract_number}`)}&body=${msg}`,
+      };
+      window.open(urls[channel], "_blank");
+    } catch { toast("Нет связи с сервером"); }
+    finally { setContractPdfId(null); }
+  };
+
   const downloadContractPdf = async (c: Contract) => {
     if (contractPdfId) return;
     setContractPdfId(c.id);
@@ -509,6 +538,9 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
                 onStatus={changeContractStatus}
                 onPdf={downloadContractPdf}
                 pdfLoadingId={contractPdfId}
+                shareId={contractShareId}
+                setShareId={setContractShareId}
+                onShare={shareContract}
               />
             ))}
           </div>
