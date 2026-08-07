@@ -61,6 +61,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
   const [saving, setSaving] = useState(false);
   const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
+  const [editing, setEditing] = useState(false);
+
+  const readOnly = saved && !editing;
 
   // Загружаем реквизиты из БД при монтировании
   useEffect(() => {
@@ -109,6 +112,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
         }),
       });
       setSaved(true);
+      setEditing(false);
     } finally {
       setSaving(false);
     }
@@ -216,16 +220,14 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
+    setEditing(false);
   };
 
   return (
     <div ref={rootRef} className="card-warm rounded-2xl p-4 shadow-sm">
       <button
         className="w-full flex items-center gap-2"
-        onClick={() => {
-          if (isOpen && entityType && !saved) saveToDb();
-          setIsOpen((v) => !v);
-        }}
+        onClick={() => setIsOpen((v) => !v)}
       >
         <Icon name="FileText" size={15} className="text-primary" />
         <p className="text-sm font-medium flex-1 text-left">Мои реквизиты</p>
@@ -243,8 +245,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
               {entityOptions.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => handleSelectEntity(opt.value)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                  onClick={() => !readOnly && handleSelectEntity(opt.value)}
+                  disabled={readOnly}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all disabled:opacity-70 ${
                     entityType === opt.value
                       ? "gold-gradient text-white border-transparent shadow-sm"
                       : "bg-white/60 border-border text-foreground"
@@ -350,13 +353,15 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
           {/* Заполненные поля — из реестра ФНС или вручную */}
           {showManualFill && entityType && (
             <div className="space-y-2">
-              <button
-                onClick={() => { setShowManualFill(false); setCheckResult(null); }}
-                className="flex items-center gap-1 text-[11px] text-muted-foreground"
-              >
-                <Icon name="ChevronLeft" size={12} />
-                Изменить ИНН
-              </button>
+              {!readOnly && (
+                <button
+                  onClick={() => { setShowManualFill(false); setCheckResult(null); }}
+                  className="flex items-center gap-1 text-[11px] text-muted-foreground"
+                >
+                  <Icon name="ChevronLeft" size={12} />
+                  Изменить ИНН
+                </button>
+              )}
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {entityType === "ooo" ? "Наименование организации" : "ФИО"}
@@ -372,8 +377,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                     type="text"
                     value={fullName}
                     onChange={(e) => { setFullName(e.target.value); setSaved(false); }}
+                    readOnly={readOnly}
                     placeholder={entityType === "ooo" ? 'ООО «Ромашка»' : "Иванова Анна Сергеевна"}
-                    className="flex-1 text-sm outline-none bg-transparent"
+                    className="flex-1 text-sm outline-none bg-transparent read-only:opacity-70"
                   />
                 </div>
               </div>
@@ -385,8 +391,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                     inputMode="numeric"
                     value={inn}
                     onChange={(e) => { setInn(e.target.value.replace(/\D/g, "").slice(0, innMaxLen)); setSaved(false); }}
+                    readOnly={readOnly}
                     placeholder={entityType === "ooo" ? "7707083893" : "123456789012"}
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                   />
                 </div>
                 {entityType === "ip" && (
@@ -397,8 +404,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                       inputMode="numeric"
                       value={ogrnip}
                       onChange={(e) => { setOgrnip(e.target.value.replace(/\D/g, "").slice(0, 15)); setSaved(false); }}
+                      readOnly={readOnly}
                       placeholder="315774600123456"
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                     />
                   </div>
                 )}
@@ -410,8 +418,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                       inputMode="numeric"
                       value={kpp}
                       onChange={(e) => { setKpp(e.target.value.replace(/\D/g, "").slice(0, 9)); setSaved(false); }}
+                      readOnly={readOnly}
                       placeholder="770701001"
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                     />
                   </div>
                 )}
@@ -424,8 +433,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                   type="text"
                   value={address}
                   onChange={(e) => { setAddress(e.target.value); setSaved(false); }}
+                  readOnly={readOnly}
                   placeholder="105066, г. Москва, ул. Примерная, д. 1, кв. 1"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                 />
               </div>
               <div>
@@ -435,8 +445,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                   inputMode="numeric"
                   value={okpo}
                   onChange={(e) => { setOkpo(e.target.value.replace(/\D/g, "").slice(0, 10)); setSaved(false); }}
+                  readOnly={readOnly}
                   placeholder="12345678"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                 />
               </div>
 
@@ -460,8 +471,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                           setSaved(false);
                           if (val.length === 9) setTimeout(() => handleBikCheck(val), 0);
                         }}
+                        readOnly={readOnly}
                         placeholder="044525225"
-                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                       />
                       {bikChecking && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -479,7 +491,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                         type="text"
                         value={bankName}
                         onChange={(e) => { setBankName(e.target.value); setSaved(false); }}
-                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                        readOnly={readOnly}
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                       />
                     </div>
                   )}
@@ -491,7 +504,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                         type="text"
                         value={corrAccount}
                         onChange={(e) => { setCorrAccount(e.target.value); setSaved(false); }}
-                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                        readOnly={readOnly}
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                       />
                     </div>
                   )}
@@ -504,8 +518,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                         inputMode="numeric"
                         value={checkingAccount}
                         onChange={(e) => { setCheckingAccount(e.target.value.replace(/\D/g, "").slice(0, 20)); setSaved(false); }}
+                        readOnly={readOnly}
                         placeholder="40802810000000000000"
-                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                        className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                       />
                     </div>
                   )}
@@ -517,18 +532,41 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
           {/* Кнопки */}
           {entityType && (
             <div className="flex justify-between gap-2 items-center">
-              <button
-                onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
-              >
-                <Icon name="RotateCcw" size={12} />
-                Сбросить
-              </button>
-              {saving && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Icon name="Loader" size={12} className="animate-spin" />
-                  Сохраняю...
-                </div>
+              {readOnly ? (
+                <>
+                  <button
+                    onClick={handleReset}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
+                  >
+                    <Icon name="RotateCcw" size={12} />
+                    Сбросить
+                  </button>
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform"
+                  >
+                    <Icon name="Pencil" size={12} />
+                    Изменить
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleReset}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
+                  >
+                    <Icon name="RotateCcw" size={12} />
+                    Сбросить
+                  </button>
+                  <button
+                    onClick={saveToDb}
+                    disabled={saving}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform disabled:opacity-60"
+                  >
+                    <Icon name={saving ? "Loader" : "Save"} size={12} className={saving ? "animate-spin" : ""} />
+                    {saving ? "Сохраняю..." : "Сохранить"}
+                  </button>
+                </>
               )}
             </div>
           )}
