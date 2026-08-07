@@ -257,6 +257,10 @@ export default function Index() {
           familyRequestStatus={user?.family_request_status ?? null}
           onUserUpdated={setUser}
           onDocCreated={reloadLimits}
+          onGoToAccount={() => {
+            try { sessionStorage.setItem("openRequisites", "1"); } catch { /* ignore */ }
+            setActiveTab("account");
+          }}
         />
       </main>
 

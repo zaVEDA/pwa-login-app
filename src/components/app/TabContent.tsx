@@ -25,6 +25,7 @@ interface Props {
   familyRequestStatus?: "pending" | "approved" | "rejected" | null;
   onUserUpdated?: (user: AuthUser) => void;
   onDocCreated?: () => void;
+  onGoToAccount?: () => void;
 }
 
 export default function TabContent({
@@ -48,12 +49,13 @@ export default function TabContent({
   familyRequestStatus,
   onUserUpdated,
   onDocCreated,
+  onGoToAccount,
 }: Props) {
   return (
     <>
-      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} onDocCreated={onDocCreated} userEmail={userEmail} />}
+      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} onDocCreated={onDocCreated} userEmail={userEmail} onGoToAccount={onGoToAccount} />}
 
-      <TemplatesTab activeTab={activeTab} phone={phone} onSaved={onDocCreated} userEmail={userEmail} />
+      <TemplatesTab activeTab={activeTab} phone={phone} onSaved={onDocCreated} userEmail={userEmail} onGoToAccount={onGoToAccount} />
 
       {activeTab === "account" && (
         <AccountTab

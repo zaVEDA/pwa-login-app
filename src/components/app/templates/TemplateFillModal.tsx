@@ -12,6 +12,7 @@ interface Props {
   contract?: Contract | null;
   onClose: () => void;
   onSaved?: () => void;
+  onGoToAccount?: () => void;
 }
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -26,7 +27,7 @@ const ENTITY_LABEL: Record<string, string> = {
 const draftKey = (docTitle: string, contractId?: number | null) =>
   `doc_draft_${docTitle}_${contractId ?? "new"}`;
 
-export default function TemplateFillModal({ doc, phone, userProfile, contract, onClose, onSaved }: Props) {
+export default function TemplateFillModal({ doc, phone, userProfile, contract, onClose, onSaved, onGoToAccount }: Props) {
   const draftLoadedRef = useRef(false);
 
   const initialValues = (): Record<string, string> => {
@@ -55,6 +56,8 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const [values, setValues] = useState<Record<string, string>>(initialValues());
   const [restoredNotice, setRestoredNotice] = useState(draftLoadedRef.current);
   const [performerAutofill, setPerformerAutofill] = useState<string | null>(null);
+  const [requisitesLoaded, setRequisitesLoaded] = useState(false);
+  const [hasRequisites, setHasRequisites] = useState(false);
   const [preview, setPreview] = useState(!!contract);
   const [copied, setCopied] = useState(false);
   const [savedId, setSavedId] = useState<number | null>(contract?.id ?? null);
@@ -80,19 +83,21 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
 
   // Подставляем свои реквизиты (ИП/самозанятый/ООО) в поле «Ваши данные»
   useEffect(() => {
-    if (!phone) return;
+    if (!phone) { setRequisitesLoaded(true); return; }
     fetch(REQUISITES_URL, { headers: { "X-Phone": phone } })
       .then((r) => r.json())
       .then((data) => {
         const r = data?.requisites;
         if (!r || !r.full_name) return;
+        setHasRequisites(true);
         const parts = [ENTITY_LABEL[r.entity_type] ? `${ENTITY_LABEL[r.entity_type]} ${r.full_name}` : r.full_name];
         if (r.inn) parts.push(`ИНН ${r.inn}`);
         const summary = parts.join(", ");
         setPerformerAutofill(summary);
         setValues((prev) => (prev.performer ? prev : { ...prev, performer: summary }));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setRequisitesLoaded(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phone]);
 
@@ -256,7 +261,10 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           error={error}
           performerAutofill={performerAutofill}
           userProfile={userProfile}
+          requisitesLoaded={requisitesLoaded}
+          hasRequisites={hasRequisites}
           onSet={set}
+          onGoToAccount={onGoToAccount}
         />
 
         <TemplateFillFooter

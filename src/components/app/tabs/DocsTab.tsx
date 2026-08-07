@@ -21,9 +21,10 @@ interface Props {
   userPlan?: PlanType | null;
   userEmail?: string | null;
   onDocCreated?: () => void;
+  onGoToAccount?: () => void;
 }
 
-export default function DocsTab({ phone, userPlan, userEmail, onDocCreated }: Props) {
+export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGoToAccount }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -476,6 +477,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated }: Pr
           contract={openContract}
           onClose={() => setOpenContract(null)}
           onSaved={loadContracts}
+          onGoToAccount={() => { setOpenContract(null); onGoToAccount?.(); }}
         />
       )}
       {openDocId && (

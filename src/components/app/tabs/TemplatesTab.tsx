@@ -10,9 +10,10 @@ interface Props {
   phone: string;
   userEmail?: string | null;
   onSaved?: () => void;
+  onGoToAccount?: () => void;
 }
 
-export default function TemplatesTab({ activeTab, phone, userEmail, onSaved }: Props) {
+export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onGoToAccount }: Props) {
   const [openDoc, setOpenDoc] = useState<string | null>(null);
   const [soon, setSoon] = useState<string | null>(null);
 
@@ -30,6 +31,7 @@ export default function TemplatesTab({ activeTab, phone, userEmail, onSaved }: P
           userProfile={{ phone, email: userEmail }}
           onClose={() => setOpenDoc(null)}
           onSaved={onSaved}
+          onGoToAccount={() => { setOpenDoc(null); onGoToAccount?.(); }}
         />
       )}
 

@@ -14,7 +14,10 @@ interface Props {
   error: string;
   performerAutofill: string | null;
   userProfile?: { phone?: string | null; email?: string | null };
+  requisitesLoaded?: boolean;
+  hasRequisites?: boolean;
   onSet: (k: string, v: string) => void;
+  onGoToAccount?: () => void;
 }
 
 export default function TemplateFillFields({
@@ -29,7 +32,10 @@ export default function TemplateFillFields({
   error,
   performerAutofill,
   userProfile,
+  requisitesLoaded,
+  hasRequisites,
   onSet,
+  onGoToAccount,
 }: Props) {
   return (
     <div className="flex-1 overflow-y-auto px-5 py-5 pb-40">
@@ -122,6 +128,33 @@ export default function TemplateFillFields({
             const autofilled = f.autofill === "performer"
               ? !!performerAutofill && values[f.key] === performerAutofill
               : f.autofill && userProfile?.[f.autofill] && values[f.key] === userProfile[f.autofill];
+
+            // Свои реквизиты нельзя вписывать вручную — сначала их нужно заполнить в Аккаунте.
+            // Если поле уже что-то содержит (например, из старого черновика) — не перекрываем.
+            const needsRequisites = f.autofill === "performer" && requisitesLoaded && !hasRequisites && !locked && !values[f.key];
+
+            if (needsRequisites) {
+              return (
+                <div key={f.key}>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{f.label}</label>
+                  <button
+                    onClick={onGoToAccount}
+                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-left active:scale-[0.99] transition-transform"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Icon name="UserCog" size={16} className="text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm block">Заполните реквизиты в Аккаунте</span>
+                      <span className="text-[11px] text-muted-foreground block mt-0.5">
+                        Данные подставятся сюда автоматически
+                      </span>
+                    </div>
+                    <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
+                  </button>
+                </div>
+              );
+            }
 
             return (
               <div key={f.key}>

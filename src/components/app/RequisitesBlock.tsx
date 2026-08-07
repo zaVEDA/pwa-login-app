@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 
 const CHECK_INN_URL = "https://functions.poehali.dev/9aea3fe4-6f69-411a-8a01-c3e94cb8888c";
@@ -30,7 +30,19 @@ interface Props {
 }
 
 export default function RequisitesBlock({ fullName, setFullName, phone }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(() => {
+    try {
+      return sessionStorage.getItem("openRequisites") === "1";
+    } catch { return false; }
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try { sessionStorage.removeItem("openRequisites"); } catch { /* ignore */ }
+    rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [entityType, setEntityType] = useState<EntityType | null>(() => loadSaved().entityType ?? null);
   const [innOgrnip, setInnOgrnip] = useState<string>(() => loadSaved().innOgrnip ?? "");
   const [inn, setInn] = useState<string>(() => loadSaved().inn ?? "");
@@ -205,7 +217,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   };
 
   return (
-    <div className="card-warm rounded-2xl p-4 shadow-sm">
+    <div ref={rootRef} className="card-warm rounded-2xl p-4 shadow-sm">
       <button
         className="w-full flex items-center gap-2"
         onClick={() => {
