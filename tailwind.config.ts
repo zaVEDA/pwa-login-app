@@ -89,6 +89,10 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'hint-glow': {
+					'0%, 100%': { boxShadow: '0 0 0 0 hsl(var(--primary) / 0.45)' },
+					'50%': { boxShadow: '0 0 0 6px hsl(var(--primary) / 0)' }
 				}
 			},
 			animation: {
@@ -96,6 +100,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fadeIn 0.5s ease forwards',
 				'slide-up': 'slideUp 0.5s ease forwards',
+				'hint-glow': 'hint-glow 2s ease-in-out infinite',
 			}
 		}
 	},
