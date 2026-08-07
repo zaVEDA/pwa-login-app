@@ -1,5 +1,19 @@
 export const INVOICES_URL = "https://functions.poehali.dev/b8539077-8a35-46ed-b604-3f9b439fafa1";
 export const HELP_URL = "https://functions.poehali.dev/66109594-95d9-45ec-bcda-4de385abc5ef";
+export const CONTRACTS_URL = "https://functions.poehali.dev/bba1a1e6-6bda-4f5e-b94d-99daa4c87d50";
+
+export interface Contract {
+  id: number;
+  template_key: string;
+  title: string;
+  contract_number: string;
+  contract_date: string;
+  client_name: string;
+  values: Record<string, string>;
+  body: string;
+  status: string;
+  signed_at: string | null;
+}
 
 export interface HelpTip { key: string; title: string; body: string; category: string; }
 

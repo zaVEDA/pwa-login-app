@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "GET без phone",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    },
+    {
+      "name": "Создание договора",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "template_key": "Соглашение на фото и видео съемку",
+        "title": "Соглашение на фото и видео съемку",
+        "client_name": "Иванова Анна Петровна",
+        "values": { "fio": "Иванова Анна Петровна" },
+        "body": "Текст согласия"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "Список договоров",
+      "method": "GET",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
+    }
+  ]
+}

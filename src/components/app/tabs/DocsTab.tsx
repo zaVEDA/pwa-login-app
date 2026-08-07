@@ -3,7 +3,10 @@ import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import DocumentModal from "@/components/app/DocumentModal";
 import { formatDate } from "@/lib/date";
-import { INVOICES_URL, HELP_URL, HelpTip, Invoice, RealizationDoc } from "./constants";
+import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract } from "./constants";
+import ContractCard from "./docs/ContractCard";
+import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
+import { templateDocs } from "@/components/app/templates/docs";
 import type { DateRange } from "react-day-picker";
 import { PlanType } from "@/lib/auth";
 import DocsFilters from "./docs/DocsFilters";
@@ -162,6 +165,9 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
       .finally(() => setInvoicesLoading(false));
   };
 
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [contractMenuId, setContractMenuId] = useState<number | null>(null);
+  const [openContract, setOpenContract] = useState<Contract | null>(null);
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
   const [openDocId, setOpenDocId] = useState<number | null>(null);
   const [docFilter, setDocFilter] = useState("Все");
@@ -175,8 +181,9 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
     const names = new Set<string>();
     invoices.forEach((inv) => { if (inv.client_name) names.add(inv.client_name); });
     realizationDocs.forEach((d) => { if (d.client_name) names.add(d.client_name); });
+    contracts.forEach((c) => { if (c.client_name) names.add(c.client_name); });
     return Array.from(names).sort((a, b) => a.localeCompare(b, "ru"));
-  }, [invoices, realizationDocs]);
+  }, [invoices, realizationDocs, contracts]);
 
   const isInDateRange = (dateStr: string) => {
     if (!dateRange?.from || !dateStr) return true;
@@ -314,10 +321,42 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
     window.open(urls[channel], "_blank");
   };
 
+  const loadContracts = () => {
+    if (!phone) return;
+    fetch(CONTRACTS_URL, { headers: { "X-Phone": phone } })
+      .then((r) => r.json())
+      .then((data) => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        setContracts(parsed.contracts || []);
+      })
+      .catch(() => {});
+  };
+
+  const changeContractStatus = async (id: number, status: string) => {
+    setContracts((prev) => status === "deleted"
+      ? prev.filter((c) => c.id !== id)
+      : prev.map((c) => c.id === id ? { ...c, status } : c));
+    try {
+      await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({ action: "set_status", id, status }),
+      });
+    } catch { loadContracts(); }
+  };
+
+  const showContracts = docFilter === "Все" || docFilter === "Договоры" || docFilter === "Черновики";
+  const filteredContracts = contracts.filter((c) =>
+    (docFilter === "Черновики" ? c.status === "draft" : true) &&
+    isInDateRange(c.contract_date) &&
+    (!clientFilter || c.client_name === clientFilter)
+  );
+
   useEffect(() => {
     if (!phone) return;
     loadInvoices();
     loadDocuments();
+    loadContracts();
   }, [phone]);
 
   return (
@@ -329,6 +368,15 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
           onSaved={() => { loadInvoices(); onDocCreated?.(); }}
           invoiceId={openInvoiceId}
           userPlan={userPlan}
+        />
+      )}
+      {openContract && templateDocs[openContract.template_key] && (
+        <TemplateFillModal
+          doc={templateDocs[openContract.template_key]}
+          phone={phone}
+          contract={openContract}
+          onClose={() => setOpenContract(null)}
+          onSaved={loadContracts}
         />
       )}
       {openDocId && (
@@ -373,7 +421,7 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
           </div>
         )}
 
-        {!invoicesLoading && (showInvoicesList ? filteredInvoices.length : 0) === 0 && filteredDocs.length === 0 && (
+        {!invoicesLoading && (showInvoicesList ? filteredInvoices.length : 0) === 0 && filteredDocs.length === 0 && (showContracts ? filteredContracts.length : 0) === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
               <Icon name="FileText" size={24} className="text-primary/50" />
@@ -386,6 +434,21 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
             <p className="text-xs text-muted-foreground mt-1">
               {dateRange?.from || clientFilter ? "Попробуйте изменить дату или клиента" : "Нажмите + чтобы создать первый счёт"}
             </p>
+          </div>
+        )}
+
+        {!invoicesLoading && showContracts && filteredContracts.length > 0 && (
+          <div className="space-y-3">
+            {filteredContracts.map((c) => (
+              <ContractCard
+                key={c.id}
+                contract={c}
+                menuId={contractMenuId}
+                setMenuId={setContractMenuId}
+                onOpen={setOpenContract}
+                onStatus={changeContractStatus}
+              />
+            ))}
           </div>
         )}
 

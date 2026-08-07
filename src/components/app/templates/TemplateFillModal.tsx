@@ -1,28 +1,85 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { TemplateDoc } from "./docs";
+import { CONTRACTS_URL, Contract } from "@/components/app/tabs/constants";
 
 interface Props {
   doc: TemplateDoc;
+  phone: string;
+  contract?: Contract | null;
   onClose: () => void;
+  onSaved?: () => void;
 }
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-export default function TemplateFillModal({ doc, onClose }: Props) {
-  const [values, setValues] = useState<Record<string, string>>({ signDate: todayStr() });
-  const [preview, setPreview] = useState(false);
+export default function TemplateFillModal({ doc, phone, contract, onClose, onSaved }: Props) {
+  const [values, setValues] = useState<Record<string, string>>(
+    contract?.values && Object.keys(contract.values).length ? contract.values : { signDate: todayStr() }
+  );
+  const [preview, setPreview] = useState(!!contract);
   const [copied, setCopied] = useState(false);
+  const [savedId, setSavedId] = useState<number | null>(contract?.id ?? null);
+  const [savedNumber, setSavedNumber] = useState(contract?.contract_number || "");
+  const [status, setStatus] = useState(contract?.status || "draft");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [dirty, setDirty] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
 
-  const set = (k: string, v: string) => setValues((p) => ({ ...p, [k]: v }));
+  const locked = status === "signed";
 
-  const visibleFields = doc.fields.filter((f) => {
-    if (f.key === "passport" && values.eSign === "1") return false;
-    return true;
-  });
+  useEffect(() => { setError(""); }, [values]);
+
+  const set = (k: string, v: string) => {
+    if (locked) return;
+    setValues((p) => ({ ...p, [k]: v }));
+    setDirty(true);
+  };
+
+  const visibleFields = doc.fields.filter((f) => !(f.key === "passport" && values.eSign === "1"));
 
   const text = doc.build(values);
   const fullText = `${doc.heading}\n\n${text}`;
+
+  const handleSave = async () => {
+    if (saving || locked) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Phone": phone },
+        body: JSON.stringify({
+          id: savedId,
+          template_key: doc.title,
+          title: doc.title,
+          client_name: values.fio || "",
+          contract_date: values.signDate || todayStr(),
+          values,
+          body: fullText,
+        }),
+      });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (res.status === 409) { setError("Документ уже подписан клиентом — изменить нельзя"); setStatus("signed"); return; }
+      if (!parsed.contract) { setError("Не удалось сохранить, попробуйте ещё раз"); return; }
+      setSavedId(parsed.contract.id);
+      setSavedNumber(parsed.contract.contract_number || "");
+      setStatus(parsed.contract.status || "draft");
+      setDirty(false);
+      onSaved?.();
+    } catch {
+      setError("Нет связи с сервером");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tryClose = () => {
+    if (dirty) setConfirmClose(true);
+    else onClose();
+  };
 
   const copy = async () => {
     try {
@@ -51,17 +108,29 @@ export default function TemplateFillModal({ doc, onClose }: Props) {
       <div className="absolute inset-0 bg-background" />
 
       <div className="relative flex flex-col h-full">
-        {/* Header */}
         <div className="flex-shrink-0 px-5 pt-12 pb-4 border-b border-border/50">
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <h2 className="font-cormorant text-xl font-semibold leading-tight">{doc.title}</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {preview ? "Готовый документ" : "Заполните поля"}
-              </p>
+              <h2 className="font-cormorant text-xl font-semibold leading-tight truncate">{doc.title}</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                {savedNumber && <span className="text-xs font-medium text-primary">№ {savedNumber}</span>}
+                <span className="text-xs text-muted-foreground truncate">
+                  {locked ? "Подписан клиентом" : savedId ? "Черновик сохранён" : "Заполните поля"}
+                </span>
+              </div>
             </div>
+            {!locked && (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="h-9 flex items-center gap-1.5 text-xs font-medium text-white gold-gradient rounded-xl px-3.5 shadow-sm active:scale-95 transition-transform flex-shrink-0 disabled:opacity-60"
+              >
+                <Icon name={saving ? "Loader" : "Save"} size={13} className={saving ? "animate-spin" : ""} />
+                {saving ? "Сохраняю" : "Сохранить"}
+              </button>
+            )}
             <button
-              onClick={onClose}
+              onClick={tryClose}
               aria-label="Закрыть"
               className="w-9 h-9 flex-shrink-0 rounded-xl border border-border bg-white/60 flex items-center justify-center hover:border-primary transition-colors"
             >
@@ -70,8 +139,21 @@ export default function TemplateFillModal({ doc, onClose }: Props) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 pb-32">
+        <div className="flex-1 overflow-y-auto px-5 py-5 pb-40">
+          {error && (
+            <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+              <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
+              <p className="text-[11px] text-red-600">{error}</p>
+            </div>
+          )}
+
+          {locked && (
+            <div className="mb-3 px-3 py-2.5 rounded-lg bg-green-50 border border-green-200 flex items-center gap-2">
+              <Icon name="ShieldCheck" size={14} className="text-green-600 flex-shrink-0" />
+              <p className="text-[11px] text-green-700">Документ подписан клиентом — редактирование закрыто</p>
+            </div>
+          )}
+
           {!preview ? (
             <div className="space-y-3">
               {visibleFields.map((f) =>
@@ -79,7 +161,8 @@ export default function TemplateFillModal({ doc, onClose }: Props) {
                   <button
                     key={f.key}
                     onClick={() => set(f.key, values[f.key] === "1" ? "" : "1")}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform"
+                    disabled={locked}
+                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform disabled:opacity-60"
                   >
                     <div
                       className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 border ${
@@ -100,8 +183,9 @@ export default function TemplateFillModal({ doc, onClose }: Props) {
                       type={f.type}
                       value={values[f.key] || ""}
                       onChange={(e) => set(f.key, e.target.value)}
+                      readOnly={locked}
                       placeholder={f.placeholder}
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                     />
                     {f.hint && <p className="text-[11px] text-muted-foreground mt-1">{f.hint}</p>}
                   </div>
@@ -121,7 +205,6 @@ export default function TemplateFillModal({ doc, onClose }: Props) {
           )}
         </div>
 
-        {/* Footer */}
         <div
           className="flex-shrink-0 absolute bottom-0 left-0 right-0 px-5 pt-4 bg-background border-t border-border/50"
           style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
@@ -152,16 +235,47 @@ export default function TemplateFillModal({ doc, onClose }: Props) {
                   {copied ? "Скопировано" : "Копировать"}
                 </button>
               </div>
-              <button
-                onClick={() => setPreview(false)}
-                className="w-full py-2.5 text-sm text-muted-foreground flex items-center justify-center gap-1.5"
-              >
-                <Icon name="ChevronLeft" size={14} />
-                Вернуться к заполнению
-              </button>
+              {!locked && (
+                <button
+                  onClick={() => setPreview(false)}
+                  className="w-full py-2.5 text-sm text-muted-foreground flex items-center justify-center gap-1.5"
+                >
+                  <Icon name="ChevronLeft" size={14} />
+                  Вернуться к заполнению
+                </button>
+              )}
             </div>
           )}
         </div>
+
+        {confirmClose && (
+          <div className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center px-6">
+            <div className="bg-background rounded-2xl p-5 w-full max-w-xs shadow-2xl">
+              <p className="text-sm font-medium mb-1">Сохранить изменения?</p>
+              <p className="text-xs text-muted-foreground mb-4">Документ попадёт в раздел «Договоры»</p>
+              <div className="space-y-2">
+                <button
+                  onClick={async () => { await handleSave(); setConfirmClose(false); onClose(); }}
+                  className="w-full py-2.5 rounded-xl gold-gradient text-white text-sm font-medium"
+                >
+                  Сохранить и закрыть
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-full py-2.5 rounded-xl border border-border bg-white/70 text-sm"
+                >
+                  Закрыть без сохранения
+                </button>
+                <button
+                  onClick={() => setConfirmClose(false)}
+                  className="w-full py-2 text-sm text-muted-foreground"
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
