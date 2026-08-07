@@ -382,14 +382,14 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
       const res = await fetch(CONTRACTS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "share_link", id: c.id }),
+        body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!parsed.url) { toast("Не удалось подготовить ссылку"); return; }
 
       const signedNote = c.status === "signed" ? " (подписан электронной подписью)" : "";
-      const text = `${c.title} № ${c.contract_number}${signedNote}\n${parsed.url}`;
+      const text = `${c.title} № ${c.contract_number}${signedNote}\nСсылка действует 1 час:\n${parsed.url}`;
       const msg = encodeURIComponent(text);
       const urls: Record<string, string> = {
         telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(`${c.title} № ${c.contract_number}${signedNote}`)}`,
@@ -398,6 +398,7 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
         email: `mailto:?subject=${encodeURIComponent(`${c.title} № ${c.contract_number}`)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");
+      toast("Ссылка отправлена. Она действует 1 час.", { icon: "⏱" });
     } catch { toast("Нет связи с сервером"); }
     finally { setContractPdfId(null); }
   };

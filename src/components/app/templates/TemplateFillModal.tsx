@@ -124,14 +124,14 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
       const res = await fetch(CONTRACTS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "share_link", id: savedId }),
+        body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!parsed.url) { setError("Не удалось подготовить ссылку"); return; }
       const note = locked ? " (подписан электронной подписью)" : "";
       const subject = `${doc.title} № ${savedNumber}${note}`;
-      const msg = encodeURIComponent(`${subject}\n${parsed.url}`);
+      const msg = encodeURIComponent(`${subject}\nСсылка действует 1 час:\n${parsed.url}`);
       const urls: Record<string, string> = {
         telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(subject)}`,
         whatsapp: `https://wa.me/?text=${msg}`,

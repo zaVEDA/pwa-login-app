@@ -11,6 +11,7 @@ import Welcome from "./pages/Welcome";
 import Legal from "./pages/Legal";
 import Offer from "./pages/Offer";
 import Privacy from "./pages/Privacy";
+import SharedDoc from "./pages/SharedDoc";
 import NotFound from "./pages/NotFound";
 import DevSwitcher from "./components/app/DevSwitcher";
 import MetrikaTracker from "./components/MetrikaTracker";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/legal" element={<Legal />} />
           <Route path="/offer" element={<Offer />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/doc/:token" element={<SharedDoc />} />
           <Route path="/legal-flow" element={<Navigate to="/legal" replace />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

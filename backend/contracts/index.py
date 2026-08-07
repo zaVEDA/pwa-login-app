@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 import hashlib
+import secrets
 import base64
 import psycopg2
 
@@ -214,6 +215,51 @@ def handler(event: dict, context) -> dict:
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": cors, "body": ""}
 
+    params = event.get("queryStringParameters") or {}
+    token = params.get("token")
+    if token:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT l.contract_id, l.file_key, l.expires_at, l.expires_at < NOW() AS expired "
+            "FROM contract_links l WHERE l.token = %s",
+            (token,)
+        )
+        link = cur.fetchone()
+        if not link:
+            cur.close()
+            conn.close()
+            return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not_found"})}
+        if link[3]:
+            cur.close()
+            conn.close()
+            return {"statusCode": 410, "headers": cors, "body": json.dumps({"error": "expired"})}
+
+        cur.execute("UPDATE contract_links SET opened_count = opened_count + 1 WHERE token = %s", (token,))
+        conn.commit()
+        cur.execute(
+            "SELECT title, contract_number, contract_date, client_name, status, signed_at, signer_name FROM contracts WHERE id = %s",
+            (link[0],)
+        )
+        c = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        file_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{link[1]}"
+        return {
+            "statusCode": 200,
+            "headers": cors,
+            "body": json.dumps({
+                "title": c[0], "contract_number": c[1],
+                "contract_date": str(c[2]) if c[2] else None,
+                "client_name": c[3], "status": c[4],
+                "signed_at": str(c[5]) if c[5] else None,
+                "signer_name": c[6],
+                "file_url": file_url,
+                "expires_at": str(link[2]),
+            }, ensure_ascii=False),
+        }
+
     headers = event.get("headers") or {}
     phone = headers.get("x-phone") or headers.get("X-Phone", "")
     if not phone:
@@ -227,7 +273,6 @@ def handler(event: dict, context) -> dict:
     method = event.get("httpMethod")
 
     if method == "GET":
-        params = event.get("queryStringParameters") or {}
         cid = params.get("id")
         if cid:
             cur.execute(f"SELECT {COLS} FROM contracts WHERE id = %s AND user_id = %s", (int(cid), user_id))
@@ -314,11 +359,26 @@ def handler(event: dict, context) -> dict:
                 aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
                 aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
             )
-            token = hashlib.sha256(f"{user_id}|{cid}|{c.get('sign_hash') or ''}".encode()).hexdigest()[:20]
+            token = secrets.token_urlsafe(24)[:32]
             key = f"contracts/{user_id}/{cid}-{token}.pdf"
             s3.put_object(Bucket="files", Key=key, Body=pdf, ContentType="application/pdf")
-            url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
-            return {"statusCode": 200, "headers": cors, "body": json.dumps({"url": url})}
+
+            conn2 = get_conn()
+            cur2 = conn2.cursor()
+            cur2.execute("DELETE FROM contract_links WHERE contract_id = %s AND user_id = %s", (cid, user_id))
+            cur2.execute(
+                "INSERT INTO contract_links (token, contract_id, user_id, file_key, expires_at) "
+                "VALUES (%s, %s, %s, %s, NOW() + INTERVAL '1 hour')",
+                (token, cid, user_id, key)
+            )
+            conn2.commit()
+            cur2.close()
+            conn2.close()
+
+            base = (body.get("origin") or "").rstrip("/")
+            url = f"{base}/doc/{token}" if base else f"/doc/{token}"
+            expires_at = (datetime.datetime.now() + datetime.timedelta(hours=1)).isoformat(timespec="seconds")
+            return {"statusCode": 200, "headers": cors, "body": json.dumps({"url": url, "expires_at": expires_at})}
 
         return {
             "statusCode": 200,
