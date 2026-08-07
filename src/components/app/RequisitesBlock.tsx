@@ -335,7 +335,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform"
               >
                 <Icon name="Search" size={14} />
-                {entityType === "self_employed" ? "Проверить статус самозанятого на сайте ФНС" : "Заполнить по ИНН с сайта налоговой"}
+                Заполнить данные с сайта налоговой
               </button>
               <button
                 onClick={() => { setShowManualFill(true); setCheckResult(null); }}
