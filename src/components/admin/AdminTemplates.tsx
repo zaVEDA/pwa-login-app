@@ -12,6 +12,7 @@ type Template = {
 };
 
 const initialTemplates: Template[] = [
+  { id: 7, icon: "Camera", title: "Соглашение на фото и видео съемку", desc: "Для того чтобы разместить у себя на страничке портфолио работ, или рилс/шортс после проведенной сессии, мероприятия — нужно получить официальное согласие того человека, чьи фото или видео материалы вы используете", tag: "Фотограф", specialty: "photographer", active: true },
   { id: 1, icon: "FileText", title: "Договор услуг", desc: "Базовый договор с клиентом", tag: "Универсальный", specialty: "all", active: true },
   { id: 2, icon: "Receipt", title: "Акт выполненных работ", desc: "Закрывающий документ", tag: "Универсальный", specialty: "all", active: true },
   { id: 3, icon: "CreditCard", title: "Счёт на оплату", desc: "Выставить счёт клиенту", tag: "Финансы", specialty: "all", active: true },
@@ -31,7 +32,7 @@ const specialtyOptions = [
   { value: "photographer", label: "Фотограф" },
 ];
 
-const iconOptions = ["FileText", "Receipt", "CreditCard", "Shield", "Calendar", "Image", "FileSignature", "Clipboard", "BookOpen", "Users", "Star", "Heart"];
+const iconOptions = ["FileText", "Receipt", "CreditCard", "Shield", "Calendar", "Image", "Camera", "Video", "FileSignature", "Clipboard", "BookOpen", "Users", "Star", "Heart"];
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState<Template[]>(initialTemplates);

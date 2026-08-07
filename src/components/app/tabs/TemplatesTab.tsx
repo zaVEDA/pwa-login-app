@@ -42,7 +42,7 @@ export default function TemplatesTab({ activeTab }: Props) {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{t.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{t.desc}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span className="doc-tag bg-primary/15 text-primary text-[10px]">{t.tag}</span>
