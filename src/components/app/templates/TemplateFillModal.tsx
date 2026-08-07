@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 import { TemplateDoc } from "./docs";
-import { CONTRACTS_URL, Contract } from "@/components/app/tabs/constants";
+import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
 
 interface Props {
   doc: TemplateDoc;
@@ -14,16 +14,45 @@ interface Props {
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
+const ENTITY_LABEL: Record<string, string> = {
+  ip: "ИП",
+  self_employed: "Самозанятый",
+  individual: "Физ. лицо",
+  ooo: "ООО",
+};
+
+const draftKey = (docTitle: string, contractId?: number | null) =>
+  `doc_draft_${docTitle}_${contractId ?? "new"}`;
+
 export default function TemplateFillModal({ doc, phone, userProfile, contract, onClose, onSaved }: Props) {
+  const draftLoadedRef = useRef(false);
+
   const initialValues = (): Record<string, string> => {
+    // Незавершённый черновик в этом же документе имеет приоритет — не теряем правки
+    try {
+      const raw = localStorage.getItem(draftKey(doc.title, contract?.id ?? null));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          draftLoadedRef.current = true;
+          return parsed;
+        }
+      }
+    } catch { /* ignore */ }
+
     if (contract?.values && Object.keys(contract.values).length) return contract.values;
+
     const v: Record<string, string> = { signDate: todayStr() };
     doc.fields.forEach((f) => {
-      if (f.autofill && userProfile?.[f.autofill]) v[f.key] = userProfile[f.autofill] as string;
+      if (f.autofill && f.autofill !== "performer" && userProfile?.[f.autofill as "phone" | "email"]) {
+        v[f.key] = userProfile[f.autofill as "phone" | "email"] as string;
+      }
     });
     return v;
   };
   const [values, setValues] = useState<Record<string, string>>(initialValues());
+  const [restoredNotice, setRestoredNotice] = useState(draftLoadedRef.current);
+  const [performerAutofill, setPerformerAutofill] = useState<string | null>(null);
   const [preview, setPreview] = useState(!!contract);
   const [copied, setCopied] = useState(false);
   const [savedId, setSavedId] = useState<number | null>(contract?.id ?? null);
@@ -37,8 +66,33 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const [shareOpen, setShareOpen] = useState(false);
 
   const locked = status === "signed";
+  const draftStorageKey = draftKey(doc.title, contract?.id ?? null);
 
   useEffect(() => { setError(""); }, [values]);
+
+  // Автосохранение черновика в браузере — данные не теряются, если закрыть без кнопки «Сохранить»
+  useEffect(() => {
+    if (locked) return;
+    try { localStorage.setItem(draftStorageKey, JSON.stringify(values)); } catch { /* ignore */ }
+  }, [values, locked, draftStorageKey]);
+
+  // Подставляем свои реквизиты (ИП/самозанятый/ООО) в поле «Ваши данные»
+  useEffect(() => {
+    if (!phone) return;
+    fetch(REQUISITES_URL, { headers: { "X-Phone": phone } })
+      .then((r) => r.json())
+      .then((data) => {
+        const r = data?.requisites;
+        if (!r || !r.full_name) return;
+        const parts = [ENTITY_LABEL[r.entity_type] ? `${ENTITY_LABEL[r.entity_type]} ${r.full_name}` : r.full_name];
+        if (r.inn) parts.push(`ИНН ${r.inn}`);
+        const summary = parts.join(", ");
+        setPerformerAutofill(summary);
+        setValues((prev) => (prev.performer ? prev : { ...prev, performer: summary }));
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone]);
 
   const set = (k: string, v: string) => {
     if (locked) return;
@@ -78,6 +132,11 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       setSavedNumber(parsed.contract.contract_number || "");
       setStatus(parsed.contract.status || "draft");
       setDirty(false);
+      setRestoredNotice(false);
+      try {
+        localStorage.removeItem(draftStorageKey);
+        localStorage.removeItem(draftKey(doc.title, parsed.contract.id));
+      } catch { /* ignore */ }
       onSaved?.();
     } catch {
       setError("Нет связи с сервером");
@@ -215,6 +274,14 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 pb-40">
+          {restoredNotice && !locked && (
+            <div className="mb-3 px-3 py-2.5 rounded-xl bg-primary/10 border border-primary/20 flex items-start gap-2">
+              <Icon name="History" size={14} className="text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-foreground/80">
+                Восстановили несохранённые данные с прошлого раза. Нажмите «Сохранить», чтобы закрепить их.
+              </p>
+            </div>
+          )}
           {error && (
             <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
               <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
@@ -293,7 +360,9 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
                   );
                 }
 
-                const autofilled = f.autofill && userProfile?.[f.autofill] && values[f.key] === userProfile[f.autofill];
+                const autofilled = f.autofill === "performer"
+                  ? !!performerAutofill && values[f.key] === performerAutofill
+                  : f.autofill && userProfile?.[f.autofill] && values[f.key] === userProfile[f.autofill];
 
                 return (
                   <div key={f.key}>
@@ -418,7 +487,9 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           <div className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center px-6">
             <div className="bg-background rounded-2xl p-5 w-full max-w-xs shadow-2xl">
               <p className="text-sm font-medium mb-1">Сохранить изменения?</p>
-              <p className="text-xs text-muted-foreground mb-4">Документ попадёт в раздел «Договоры»</p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Документ попадёт в раздел «Договоры». Если закрыть без сохранения — данные никуда не денутся, найдёте их здесь же при следующем открытии.
+              </p>
               <div className="space-y-2">
                 <button
                   onClick={async () => { await handleSave(); setConfirmClose(false); onClose(); }}

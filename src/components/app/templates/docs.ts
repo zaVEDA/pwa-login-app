@@ -8,8 +8,8 @@ export interface TemplateField {
   hint?: string;
   optional?: boolean;
   options?: { value: string; label: string; description?: string }[];
-  /** Автозаполнение из профиля пользователя ("phone" | "email") с возможностью правки */
-  autofill?: "phone" | "email";
+  /** Автозаполнение из профиля пользователя с возможностью правки */
+  autofill?: "phone" | "email" | "performer";
 }
 
 export interface TemplateDoc {
@@ -43,7 +43,7 @@ const consentPhotoVideo: TemplateDoc = {
       ],
     },
     { key: "passport", label: "Паспорт (серия, номер)", type: "text", placeholder: "4510 123456", optional: true },
-    { key: "performer", label: "Ваши данные (наименование / ФИО, ИНН)", type: "text", placeholder: "ИП Смирнова М.В., ИНН 770000000000" },
+    { key: "performer", label: "Ваши данные (наименование / ФИО, ИНН)", type: "text", placeholder: "ИП Смирнова М.В., ИНН 770000000000", autofill: "performer" },
     { key: "alreadyDone", label: "Съёмка уже прошла", type: "checkbox" },
     { key: "shootDate", label: "Дата съёмки", type: "date" },
     { key: "shootPlace", label: "Место съёмки", type: "text", placeholder: "г. Москва, студия «Свет»" },
