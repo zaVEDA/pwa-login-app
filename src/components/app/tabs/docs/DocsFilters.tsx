@@ -35,7 +35,7 @@ export default function DocsFilters({
   return (
     <>
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
-        {["Все", "Счета", "Договоры", "Акты", "Накладные", "Черновики"].map((f) => (
+        {["Все", "Счета", "Договоры", "Акты", "Накладные", "Черновики", "Отправленные", "Подписанные"].map((f) => (
           <button
             key={f}
             onClick={() => setDocFilter(f)}

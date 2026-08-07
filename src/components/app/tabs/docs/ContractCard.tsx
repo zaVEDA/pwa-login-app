@@ -16,7 +16,7 @@ interface Props {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  draft: "Черновик",
+  draft: "Создан",
   sent: "Отправлен",
   signed: "Подписан",
   deleted: "Удалён",
@@ -28,6 +28,9 @@ const STATUS_STYLE: Record<string, string> = {
   signed: "bg-green-100 text-green-700",
   deleted: "bg-gray-200 text-gray-500",
 };
+
+const STEPS = ["draft", "sent", "signed"];
+const STEP_ICON: Record<string, string> = { draft: "FilePlus2", sent: "Send", signed: "ShieldCheck" };
 
 const CHANNELS = [
   { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
@@ -41,6 +44,7 @@ export default function ContractCard({
 }: Props) {
   const signed = contract.status === "signed";
   const deleted = contract.status === "deleted";
+  const stepIndex = Math.max(0, STEPS.indexOf(contract.status));
 
   return (
     <div className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${deleted ? "opacity-50" : ""}`}>
@@ -61,10 +65,38 @@ export default function ContractCard({
         <p className="text-xs text-muted-foreground mt-0.5 truncate">
           {contract.client_name || "Без клиента"}
         </p>
+        {!deleted && (
+          <div className="flex items-center gap-1 mt-2.5">
+            {STEPS.map((s, i) => {
+              const done = i <= stepIndex;
+              return (
+                <div key={s} className="flex items-center gap-1">
+                  <div
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                      i === stepIndex
+                        ? STATUS_STYLE[s]
+                        : done
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-transparent text-muted-foreground/40"
+                    }`}
+                  >
+                    <Icon name={STEP_ICON[s]} size={10} />
+                    {STATUS_LABEL[s]}
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div className={`w-2.5 h-px ${i < stepIndex ? "bg-muted-foreground/40" : "bg-border"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_STYLE[contract.status] || STATUS_STYLE.draft}`}>
-            {STATUS_LABEL[contract.status] || contract.status}
-          </span>
+          {deleted && (
+            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_STYLE.deleted}`}>
+              Удалён
+            </span>
+          )}
           {signed && contract.sign_id && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
               <Icon name="BadgeCheck" size={10} />
@@ -134,13 +166,22 @@ export default function ContractCard({
               <Icon name={signed ? "Eye" : "Pencil"} size={14} className="text-muted-foreground" />
               {signed ? "Посмотреть" : "Открыть и изменить"}
             </button>
-            {!signed && (
+            {contract.status === "draft" && (
               <button
                 onClick={() => { setMenuId(null); onStatus(contract.id, "sent"); }}
                 className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"
               >
-                <Icon name="Send" size={14} className="text-muted-foreground" />
+                <Icon name="Send" size={14} className="text-sky-600" />
                 Отметить «Отправлен»
+              </button>
+            )}
+            {contract.status === "sent" && (
+              <button
+                onClick={() => { setMenuId(null); onStatus(contract.id, "draft"); }}
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left hover:bg-amber-50"
+              >
+                <Icon name="Undo2" size={14} className="text-muted-foreground" />
+                Вернуть в «Создан»
               </button>
             )}
             {!signed && (

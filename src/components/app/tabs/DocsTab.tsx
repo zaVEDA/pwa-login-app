@@ -202,14 +202,15 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
 
   // Счета показываем при: Все, Счета, Черновики
   const showInvoicesList = docFilter === "Все" || docFilter === "Счета" || docFilter === "Черновики";
+  const isContractStatusFilter = docFilter === "Отправленные" || docFilter === "Подписанные";
   const filteredInvoices = invoices.filter((inv) =>
     (docFilter === "Черновики" ? inv.status === "created" : true) &&
     isInDateRange(inv.invoice_date) &&
     (!clientFilter || inv.client_name === clientFilter)
   );
   // Документы реализации показываем при: Все, Акты, Накладные
-  const showActs = docFilter === "Все" || docFilter === "Акты";
-  const showNotes = docFilter === "Все" || docFilter === "Накладные";
+  const showActs = docFilter === "Акты" || (docFilter === "Все" && !isContractStatusFilter);
+  const showNotes = docFilter === "Накладные" || (docFilter === "Все" && !isContractStatusFilter);
   const filteredDocs = realizationDocs.filter((d) =>
     (d.doc_type === "act" && showActs) || (d.doc_type === "invoice_note" && showNotes)
   ).filter((d) => isInDateRange(d.doc_date) && (!clientFilter || d.client_name === clientFilter));
@@ -398,6 +399,7 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
         email: `mailto:?subject=${encodeURIComponent(`${c.title} № ${c.contract_number}`)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");
+      loadContracts();
       toast("Ссылка отправлена. Она действует 1 час.", { icon: "⏱" });
     } catch { toast("Нет связи с сервером"); }
     finally { setContractPdfId(null); }
@@ -428,9 +430,14 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
     finally { setContractPdfId(null); }
   };
 
-  const showContracts = docFilter === "Все" || docFilter === "Договоры" || docFilter === "Черновики";
+  const CONTRACT_STATUS_FILTER: Record<string, string> = {
+    "Черновики": "draft",
+    "Отправленные": "sent",
+    "Подписанные": "signed",
+  };
+  const showContracts = docFilter === "Все" || docFilter === "Договоры" || !!CONTRACT_STATUS_FILTER[docFilter];
   const filteredContracts = contracts.filter((c) =>
-    (docFilter === "Черновики" ? c.status === "draft" : true) &&
+    (CONTRACT_STATUS_FILTER[docFilter] ? c.status === CONTRACT_STATUS_FILTER[docFilter] : true) &&
     isInDateRange(c.contract_date) &&
     (!clientFilter || c.client_name === clientFilter)
   );

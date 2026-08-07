@@ -139,6 +139,8 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
         email: `mailto:?subject=${encodeURIComponent(subject)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");
+      if (status === "draft") setStatus("sent");
+      onSaved?.();
     } catch { setError("Нет связи с сервером"); }
     finally { setPdfLoading(false); }
   };
@@ -168,9 +170,20 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
               <h2 className="font-cormorant text-xl font-semibold leading-tight truncate">{doc.title}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 {savedNumber && <span className="text-xs font-medium text-primary">№ {savedNumber}</span>}
-                <span className="text-xs text-muted-foreground truncate">
-                  {locked ? "Подписан клиентом" : savedId ? "Черновик сохранён" : "Заполните поля"}
-                </span>
+                {savedId ? (
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      locked ? "bg-green-100 text-green-700"
+                        : status === "sent" ? "bg-sky-100 text-sky-700"
+                        : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    <Icon name={locked ? "ShieldCheck" : status === "sent" ? "Send" : "FilePlus2"} size={10} />
+                    {locked ? "Подписан" : status === "sent" ? "Отправлен" : "Создан"}
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground truncate">Заполните поля</span>
+                )}
               </div>
             </div>
             {!locked && (

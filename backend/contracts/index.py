@@ -51,11 +51,12 @@ def row_to_dict(row):
         "signer_ip": row[12],
         "sign_id": row[13],
         "sign_hash": row[14],
+        "sent_at": row[15].isoformat() if row[15] else None,
     }
 
 
 COLS = ("id, template_key, title, contract_number, contract_date, client_name, field_values, body, status, "
-        "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash")
+        "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash, sent_at")
 
 
 def ensure_fonts():
@@ -321,10 +322,24 @@ def handler(event: dict, context) -> dict:
                 "signer_ip = %s, sign_id = %s, sign_hash = %s, updated_at = NOW() WHERE id = %s AND user_id = %s",
                 (signer_name, signer_phone, ip, sign_id, sign_hash, cid, user_id)
             )
+        elif status == "sent":
+            cur.execute(
+                "UPDATE contracts SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), signed_at = NULL, "
+                "signer_name = NULL, signer_phone = NULL, signer_ip = NULL, sign_id = NULL, sign_hash = NULL, "
+                "updated_at = NOW() WHERE id = %s AND user_id = %s",
+                (cid, user_id)
+            )
+        elif status == "draft":
+            cur.execute(
+                "UPDATE contracts SET status = 'draft', sent_at = NULL, signed_at = NULL, signer_name = NULL, "
+                "signer_phone = NULL, signer_ip = NULL, sign_id = NULL, sign_hash = NULL, updated_at = NOW() "
+                "WHERE id = %s AND user_id = %s",
+                (cid, user_id)
+            )
+            cur.execute("DELETE FROM contract_links WHERE contract_id = %s AND user_id = %s", (cid, user_id))
         else:
             cur.execute(
-                "UPDATE contracts SET status = %s, signed_at = NULL, signer_name = NULL, signer_phone = NULL, "
-                "signer_ip = NULL, sign_id = NULL, sign_hash = NULL, updated_at = NOW() WHERE id = %s AND user_id = %s",
+                "UPDATE contracts SET status = %s, updated_at = NOW() WHERE id = %s AND user_id = %s",
                 (status, cid, user_id)
             )
 
@@ -374,6 +389,17 @@ def handler(event: dict, context) -> dict:
             conn2.commit()
             cur2.close()
             conn2.close()
+
+            conn3 = get_conn()
+            cur3 = conn3.cursor()
+            cur3.execute(
+                "UPDATE contracts SET status = 'sent', sent_at = NOW(), updated_at = NOW() "
+                "WHERE id = %s AND user_id = %s AND status = 'draft'",
+                (cid, user_id)
+            )
+            conn3.commit()
+            cur3.close()
+            conn3.close()
 
             base = (body.get("origin") or "").rstrip("/")
             url = f"{base}/doc/{token}" if base else f"/doc/{token}"
