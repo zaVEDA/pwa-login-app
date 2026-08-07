@@ -112,10 +112,6 @@ export default function TemplateFillFooter({
                 <span className="text-sm font-medium">{ch.label}</span>
               </button>
             ))}
-            <button onClick={onCopy} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60">
-              <Icon name={copied ? "Check" : "Copy"} size={18} className={copied ? "text-green-600" : "text-muted-foreground"} />
-              <span className="text-sm font-medium">{copied ? "Текст скопирован" : "Скопировать текст"}</span>
-            </button>
             <button onClick={onCloseShare} className="w-full py-3 text-sm text-muted-foreground">
               Отмена
             </button>
