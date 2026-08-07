@@ -1,0 +1,1 @@
+ALTER TABLE requisites ADD COLUMN IF NOT EXISTS identity_changed_at TIMESTAMP NULL;

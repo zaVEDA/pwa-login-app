@@ -30,6 +30,32 @@
       "path": "/",
       "headers": { "X-Phone": "+79001234567" },
       "expectedStatus": 200
+    },
+    {
+      "name": "POST same identity (no confirm needed)",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "entity_type": "ip",
+        "full_name": "Иванов Иван Иванович",
+        "inn": "123456789012",
+        "ogrnip": "315774600123456"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST changed identity without confirmation requires confirm",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Phone": "+79001234567" },
+      "body": {
+        "entity_type": "ip",
+        "full_name": "Петров Пётр Петрович",
+        "inn": "987654321098",
+        "ogrnip": "315774600999999"
+      },
+      "expectedStatus": 409
     }
   ]
 }

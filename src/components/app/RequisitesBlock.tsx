@@ -62,6 +62,9 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [saving, setSaving] = useState(false);
   const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
   const [editing, setEditing] = useState(false);
+  const [identityConfirmOpen, setIdentityConfirmOpen] = useState(false);
+  const [identityConfirmMessage, setIdentityConfirmMessage] = useState("");
+  const [identityLockedMessage, setIdentityLockedMessage] = useState("");
 
   const readOnly = saved && !editing;
 
@@ -93,11 +96,11 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, saved, showManualFill, fullName }));
   }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, saved, showManualFill, fullName]);
 
-  const saveToDb = async () => {
+  const saveToDb = async (opts?: { confirmIdentity?: boolean }) => {
     if (!phone) return;
     setSaving(true);
     try {
-      await fetch(REQUISITES_URL, {
+      const res = await fetch(REQUISITES_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
         body: JSON.stringify({
@@ -109,10 +112,29 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
           checking_account: checkingAccount,
           okpo,
           kpp,
+          confirm_identity_change: !!opts?.confirmIdentity,
         }),
       });
+
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}));
+        setIdentityConfirmMessage(data.message || "Вы меняете лицо, от которого подписываются документы. Подтверждаете изменение?");
+        setIdentityConfirmOpen(true);
+        return;
+      }
+
+      if (res.status === 423) {
+        const data = await res.json().catch(() => ({}));
+        setIdentityLockedMessage(data.message || "Изменить лицо, от которого подписываются документы, можно не чаще 1 раза в 30 дней.");
+        return;
+      }
+
+      if (!res.ok) return;
+
       setSaved(true);
       setEditing(false);
+      setIdentityConfirmOpen(false);
+      setIdentityLockedMessage("");
     } finally {
       setSaving(false);
     }
@@ -221,6 +243,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     setSaved(false);
     setShowManualFill(false);
     setEditing(false);
+    setIdentityLockedMessage("");
+    setIdentityConfirmOpen(false);
   };
 
   return (
@@ -559,7 +583,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                     Сбросить
                   </button>
                   <button
-                    onClick={saveToDb}
+                    onClick={() => saveToDb()}
                     disabled={saving}
                     className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform disabled:opacity-60"
                   >
@@ -571,9 +595,43 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
             </div>
           )}
 
+          {identityLockedMessage && (
+            <div className="rounded-xl px-3 py-2.5 text-sm flex items-start gap-2 bg-amber-50 text-amber-700 border border-amber-200">
+              <Icon name="Lock" size={15} className="flex-shrink-0 mt-0.5" />
+              <span>{identityLockedMessage}</span>
+            </div>
+          )}
+
           <p className="text-xs text-muted-foreground leading-relaxed">
             Данные будут автоматически подставляться во все документы
           </p>
+        </div>
+      )}
+
+      {identityConfirmOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center px-6">
+          <div className="bg-background rounded-2xl p-5 w-full max-w-xs shadow-2xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="ShieldAlert" size={18} className="text-amber-600 flex-shrink-0" />
+              <p className="text-sm font-semibold">Смена лица по договорам</p>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{identityConfirmMessage}</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => saveToDb({ confirmIdentity: true })}
+                disabled={saving}
+                className="w-full py-2.5 rounded-xl gold-gradient text-white text-sm font-medium disabled:opacity-60"
+              >
+                {saving ? "Сохраняю..." : "Подтверждаю, сохранить"}
+              </button>
+              <button
+                onClick={() => setIdentityConfirmOpen(false)}
+                className="w-full py-2.5 rounded-xl border border-border bg-white/70 text-sm"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

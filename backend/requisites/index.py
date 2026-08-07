@@ -1,6 +1,9 @@
 import json
 import os
 import psycopg2
+from datetime import datetime
+
+IDENTITY_LOCK_DAYS = 30
 
 
 def get_conn():
@@ -36,20 +39,73 @@ def handler(event: dict, context) -> dict:
     method = event.get("httpMethod")
 
     if method == "GET":
-        cur.execute("SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp FROM requisites WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, identity_changed_at FROM requisites WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         cur.close()
         conn.close()
         if not row:
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"requisites": None})}
-        keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp"]
-        return {"statusCode": 200, "headers": cors, "body": json.dumps({"requisites": dict(zip(keys, row))})}
+        keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp", "identity_changed_at"]
+        data = dict(zip(keys, row))
+        if data.get("identity_changed_at"):
+            data["identity_changed_at"] = data["identity_changed_at"].isoformat()
+        return {"statusCode": 200, "headers": cors, "body": json.dumps({"requisites": data})}
 
     if method == "POST":
         body = json.loads(event.get("body") or "{}")
+
+        # Проверяем, не меняется ли ЛИЦО (кому принадлежит тариф) — по ИНН/ОГРНИП/форме деятельности.
+        # Телефон, email и прочие контакты меняются свободно — это не относится к личности плательщика.
+        cur.execute("SELECT entity_type, inn, ogrnip, identity_changed_at FROM requisites WHERE user_id = %s", (user_id,))
+        existing = cur.fetchone()
+
+        new_entity_type = body.get("entity_type")
+        new_inn = (body.get("inn") or "").strip()
+        new_ogrnip = (body.get("ogrnip") or "").strip()
+
+        if existing:
+            old_entity_type, old_inn, old_ogrnip, identity_changed_at = existing
+            old_inn = (old_inn or "").strip()
+            old_ogrnip = (old_ogrnip or "").strip()
+
+            had_identity = bool(old_inn or old_ogrnip)
+            identity_key_changed = had_identity and (
+                new_entity_type != old_entity_type
+                or (new_inn and new_inn != old_inn)
+                or (new_ogrnip and new_ogrnip != old_ogrnip)
+            )
+
+            if identity_key_changed:
+                if identity_changed_at:
+                    days_left = IDENTITY_LOCK_DAYS - (datetime.now() - identity_changed_at).days
+                    if days_left > 0:
+                        cur.close()
+                        conn.close()
+                        return {
+                            "statusCode": 423,
+                            "headers": cors,
+                            "body": json.dumps({
+                                "error": "identity_locked",
+                                "message": f"Изменить лицо, от имени которого подписываются документы, можно не чаще 1 раза в 30 дней. Следующая смена будет доступна через {days_left} дн.",
+                                "days_left": days_left,
+                            })
+                        }
+
+                if not body.get("confirm_identity_change"):
+                    cur.close()
+                    conn.close()
+                    return {
+                        "statusCode": 409,
+                        "headers": cors,
+                        "body": json.dumps({
+                            "error": "identity_change_confirm_required",
+                            "message": "Вы меняете данные на другое лицо/компанию (по ИНН). Изменить лицо, от которого подписываются документы, можно не чаще 1 раза в 30 дней. Подтверждаете изменение?",
+                        })
+                    }
+
         cur.execute("""
-            INSERT INTO requisites (user_id, entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            INSERT INTO requisites (user_id, entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, updated_at, identity_changed_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), CASE WHEN %s THEN NOW() ELSE NULL END)
             ON CONFLICT (user_id) DO UPDATE SET
                 entity_type = EXCLUDED.entity_type,
                 full_name = EXCLUDED.full_name,
@@ -62,10 +118,11 @@ def handler(event: dict, context) -> dict:
                 checking_account = EXCLUDED.checking_account,
                 okpo = EXCLUDED.okpo,
                 kpp = EXCLUDED.kpp,
-                updated_at = NOW()
+                updated_at = NOW(),
+                identity_changed_at = CASE WHEN %s THEN NOW() ELSE requisites.identity_changed_at END
         """, (
             user_id,
-            body.get("entity_type"),
+            new_entity_type,
             body.get("full_name"),
             body.get("inn"),
             body.get("ogrnip"),
@@ -76,6 +133,8 @@ def handler(event: dict, context) -> dict:
             body.get("checking_account"),
             body.get("okpo"),
             body.get("kpp"),
+            bool(body.get("confirm_identity_change")),
+            bool(body.get("confirm_identity_change")),
         ))
         conn.commit()
         cur.close()
