@@ -56,6 +56,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const [values, setValues] = useState<Record<string, string>>(initialValues());
   const [restoredNotice, setRestoredNotice] = useState(draftLoadedRef.current);
   const [performerAutofill, setPerformerAutofill] = useState<string | null>(null);
+  const [signContact, setSignContact] = useState<{ phone?: string; email?: string }>({});
   const [requisitesLoaded, setRequisitesLoaded] = useState(false);
   const [hasRequisites, setHasRequisites] = useState(false);
   const [preview, setPreview] = useState(!!contract);
@@ -81,14 +82,30 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
     try { localStorage.setItem(draftStorageKey, JSON.stringify(values)); } catch { /* ignore */ }
   }, [values, locked, draftStorageKey]);
 
-  // Подставляем свои реквизиты (ИП/самозанятый/ООО) в поле «Ваши данные»
+  // Подставляем свои реквизиты (ИП/самозанятый/ООО) в поле «Ваши данные»,
+  // а телефон/email для документов — из «Мои реквизиты» (приоритет над общим профилем)
   useEffect(() => {
     if (!phone) { setRequisitesLoaded(true); return; }
     fetch(REQUISITES_URL, { headers: { "X-Phone": phone } })
       .then((r) => r.json())
       .then((data) => {
         const r = data?.requisites;
-        if (!r || !r.full_name) return;
+        if (!r) return;
+
+        if (r.sign_phone || r.sign_email) {
+          const contact = { phone: r.sign_phone || undefined, email: r.sign_email || undefined };
+          setSignContact(contact);
+          setValues((prev) => {
+            const next = { ...prev };
+            doc.fields.forEach((f) => {
+              if (f.autofill === "phone" && contact.phone && !prev[f.key]) next[f.key] = contact.phone;
+              if (f.autofill === "email" && contact.email && !prev[f.key]) next[f.key] = contact.email;
+            });
+            return next;
+          });
+        }
+
+        if (!r.full_name) return;
         setHasRequisites(true);
         const parts = [ENTITY_LABEL[r.entity_type] ? `${ENTITY_LABEL[r.entity_type]} ${r.full_name}` : r.full_name];
         if (r.inn) parts.push(`ИНН ${r.inn}`);
@@ -260,7 +277,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           restoredNotice={restoredNotice}
           error={error}
           performerAutofill={performerAutofill}
-          userProfile={userProfile}
+          userProfile={{ phone: signContact.phone || userProfile?.phone, email: signContact.email || userProfile?.email }}
           requisitesLoaded={requisitesLoaded}
           hasRequisites={hasRequisites}
           onSet={set}

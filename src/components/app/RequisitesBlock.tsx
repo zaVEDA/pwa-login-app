@@ -54,6 +54,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [checkingAccount, setCheckingAccount] = useState<string>(() => loadSaved().checkingAccount ?? "");
   const [okpo, setOkpo] = useState<string>(() => loadSaved().okpo ?? "");
   const [kpp, setKpp] = useState<string>(() => loadSaved().kpp ?? "");
+  const [signPhone, setSignPhone] = useState<string>(() => loadSaved().signPhone ?? "");
+  const [signEmail, setSignEmail] = useState<string>(() => loadSaved().signEmail ?? "");
   const [bikChecking, setBikChecking] = useState(false);
   const [bikError, setBikError] = useState<string>("");
   const [checking, setChecking] = useState(false);
@@ -87,14 +89,16 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
         if (r.checking_account) setCheckingAccount(r.checking_account);
         if (r.okpo) setOkpo(r.okpo);
         if (r.kpp) setKpp(r.kpp);
+        if (r.sign_phone) setSignPhone(r.sign_phone);
+        if (r.sign_email) setSignEmail(r.sign_email);
         setSaved(true);
       })
       .catch(() => {});
   }, [phone]);
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, saved, showManualFill, fullName }));
-  }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, saved, showManualFill, fullName]);
+    localStorage.setItem(LS_KEY, JSON.stringify({ entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, signPhone, signEmail, saved, showManualFill, fullName }));
+  }, [entityType, innOgrnip, inn, ogrnip, address, bik, bankName, corrAccount, checkingAccount, okpo, kpp, signPhone, signEmail, saved, showManualFill, fullName]);
 
   const saveToDb = async (opts?: { confirmIdentity?: boolean }) => {
     if (!phone) return;
@@ -112,6 +116,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
           checking_account: checkingAccount,
           okpo,
           kpp,
+          sign_phone: signPhone,
+          sign_email: signEmail,
           confirm_identity_change: !!opts?.confirmIdentity,
         }),
       });
@@ -239,6 +245,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
     setCheckingAccount("");
     setOkpo("");
     setKpp("");
+    setSignPhone("");
+    setSignEmail("");
     setCheckResult(null);
     setSaved(false);
     setShowManualFill(false);
@@ -475,6 +483,36 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 />
               </div>
 
+              {/* Контакты для документов */}
+              <div className="pt-1">
+                <p className="text-xs font-medium text-foreground mb-2">Контакты для документов</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Телефон для подписания</label>
+                    <input
+                      type="tel"
+                      value={signPhone}
+                      onChange={(e) => { setSignPhone(e.target.value); setSaved(false); }}
+                      readOnly={readOnly}
+                      placeholder="+7 900 000-00-00"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">E-mail для документов</label>
+                    <input
+                      type="email"
+                      value={signEmail}
+                      onChange={(e) => { setSignEmail(e.target.value); setSaved(false); }}
+                      readOnly={readOnly}
+                      placeholder="mail@example.ru"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">Эти данные будут подставляться в документы для подписания и отзыва согласий</p>
+              </div>
+
               {/* Банковские реквизиты */}
               <div className="pt-1">
                 <p className="text-xs font-medium text-foreground mb-2">Банковские реквизиты</p>
@@ -567,7 +605,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 <button
                   onClick={() => setEditing(true)}
                   disabled={!readOnly}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-primary/40 bg-white/70 text-primary text-xs font-medium active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-medium shadow-sm hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none disabled:hover:shadow-sm"
                 >
                   <Icon name="Pencil" size={12} />
                   Изменить
@@ -575,7 +613,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 <button
                   onClick={() => saveToDb()}
                   disabled={saving || readOnly}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm hover:shadow-md hover:brightness-105 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none disabled:hover:shadow-sm disabled:hover:brightness-100"
                 >
                   <Icon name={saving ? "Loader" : "Save"} size={12} className={saving ? "animate-spin" : ""} />
                   {saving ? "Сохраняю..." : "Сохранить"}

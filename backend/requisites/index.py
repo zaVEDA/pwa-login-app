@@ -39,13 +39,13 @@ def handler(event: dict, context) -> dict:
     method = event.get("httpMethod")
 
     if method == "GET":
-        cur.execute("SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, identity_changed_at FROM requisites WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, identity_changed_at, sign_phone, sign_email FROM requisites WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         cur.close()
         conn.close()
         if not row:
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"requisites": None})}
-        keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp", "identity_changed_at"]
+        keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp", "identity_changed_at", "sign_phone", "sign_email"]
         data = dict(zip(keys, row))
         if data.get("identity_changed_at"):
             data["identity_changed_at"] = data["identity_changed_at"].isoformat()
@@ -102,8 +102,8 @@ def handler(event: dict, context) -> dict:
                     }
 
         cur.execute("""
-            INSERT INTO requisites (user_id, entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, updated_at, identity_changed_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), CASE WHEN %s THEN NOW() ELSE NULL END)
+            INSERT INTO requisites (user_id, entity_type, full_name, inn, ogrnip, address, bik, bank_name, corr_account, checking_account, okpo, kpp, sign_phone, sign_email, updated_at, identity_changed_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), CASE WHEN %s THEN NOW() ELSE NULL END)
             ON CONFLICT (user_id) DO UPDATE SET
                 entity_type = EXCLUDED.entity_type,
                 full_name = EXCLUDED.full_name,
@@ -116,6 +116,8 @@ def handler(event: dict, context) -> dict:
                 checking_account = EXCLUDED.checking_account,
                 okpo = EXCLUDED.okpo,
                 kpp = EXCLUDED.kpp,
+                sign_phone = EXCLUDED.sign_phone,
+                sign_email = EXCLUDED.sign_email,
                 updated_at = NOW(),
                 identity_changed_at = CASE WHEN %s THEN NOW() ELSE requisites.identity_changed_at END
         """, (
@@ -131,6 +133,8 @@ def handler(event: dict, context) -> dict:
             body.get("checking_account"),
             body.get("okpo"),
             body.get("kpp"),
+            body.get("sign_phone"),
+            body.get("sign_email"),
             bool(body.get("confirm_identity_change")),
             bool(body.get("confirm_identity_change")),
         ))
