@@ -19,10 +19,11 @@ import { toast } from "sonner";
 interface Props {
   phone: string;
   userPlan?: PlanType | null;
+  userEmail?: string | null;
   onDocCreated?: () => void;
 }
 
-export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
+export default function DocsTab({ phone, userPlan, userEmail, onDocCreated }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -471,6 +472,7 @@ export default function DocsTab({ phone, userPlan, onDocCreated }: Props) {
         <TemplateFillModal
           doc={templateDocs[openContract.template_key]}
           phone={phone}
+          userProfile={{ phone, email: userEmail }}
           contract={openContract}
           onClose={() => setOpenContract(null)}
           onSaved={loadContracts}

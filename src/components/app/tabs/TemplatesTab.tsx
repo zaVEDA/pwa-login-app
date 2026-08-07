@@ -8,10 +8,11 @@ import { templateDocs } from "@/components/app/templates/docs";
 interface Props {
   activeTab: Tab;
   phone: string;
+  userEmail?: string | null;
   onSaved?: () => void;
 }
 
-export default function TemplatesTab({ activeTab, phone, onSaved }: Props) {
+export default function TemplatesTab({ activeTab, phone, userEmail, onSaved }: Props) {
   const [openDoc, setOpenDoc] = useState<string | null>(null);
   const [soon, setSoon] = useState<string | null>(null);
 
@@ -26,6 +27,7 @@ export default function TemplatesTab({ activeTab, phone, onSaved }: Props) {
         <TemplateFillModal
           doc={templateDocs[openDoc]}
           phone={phone}
+          userProfile={{ phone, email: userEmail }}
           onClose={() => setOpenDoc(null)}
           onSaved={onSaved}
         />

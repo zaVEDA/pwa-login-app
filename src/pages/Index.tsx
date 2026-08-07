@@ -250,6 +250,7 @@ export default function Index() {
           setColorTheme={setColorTheme}
           phone={phone}
           userName={user?.full_name}
+          userEmail={user?.email}
           userRole={user?.role}
           userPlan={user?.plan ?? null}
           planExpiresAt={user?.plan_expires_at ?? null}

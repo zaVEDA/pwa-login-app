@@ -1,4 +1,4 @@
-export type FieldType = "text" | "date" | "tel" | "email" | "checkbox";
+export type FieldType = "text" | "date" | "tel" | "email" | "checkbox" | "radio";
 
 export interface TemplateField {
   key: string;
@@ -7,6 +7,9 @@ export interface TemplateField {
   placeholder?: string;
   hint?: string;
   optional?: boolean;
+  options?: { value: string; label: string; description?: string }[];
+  /** Автозаполнение из профиля пользователя ("phone" | "email") с возможностью правки */
+  autofill?: "phone" | "email";
 }
 
 export interface TemplateDoc {
@@ -30,20 +33,28 @@ const consentPhotoVideo: TemplateDoc = {
   fields: [
     { key: "fio", label: "ФИО того, кого снимают", type: "text", placeholder: "Иванова Анна Петровна" },
     { key: "birth", label: "Дата рождения", type: "date" },
-    { key: "eSign", label: "Подписываем электронно — паспорт не указываем", type: "checkbox" },
+    {
+      key: "identMode",
+      label: "Как указать личность в документе",
+      type: "radio",
+      options: [
+        { value: "passport", label: "Указать паспортные данные", description: "Клиент не зарегистрирован в приложении — данные вносите вручную" },
+        { value: "none", label: "Не указывать паспорт", description: "Данные не указываются при электронной подписи" },
+      ],
+    },
     { key: "passport", label: "Паспорт (серия, номер)", type: "text", placeholder: "4510 123456", optional: true },
     { key: "performer", label: "Ваши данные (наименование / ФИО, ИНН)", type: "text", placeholder: "ИП Смирнова М.В., ИНН 770000000000" },
     { key: "alreadyDone", label: "Съёмка уже прошла", type: "checkbox" },
     { key: "shootDate", label: "Дата съёмки", type: "date" },
     { key: "shootPlace", label: "Место съёмки", type: "text", placeholder: "г. Москва, студия «Свет»" },
-    { key: "phone", label: "Телефон для отзыва согласия", type: "tel", placeholder: "+7 900 000-00-00" },
-    { key: "email", label: "E-mail для отзыва согласия", type: "email", placeholder: "mail@example.ru" },
+    { key: "phone", label: "Телефон для отзыва согласия", type: "tel", placeholder: "+7 900 000-00-00", autofill: "phone" },
+    { key: "email", label: "E-mail для отзыва согласия", type: "email", placeholder: "mail@example.ru", autofill: "email" },
     { key: "signDate", label: "Дата подписания", type: "date" },
   ],
   build: (v) => {
-    const ident = v.eSign === "1"
-      ? "данные не указываются при электронной подписи"
-      : `паспорт ${or(v.passport, "[серия, номер]")}`;
+    const ident = v.identMode === "passport"
+      ? `паспорт ${or(v.passport, "[серия, номер]")}`
+      : "данные не указываются при электронной подписи";
 
     const shoot = v.alreadyDone === "1"
       ? `Фото- и (или) видеосъёмку меня в ходе ранее проведённой съёмки ${or(fmt(v.shootDate), "[дата]")}, ${or(v.shootPlace, "[место]")}.`

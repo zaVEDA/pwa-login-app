@@ -18,6 +18,7 @@ interface Props {
   setColorTheme: (t: keyof typeof themes) => void;
   phone: string;
   userName?: string | null;
+  userEmail?: string | null;
   userRole?: string;
   userPlan?: PlanType | null;
   planExpiresAt?: string | null;
@@ -40,6 +41,7 @@ export default function TabContent({
   setColorTheme,
   phone,
   userName,
+  userEmail,
   userRole,
   userPlan,
   planExpiresAt,
@@ -49,9 +51,9 @@ export default function TabContent({
 }: Props) {
   return (
     <>
-      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} onDocCreated={onDocCreated} />}
+      {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} onDocCreated={onDocCreated} userEmail={userEmail} />}
 
-      <TemplatesTab activeTab={activeTab} phone={phone} onSaved={onDocCreated} />
+      <TemplatesTab activeTab={activeTab} phone={phone} onSaved={onDocCreated} userEmail={userEmail} />
 
       {activeTab === "account" && (
         <AccountTab

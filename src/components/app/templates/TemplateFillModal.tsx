@@ -6,6 +6,7 @@ import { CONTRACTS_URL, Contract } from "@/components/app/tabs/constants";
 interface Props {
   doc: TemplateDoc;
   phone: string;
+  userProfile?: { phone?: string | null; email?: string | null };
   contract?: Contract | null;
   onClose: () => void;
   onSaved?: () => void;
@@ -13,10 +14,16 @@ interface Props {
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-export default function TemplateFillModal({ doc, phone, contract, onClose, onSaved }: Props) {
-  const [values, setValues] = useState<Record<string, string>>(
-    contract?.values && Object.keys(contract.values).length ? contract.values : { signDate: todayStr() }
-  );
+export default function TemplateFillModal({ doc, phone, userProfile, contract, onClose, onSaved }: Props) {
+  const initialValues = (): Record<string, string> => {
+    if (contract?.values && Object.keys(contract.values).length) return contract.values;
+    const v: Record<string, string> = { signDate: todayStr() };
+    doc.fields.forEach((f) => {
+      if (f.autofill && userProfile?.[f.autofill]) v[f.key] = userProfile[f.autofill] as string;
+    });
+    return v;
+  };
+  const [values, setValues] = useState<Record<string, string>>(initialValues());
   const [preview, setPreview] = useState(!!contract);
   const [copied, setCopied] = useState(false);
   const [savedId, setSavedId] = useState<number | null>(contract?.id ?? null);
@@ -39,7 +46,7 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
     setDirty(true);
   };
 
-  const visibleFields = doc.fields.filter((f) => !(f.key === "passport" && values.eSign === "1"));
+  const visibleFields = doc.fields.filter((f) => !(f.key === "passport" && values.identMode !== "passport"));
 
   const text = doc.build(values);
   const fullText = `${doc.heading}\n\n${text}`;
@@ -233,28 +240,72 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
 
           {!preview ? (
             <div className="space-y-3">
-              {visibleFields.map((f) =>
-                f.type === "checkbox" ? (
-                  <button
-                    key={f.key}
-                    onClick={() => set(f.key, values[f.key] === "1" ? "" : "1")}
-                    disabled={locked}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform disabled:opacity-60"
-                  >
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 border ${
-                        values[f.key] === "1" ? "gold-gradient border-transparent" : "border-border bg-white"
-                      }`}
+              {visibleFields.map((f) => {
+                if (f.type === "checkbox") {
+                  return (
+                    <button
+                      key={f.key}
+                      onClick={() => set(f.key, values[f.key] === "1" ? "" : "1")}
+                      disabled={locked}
+                      className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform disabled:opacity-60"
                     >
-                      {values[f.key] === "1" && <Icon name="Check" size={13} className="text-white" />}
+                      <div
+                        className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 border ${
+                          values[f.key] === "1" ? "gold-gradient border-transparent" : "border-border bg-white"
+                        }`}
+                      >
+                        {values[f.key] === "1" && <Icon name="Check" size={13} className="text-white" />}
+                      </div>
+                      <span className="text-sm">{f.label}</span>
+                    </button>
+                  );
+                }
+
+                if (f.type === "radio") {
+                  return (
+                    <div key={f.key}>
+                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{f.label}</label>
+                      <div className="space-y-2">
+                        {(f.options || []).map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => set(f.key, opt.value)}
+                            disabled={locked}
+                            className="w-full flex items-start gap-3 px-3.5 py-3 rounded-xl border border-border bg-white/70 text-left active:scale-[0.99] transition-transform disabled:opacity-60"
+                          >
+                            <div
+                              className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
+                                values[f.key] === opt.value ? "border-primary" : "border-border"
+                              }`}
+                            >
+                              {values[f.key] === opt.value && <div className="w-2.5 h-2.5 rounded-full gold-gradient" />}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-sm block">{opt.label}</span>
+                              {opt.description && (
+                                <span className="text-[11px] text-muted-foreground block mt-0.5">{opt.description}</span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <span className="text-sm">{f.label}</span>
-                  </button>
-                ) : (
+                  );
+                }
+
+                const autofilled = f.autofill && userProfile?.[f.autofill] && values[f.key] === userProfile[f.autofill];
+
+                return (
                   <div key={f.key}>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
                       {f.label}
                       {f.optional && <span className="text-muted-foreground/60"> — необязательно</span>}
+                      {autofilled && (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                          <Icon name="UserCheck" size={9} />
+                          из профиля
+                        </span>
+                      )}
                     </label>
                     <input
                       type={f.type}
@@ -266,8 +317,8 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
                     />
                     {f.hint && <p className="text-[11px] text-muted-foreground mt-1">{f.hint}</p>}
                   </div>
-                )
-              )}
+                );
+              })}
 
               <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/50 border border-border rounded-xl px-3.5 py-3 mt-4">
                 <Icon name="Info" size={13} className="flex-shrink-0 mt-0.5" />
