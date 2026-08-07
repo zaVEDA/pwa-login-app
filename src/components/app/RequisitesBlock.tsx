@@ -60,7 +60,6 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [checkResult, setCheckResult] = useState<{ valid: boolean; message?: string; name?: string; ogrnip?: string; inn?: string } | null>(null);
   const [saved, setSaved] = useState<boolean>(() => loadSaved().saved ?? false);
   const [saving, setSaving] = useState(false);
-  const [offerFill, setOfferFill] = useState(false);
   const [showManualFill, setShowManualFill] = useState<boolean>(() => loadSaved().showManualFill ?? false);
 
   // Загружаем реквизиты из БД при монтировании
@@ -120,7 +119,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const ipInputIsInn = entityType === "ip" && innOgrnip.length === 12;
   const ipInputIsOgrnip = entityType === "ip" && innOgrnip.length === 15;
 
-  const handleCheckAuto = async (value: string) => {
+  const handleCheckAuto = async (value: string, opts?: { silent?: boolean }) => {
     const isOgrnip = value.length === 15;
     setChecking(true);
     setCheckResult(null);
@@ -136,17 +135,20 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
         }),
       });
       const data = await res.json();
-      setCheckResult(data);
-      if (data.valid && entityType === "ip") {
+      if (!opts?.silent || data.valid) setCheckResult(data);
+      if (data.valid) {
         setSaved(true);
         if (data.name) setFullName(data.name);
-        if (data.ogrnip) setOgrnip(data.ogrnip);
+        if (entityType === "ip" && data.ogrnip) setOgrnip(data.ogrnip);
         if (data.inn) setInn(data.inn);
         else if (!isOgrnip) setInn(value);
+        if (data.address) setAddress(data.address);
         setShowManualFill(true);
       }
     } catch {
-      setCheckResult({ valid: false, message: "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные" });
+      if (!opts?.silent) {
+        setCheckResult({ valid: false, message: "Ошибка при сверке с сайтом ФНС. Пожалуйста, проверьте внесённые данные" });
+      }
     } finally {
       setChecking(false);
     }
@@ -258,33 +260,42 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
             )}
           </div>
 
-          {/* Поля для ИП */}
-          {entityType === "ip" && !showManualFill && (
+          {/* Единое поле ИНН / ОГРНИП для всех форм деятельности */}
+          {entityType && !showManualFill && (
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">
-                ИНН / ОГРНИП
-                {innOgrnip.length > 0 && (
-                  <span className="ml-2 text-primary font-medium">
-                    {ipInputIsInn ? "— ИНН" : ipInputIsOgrnip ? "— ОГРНИП" : ""}
-                  </span>
+                {entityType === "ip" ? (
+                  <>
+                    ИНН / ОГРНИП
+                    {innOgrnip.length > 0 && (
+                      <span className="ml-2 text-primary font-medium">
+                        {ipInputIsInn ? "— ИНН" : ipInputIsOgrnip ? "— ОГРНИП" : ""}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  `ИНН (${innMaxLen} цифр)`
                 )}
               </label>
               <div className="relative">
                 <input
                   type="text"
                   inputMode="numeric"
-                  value={innOgrnip}
+                  value={entityType === "ip" ? innOgrnip : inn}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 15);
-                    setInnOgrnip(val);
-                    setCheckResult(null);
-                    setSaved(false);
-                    setShowManualFill(false);
-                    if (val.length === 12 || val.length === 15) {
-                      setTimeout(() => handleCheckAuto(val), 0);
+                    if (entityType === "ip") {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 15);
+                      setInnOgrnip(val);
+                      setCheckResult(null);
+                      setSaved(false);
+                    } else {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, innMaxLen);
+                      setInn(val);
+                      setCheckResult(null);
+                      setSaved(false);
                     }
                   }}
-                  placeholder="Введите ИНН (12 цифр) или ОГРНИП (15 цифр)"
+                  placeholder={entityType === "ip" ? "Введите ИНН (12 цифр) или ОГРНИП (15 цифр)" : entityType === "ooo" ? "7707083893" : "123456789012"}
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
                 {checking && (
@@ -296,60 +307,8 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
             </div>
           )}
 
-          {/* ИНН для самозанятого и физлица */}
-          {(entityType === "self_employed" || entityType === "individual") && (
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">ИНН (12 цифр)</label>
-              <input
-                type="number"
-                value={inn}
-                onChange={(e) => { setInn(e.target.value.slice(0, 12)); setCheckResult(null); setSaved(false); }}
-                placeholder="123456789012"
-                className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-              />
-            </div>
-          )}
-
-          {/* ИНН для ООО */}
-          {entityType === "ooo" && (
-            <div className="space-y-2">
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">ИНН организации (10 цифр)</label>
-                <input
-                  type="number"
-                  value={inn}
-                  onChange={(e) => { setInn(e.target.value.slice(0, innMaxLen)); setCheckResult(null); setSaved(false); }}
-                  placeholder="7707083893"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">КПП (9 цифр)</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={kpp}
-                  onChange={(e) => { setKpp(e.target.value.replace(/\D/g, "").slice(0, 9)); setSaved(false); }}
-                  placeholder="770701001"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">ОКПО</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={okpo}
-                  onChange={(e) => { setOkpo(e.target.value.replace(/\D/g, "").slice(0, 10)); setSaved(false); }}
-                  placeholder="12345678"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                />
-              </div>
-            </div>
-          )}
-
           {/* Результат проверки */}
-          {checkResult && (
+          {checkResult && !showManualFill && (
             <div className={`rounded-xl px-3 py-2.5 text-sm flex items-start gap-2 ${
               checkResult.valid ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
             }`}>
@@ -358,63 +317,103 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
             </div>
           )}
 
+          {/* Когда ИНН/ОГРНИП введён полностью — даём заполнить по реестру ФНС или внести данные самостоятельно */}
+          {entityType && !showManualFill && !checking && (
+            entityType === "ip"
+              ? (innOgrnip.length === 12 || innOgrnip.length === 15)
+              : inn.length === innMaxLen
+          ) && (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => handleCheckAuto(entityType === "ip" ? innOgrnip : inn)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform"
+              >
+                <Icon name="Search" size={14} />
+                Заполнить по ИНН с сайта налоговой
+              </button>
+              <button
+                onClick={() => { setShowManualFill(true); setCheckResult(null); }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-white/60 text-sm font-medium text-foreground active:scale-[0.98] transition-transform"
+              >
+                <Icon name="PenLine" size={14} />
+                Внести данные вручную
+              </button>
+            </div>
+          )}
 
-
-          {/* Заполненные поля после проверки ФНС */}
-          {showManualFill && entityType === "ip" && (
+          {/* Заполненные поля — из реестра ФНС или вручную */}
+          {showManualFill && entityType && (
             <div className="space-y-2">
+              <button
+                onClick={() => { setShowManualFill(false); setCheckResult(null); }}
+                className="flex items-center gap-1 text-[11px] text-muted-foreground"
+              >
+                <Icon name="ChevronLeft" size={12} />
+                Изменить ИНН
+              </button>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">ФИО предпринимателя</label>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  {entityType === "ooo" ? "Наименование организации" : "ФИО"}
+                </label>
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-white/70">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">ИП</span>
-                  <div className="w-px h-4 bg-border flex-shrink-0" />
+                  {entityType === "ip" && (
+                    <>
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">ИП</span>
+                      <div className="w-px h-4 bg-border flex-shrink-0" />
+                    </>
+                  )}
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => { setFullName(e.target.value); setSaved(false); }}
-                    placeholder="Иванова Анна Сергеевна"
+                    placeholder={entityType === "ooo" ? 'ООО «Ромашка»' : "Иванова Анна Сергеевна"}
                     className="flex-1 text-sm outline-none bg-transparent"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className={entityType === "ip" || entityType === "ooo" ? "grid grid-cols-2 gap-2" : ""}>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">ИНН</label>
                   <input
                     type="text"
                     inputMode="numeric"
                     value={inn}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 12);
-                      setInn(val);
-                      setSaved(false);
-                      setCheckResult(null);
-                      if (val.length === 12) setTimeout(() => handleCheckAuto(val), 0);
-                    }}
-                    placeholder="123456789012"
+                    onChange={(e) => { setInn(e.target.value.replace(/\D/g, "").slice(0, innMaxLen)); setSaved(false); }}
+                    placeholder={entityType === "ooo" ? "7707083893" : "123456789012"}
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                   />
                 </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">ОГРНИП</label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={ogrnip}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 15);
-                      setOgrnip(val);
-                      setSaved(false);
-                      setCheckResult(null);
-                      if (val.length === 15) setTimeout(() => handleCheckAuto(val), 0);
-                    }}
-                    placeholder="315774600123456"
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
-                  />
-                </div>
+                {entityType === "ip" && (
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">ОГРНИП</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={ogrnip}
+                      onChange={(e) => { setOgrnip(e.target.value.replace(/\D/g, "").slice(0, 15)); setSaved(false); }}
+                      placeholder="315774600123456"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                )}
+                {entityType === "ooo" && (
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">КПП</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={kpp}
+                      onChange={(e) => { setKpp(e.target.value.replace(/\D/g, "").slice(0, 9)); setSaved(false); }}
+                      placeholder="770701001"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                )}
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Адрес регистрации (по прописке)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  {entityType === "ooo" ? "Юридический адрес" : "Адрес регистрации (по прописке)"}
+                </label>
                 <input
                   type="text"
                   value={address}
@@ -422,7 +421,6 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                   placeholder="105066, г. Москва, ул. Примерная, д. 1, кв. 1"
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
                 />
-                <p className="text-[11px] text-muted-foreground mt-1">Используется в документах как юридический адрес ИП</p>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">ОКПО (для товарных накладных)</label>
