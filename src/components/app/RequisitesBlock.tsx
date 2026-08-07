@@ -553,45 +553,34 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
             </div>
           )}
 
-          {/* Кнопки */}
+          {/* Кнопки: Сброс, Изменить (разблокировать поля) и Сохранить — всегда видны на своих местах */}
           {entityType && (
             <div className="flex justify-between gap-2 items-center">
-              {readOnly ? (
-                <>
-                  <button
-                    onClick={handleReset}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
-                  >
-                    <Icon name="RotateCcw" size={12} />
-                    Сбросить
-                  </button>
-                  <button
-                    onClick={() => setEditing(true)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform"
-                  >
-                    <Icon name="Pencil" size={12} />
-                    Изменить
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={handleReset}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
-                  >
-                    <Icon name="RotateCcw" size={12} />
-                    Сбросить
-                  </button>
-                  <button
-                    onClick={() => saveToDb()}
-                    disabled={saving}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform disabled:opacity-60"
-                  >
-                    <Icon name={saving ? "Loader" : "Save"} size={12} className={saving ? "animate-spin" : ""} />
-                    {saving ? "Сохраняю..." : "Сохранить"}
-                  </button>
-                </>
-              )}
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white/60 text-muted-foreground text-xs"
+              >
+                <Icon name="RotateCcw" size={12} />
+                Сбросить
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditing(true)}
+                  disabled={!readOnly}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-primary/40 bg-white/70 text-primary text-xs font-medium active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Icon name="Pencil" size={12} />
+                  Изменить
+                </button>
+                <button
+                  onClick={() => saveToDb()}
+                  disabled={saving || readOnly}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Icon name={saving ? "Loader" : "Save"} size={12} className={saving ? "animate-spin" : ""} />
+                  {saving ? "Сохраняю..." : "Сохранить"}
+                </button>
+              </div>
             </div>
           )}
 
