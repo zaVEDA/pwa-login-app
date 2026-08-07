@@ -59,6 +59,68 @@ COLS = ("id, template_key, title, contract_number, contract_date, client_name, f
         "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash, sent_at")
 
 
+PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150}
+PRESALE_START = datetime.date(2026, 9, 1)
+
+
+def _add_months(d: datetime.date, months: int) -> datetime.date:
+    month_index = d.month - 1 + months
+    return datetime.date(d.year + month_index // 12, month_index % 12 + 1, 1)
+
+
+def check_limit(cur, user_id: int) -> dict:
+    """Считает, сколько документов пользователь создал за расчётный период тарифа.
+    Учитываются счета, акты/накладные и договоры вместе."""
+    cur.execute("SELECT plan FROM users WHERE id = %s", (user_id,))
+    urow = cur.fetchone()
+    plan = urow[0] if urow else None
+    limit = PLAN_DOC_LIMITS.get(plan) if plan else None
+    today = datetime.date.today()
+
+    cur.execute(
+        "SELECT period, paid_at FROM plan_orders WHERE user_id = %s AND status = 'paid' "
+        "AND paid_at IS NOT NULL ORDER BY paid_at DESC LIMIT 1",
+        (user_id,)
+    )
+    order = cur.fetchone()
+
+    if order and order[0] == "half_year":
+        if today < PRESALE_START:
+            start, end = PRESALE_START, _add_months(PRESALE_START, 1)
+        else:
+            n = (today.year - PRESALE_START.year) * 12 + (today.month - PRESALE_START.month)
+            start, end = _add_months(PRESALE_START, n), _add_months(PRESALE_START, n + 1)
+    elif order and order[1]:
+        paid = order[1].date() if hasattr(order[1], "date") else order[1]
+        cycles = (today - paid).days // 30
+        start = paid + datetime.timedelta(days=cycles * 30)
+        end = start + datetime.timedelta(days=30)
+    else:
+        start = datetime.date(today.year, today.month, 1)
+        end = _add_months(start, 1)
+
+    used = 0
+    for table in ("invoices", "documents", "contracts"):
+        cur.execute(
+            f"SELECT COUNT(*) FROM {table} WHERE user_id = %s AND status != 'deleted' "
+            "AND created_at >= %s AND created_at < %s",
+            (user_id, start, end)
+        )
+        used += cur.fetchone()[0]
+
+    result = {
+        "plan": plan, "limit": limit, "used": used, "unlimited": limit is None,
+        "period_start": str(start), "period_end": str(end),
+    }
+    if limit is not None:
+        result["remaining"] = max(0, limit - used)
+        result["reached"] = used >= limit
+    else:
+        result["remaining"] = None
+        result["reached"] = False
+    return result
+
+
 def ensure_fonts():
     """Регистрирует шрифты с кириллицей из пакета matplotlib."""
     import matplotlib
@@ -440,6 +502,15 @@ def handler(event: dict, context) -> dict:
         cur.execute(f"SELECT {COLS} FROM contracts WHERE id = %s", (int(cid),))
         row = cur.fetchone()
     else:
+        lim = check_limit(cur, user_id)
+        if lim.get("reached"):
+            cur.close()
+            conn.close()
+            return {
+                "statusCode": 403,
+                "headers": cors,
+                "body": json.dumps({"error": "limit_reached", "limits": lim}, ensure_ascii=False),
+            }
         number = next_number(cur, user_id)
         cur.execute(
             "INSERT INTO contracts (user_id, template_key, title, contract_number, contract_date, client_name, field_values, body, status) "

@@ -65,6 +65,7 @@ export default function TemplateFillModal({ doc, phone, contract, onClose, onSav
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (res.status === 409) { setError("Документ уже подписан клиентом — изменить нельзя"); setStatus("signed"); return; }
+      if (res.status === 403) { setError("Лимит документов на этом месяце исчерпан. Докупите пакет или смените тариф в Аккаунте."); return; }
       if (!parsed.contract) { setError("Не удалось сохранить, попробуйте ещё раз"); return; }
       setSavedId(parsed.contract.id);
       setSavedNumber(parsed.contract.contract_number || "");

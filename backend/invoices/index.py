@@ -168,7 +168,13 @@ def compute_limits(cur, user_id: int, plan, plan_expires_at):
         (user_id, period_start, period_end)
     )
     used_docs = cur.fetchone()[0]
-    used = used_invoices + used_docs
+    cur.execute(
+        "SELECT COUNT(*) FROM contracts WHERE user_id = %s AND status != 'deleted' "
+        "AND created_at >= %s AND created_at < %s",
+        (user_id, period_start, period_end)
+    )
+    used_contracts = cur.fetchone()[0]
+    used = used_invoices + used_docs + used_contracts
 
     result = {
         "plan": plan,
