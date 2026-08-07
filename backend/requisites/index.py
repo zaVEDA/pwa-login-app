@@ -54,8 +54,10 @@ def handler(event: dict, context) -> dict:
     if method == "POST":
         body = json.loads(event.get("body") or "{}")
 
-        # Проверяем, не меняется ли ЛИЦО (кому принадлежит тариф) — по ИНН/ОГРНИП/форме деятельности.
-        # Телефон, email и прочие контакты меняются свободно — это не относится к личности плательщика.
+        # Проверяем, не меняется ли ЛИЦО (кому принадлежит тариф) — определяем строго по ИНН.
+        # Форма деятельности (самозанятый/ИП/физлицо) может меняться в рамках ОДНОГО ИНН —
+        # это тот же человек, просто сменивший налоговый статус, поэтому не блокируем.
+        # Телефон, email и прочие контакты тоже меняются свободно.
         cur.execute("SELECT entity_type, inn, ogrnip, identity_changed_at FROM requisites WHERE user_id = %s", (user_id,))
         existing = cur.fetchone()
 
@@ -68,12 +70,8 @@ def handler(event: dict, context) -> dict:
             old_inn = (old_inn or "").strip()
             old_ogrnip = (old_ogrnip or "").strip()
 
-            had_identity = bool(old_inn or old_ogrnip)
-            identity_key_changed = had_identity and (
-                new_entity_type != old_entity_type
-                or (new_inn and new_inn != old_inn)
-                or (new_ogrnip and new_ogrnip != old_ogrnip)
-            )
+            had_identity = bool(old_inn)
+            identity_key_changed = had_identity and bool(new_inn) and new_inn != old_inn
 
             if identity_key_changed:
                 if identity_changed_at:
