@@ -2,6 +2,7 @@ import json
 import os
 import re
 import urllib.request
+from datetime import datetime, timezone, timedelta
 
 
 def validate_inn_format(inn: str, entity_type: str) -> tuple[bool, str]:
@@ -20,6 +21,23 @@ def validate_ogrnip_format(ogrnip: str) -> tuple[bool, str]:
     if not re.match(r'^\d{15}$', ogrnip):
         return False, "ОГРНИП должен содержать ровно 15 цифр"
     return True, ""
+
+
+def check_npd_status(inn: str) -> dict:
+    """Проверка статуса плательщика НПД (самозанятого) через официальный сервис ФНС statusnpd.nalog.ru"""
+    moscow_now = datetime.now(timezone(timedelta(hours=3)))
+    request_date = moscow_now.strftime("%Y-%m-%d")
+    url = "https://statusnpd.nalog.ru/api/v1/tracker/taxpayer_status"
+    payload = json.dumps({"inn": inn, "requestDate": request_date}).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=10) as response:
+        data = json.loads(response.read().decode("utf-8"))
+        return {"is_self_employed": bool(data.get("status")), "message": data.get("message", ""), "checked_on": request_date}
 
 
 def check_dadata(query: str) -> dict:
@@ -55,7 +73,8 @@ def check_dadata(query: str) -> dict:
 
 
 def handler(event: dict, context) -> dict:
-    """Проверка ИНН или ОГРНИП через Dadata (реестр ФНС)"""
+    """Проверка ИНН/ОГРНИП. Для ИП/ООО/физлиц — через Dadata (реестр ФНС).
+    Для самозанятых — статус плательщика НПД сверяется через официальный сервис ФНС statusnpd.nalog.ru"""
     cors_headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -88,6 +107,41 @@ def handler(event: dict, context) -> dict:
         query = inn
     else:
         return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"valid": False, "message": "Укажите ИНН или ОГРНИП"})}
+
+    # Для самозанятых сначала сверяем статус плательщика НПД через официальный сервис ФНС
+    if entity_type == "self_employed" and inn:
+        try:
+            npd = check_npd_status(inn)
+        except Exception:
+            return {
+                "statusCode": 200,
+                "headers": cors_headers,
+                "body": json.dumps({"valid": False, "message": "Не удалось проверить статус самозанятого. Попробуйте ещё раз"})
+            }
+        if not npd["is_self_employed"]:
+            return {
+                "statusCode": 200,
+                "headers": cors_headers,
+                "body": json.dumps({"valid": False, "message": "По данному ИНН человек не зарегистрирован как плательщик НПД (самозанятый)"})
+            }
+
+        # Статус НПД подтверждён — дополнительно пробуем подтянуть ФИО/адрес физлица из Dadata,
+        # но её отсутствие в реестре юрлиц/ИП не является ошибкой для самозанятого
+        try:
+            extra = check_dadata(query)
+        except Exception:
+            extra = {"found": False}
+        return {
+            "statusCode": 200,
+            "headers": cors_headers,
+            "body": json.dumps({
+                "valid": True,
+                "name": extra.get("name", "") if extra.get("found") else "",
+                "ogrnip": "",
+                "inn": inn,
+                "address": extra.get("address", "") if extra.get("found") else "",
+            })
+        }
 
     try:
         result = check_dadata(query)

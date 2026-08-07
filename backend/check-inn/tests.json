@@ -19,6 +19,15 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Самозанятый не найден в реестре НПД",
+      "method": "POST",
+      "path": "/",
+      "body": {"inn": "500100732259", "entity_type": "self_employed"},
+      "expectedStatus": 200,
+      "expectedBody": {"valid": false},
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "OPTIONS preflight",
       "method": "OPTIONS",
       "path": "/",

@@ -313,7 +313,13 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
               checkResult.valid ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
             }`}>
               <Icon name={checkResult.valid ? "CheckCircle" : "AlertCircle"} size={15} className="flex-shrink-0 mt-0.5" />
-              <span>{checkResult.valid ? "Данные подтверждены в реестре ФНС" : checkResult.message}</span>
+              <span>
+                {checkResult.valid
+                  ? entityType === "self_employed"
+                    ? "Статус самозанятого (плательщика НПД) подтверждён на сайте ФНС"
+                    : "Данные подтверждены в реестре ФНС"
+                  : checkResult.message}
+              </span>
             </div>
           )}
 
@@ -329,7 +335,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform"
               >
                 <Icon name="Search" size={14} />
-                Заполнить по ИНН с сайта налоговой
+                {entityType === "self_employed" ? "Проверить статус самозанятого на сайте ФНС" : "Заполнить по ИНН с сайта налоговой"}
               </button>
               <button
                 onClick={() => { setShowManualFill(true); setCheckResult(null); }}
