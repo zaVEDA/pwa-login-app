@@ -1,7 +1,10 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange } from "react-day-picker";
+
+const DOC_TYPES = ["Все", "Счета", "Договоры", "Акты", "Накладные", "Черновики", "Отправленные", "Подписанные"];
 
 interface Props {
   docFilter: string;
@@ -32,26 +35,38 @@ export default function DocsFilters({
   setClientPickerOpen,
   clientOptions,
 }: Props) {
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
   return (
     <>
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
-        {["Все", "Счета", "Договоры", "Акты", "Накладные", "Черновики", "Отправленные", "Подписанные"].map((f) => (
-          <button
-            key={f}
-            onClick={() => setDocFilter(f)}
-            className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              docFilter === f
-                ? "gold-gradient text-white border-transparent"
-                : "bg-white/60 border-border text-foreground"
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+        <Popover open={typePickerOpen} onOpenChange={setTypePickerOpen}>
+          <PopoverTrigger asChild>
+            <button
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                docFilter !== "Все" ? "gold-gradient text-white border-transparent" : "bg-white/60 border-border text-foreground"
+              }`}
+            >
+              <Icon name="Filter" size={13} />
+              {docFilter}
+              <Icon name={typePickerOpen ? "ChevronUp" : "ChevronDown"} size={12} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-1" align="start">
+            {DOC_TYPES.map((f) => (
+              <button
+                key={f}
+                onClick={() => { setDocFilter(f); setTypePickerOpen(false); }}
+                className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left transition-colors ${
+                  docFilter === f ? "bg-primary/10 text-primary font-medium" : "hover:bg-amber-50 text-foreground"
+                }`}
+              >
+                {f}
+                {docFilter === f && <Icon name="Check" size={13} className="ml-auto" />}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
 
-      {/* Доп. фильтры: по дате и по клиенту */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
         <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
           <PopoverTrigger asChild>
             <button
