@@ -111,8 +111,8 @@ export default function AccountTab({
             <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
           </button>
 
-          {/* Остаток документов на месяц */}
-          {limits && !limits.unlimited && limits.limit !== null && (
+          {/* Остаток документов на месяц — скрываем для гостя (демо-режим) */}
+          {phone !== "+70000000000" && limits && !limits.unlimited && limits.limit !== null && (
             <div className="card-warm rounded-2xl p-4 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
