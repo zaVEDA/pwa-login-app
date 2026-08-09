@@ -26,6 +26,13 @@
       "path": "/",
       "headers": { "X-Phone": "+79001234567" },
       "expectedStatus": 200
+    },
+    {
+      "name": "GET клиенты с поиском по телефону",
+      "method": "GET",
+      "path": "/?search=900",
+      "headers": { "X-Phone": "+79001234567" },
+      "expectedStatus": 200
     }
   ]
 }

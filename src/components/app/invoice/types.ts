@@ -13,6 +13,7 @@ export interface ClientInfo {
   inn: string;
   ogrnip: string;
   address: string;
+  phone?: string;
   client_type?: string;
 }
 

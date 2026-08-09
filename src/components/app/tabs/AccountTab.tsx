@@ -4,6 +4,7 @@ import RequisitesBlock from "@/components/app/RequisitesBlock";
 import AdminUsers from "@/components/admin/AdminUsers";
 import PlanModal from "@/components/app/PlanModal";
 import ChangePasswordModal from "@/components/app/ChangePasswordModal";
+import ClientsModal from "@/components/app/ClientsModal";
 import { AuthUser, PlanType } from "@/lib/auth";
 import { fetchDocLimits, DocLimits } from "@/lib/limits";
 import { themes } from "./constants";
@@ -48,6 +49,7 @@ export default function AccountTab({
 }: Props) {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showClientsModal, setShowClientsModal] = useState(false);
   const [limits, setLimits] = useState<DocLimits | null>(null);
 
   useEffect(() => {
@@ -188,6 +190,23 @@ export default function AccountTab({
               ))}
             </div>
           </div>
+
+          {/* Мои клиенты */}
+          <button
+            onClick={() => setShowClientsModal(true)}
+            className="w-full card-warm rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-[0.98] transition-transform"
+          >
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Icon name="Users" size={16} className="text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Мои клиенты</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Справочник клиентов и поиск по телефону</p>
+            </div>
+            <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
+          </button>
+
+          {showClientsModal && <ClientsModal phone={phone} onClose={() => setShowClientsModal(false)} />}
 
           {/* Реквизиты */}
           <RequisitesBlock fullName={fullName} setFullName={setFullName} phone={phone} />
