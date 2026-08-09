@@ -14,7 +14,10 @@ export interface ClientInfo {
   ogrnip: string;
   address: string;
   phone?: string;
+  email?: string;
   client_type?: string;
+  documents_count?: number;
+  payments_total?: number;
 }
 
 export interface ServiceItem {

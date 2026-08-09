@@ -64,6 +64,22 @@ export default function InvoiceClientSection({
               <p className="text-sm mt-0.5">{clientInfo.address}</p>
             </div>
           )}
+          {(clientInfo?.phone || clientInfo?.email) && (
+            <div className="grid grid-cols-2 gap-2">
+              {clientInfo?.phone && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Телефон</p>
+                  <p className="text-sm mt-0.5">{clientInfo.phone}</p>
+                </div>
+              )}
+              {clientInfo?.email && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground">E-mail</p>
+                  <p className="text-sm mt-0.5">{clientInfo.email}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -155,6 +171,27 @@ export default function InvoiceClientSection({
               }
             }}
             placeholder="ФИО или любое название"
+            className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+          />
+        </div>
+      )}
+
+      {/* Телефон и e-mail клиента — для справочника, необязательно */}
+      {clientInfo && (
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="tel"
+            inputMode="numeric"
+            value={clientInfo.phone || ""}
+            onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
+            placeholder="Телефон (900...)"
+            className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+          />
+          <input
+            type="email"
+            value={clientInfo.email || ""}
+            onChange={(e) => setClientInfo({ ...clientInfo, email: e.target.value })}
+            placeholder="E-mail"
             className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
           />
         </div>

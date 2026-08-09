@@ -144,6 +144,8 @@ export function useInvoiceModal({ phone, onSaved, invoiceId }: UseInvoiceModalAr
             inn: chkParsed.inn || clientInfo.inn,
             ogrnip: chkParsed.ogrnip || clientInfo.ogrnip || "",
             address: chkParsed.address || clientInfo.address || "",
+            phone: clientInfo.phone,
+            email: clientInfo.email,
           };
           setClientInfo(verifiedClient);
         } else {
@@ -314,6 +316,8 @@ export function useInvoiceModal({ phone, onSaved, invoiceId }: UseInvoiceModalAr
         inn: info.inn,
         ogrnip: info.ogrnip,
         address: info.address,
+        phone: info.phone,
+        email: info.email,
       }),
     })
       .then(r => r.json())

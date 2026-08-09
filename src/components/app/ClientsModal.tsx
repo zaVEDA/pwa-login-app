@@ -99,25 +99,56 @@ export default function ClientsModal({ phone, onClose }: Props) {
           )}
 
           {clients.map((c) => (
-            <div key={c.id} className="card-warm rounded-xl p-3.5 flex items-center gap-3 shadow-sm">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Icon name={c.client_type === "ooo" ? "Building2" : c.client_type === "ip" ? "Briefcase" : "User"} size={15} className="text-primary" />
+            <div key={c.id} className="card-warm rounded-xl p-3.5 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Icon name={c.client_type === "ooo" ? "Building2" : c.client_type === "ip" ? "Briefcase" : "User"} size={15} className="text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{c.name}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {clientTypeLabel(c.client_type)}
+                    {c.inn ? ` · ИНН ${c.inn}` : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  disabled={deletingId === c.id}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <Icon name={deletingId === c.id ? "Loader" : "Trash2"} size={14} className={deletingId === c.id ? "animate-spin" : ""} />
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{c.name}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {clientTypeLabel(c.client_type)}
-                  {c.phone ? ` · ${c.phone}` : ""}
-                  {c.inn ? ` · ИНН ${c.inn}` : ""}
-                </p>
+
+              {(c.phone || c.email) && (
+                <div className="mt-2.5 pt-2.5 border-t border-border/60 space-y-1">
+                  {c.phone && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <Icon name="Phone" size={11} />
+                      {c.phone}
+                    </div>
+                  )}
+                  {c.email && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <Icon name="Mail" size={11} />
+                      {c.email}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-2.5 pt-2.5 border-t border-border/60 flex items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <Icon name="FileText" size={12} className="text-primary" />
+                  <span className="text-xs text-foreground">{c.documents_count ?? 0} документов</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Icon name="Wallet" size={12} className="text-primary" />
+                  <span className="text-xs text-foreground">
+                    {(c.payments_total ?? 0).toLocaleString("ru-RU")} ₽ оплачено
+                  </span>
+                </div>
               </div>
-              <button
-                onClick={() => handleDelete(c.id)}
-                disabled={deletingId === c.id}
-                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <Icon name={deletingId === c.id ? "Loader" : "Trash2"} size={14} className={deletingId === c.id ? "animate-spin" : ""} />
-              </button>
             </div>
           ))}
         </div>
