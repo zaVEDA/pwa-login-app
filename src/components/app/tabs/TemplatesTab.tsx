@@ -16,11 +16,17 @@ interface Props {
 export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onGoToAccount }: Props) {
   const [openDoc, setOpenDoc] = useState<string | null>(null);
   const [soon, setSoon] = useState<string | null>(null);
+  const [specOpen, setSpecOpen] = useState(false);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
 
   const handleClick = (title: string) => {
     if (templateDocs[title]) setOpenDoc(title);
     else { setSoon(title); setTimeout(() => setSoon(null), 2500); }
   };
+
+  const visibleTemplates = selectedSpecialty
+    ? templates.filter((t) => t.tag === selectedSpecialty || t.tag === "Универсальный")
+    : templates;
 
   return (
     <>
@@ -42,21 +48,47 @@ export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onG
             <p className="text-xs text-muted-foreground">Выберите под вашу деятельность</p>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5">
-            {specialties.map((s) => (
-              <button
-                key={s.label}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70 border shadow-sm"
+          <div className="relative">
+            <button
+              onClick={() => setSpecOpen((v) => !v)}
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium bg-white/70 border shadow-sm"
+              style={{ borderColor: "hsl(36 28% 82%)" }}
+            >
+              <span className="text-base">
+                {selectedSpecialty ? specialties.find((s) => s.label === selectedSpecialty)?.emoji : "🗂️"}
+              </span>
+              <span className="flex-1 text-left truncate">{selectedSpecialty || "Все специальности"}</span>
+              <Icon name={specOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground flex-shrink-0" />
+            </button>
+
+            {specOpen && (
+              <div
+                className="absolute z-10 mt-1.5 w-full rounded-xl bg-white border shadow-lg overflow-hidden max-h-64 overflow-y-auto"
                 style={{ borderColor: "hsl(36 28% 82%)" }}
               >
-                <span className="text-base">{s.emoji}</span>
-                {s.label}
-              </button>
-            ))}
+                <button
+                  onClick={() => { setSelectedSpecialty(null); setSpecOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-left transition-colors ${!selectedSpecialty ? "bg-primary/10 text-primary font-medium" : "hover:bg-primary/5"}`}
+                >
+                  <span className="text-base">🗂️</span>
+                  Все специальности
+                </button>
+                {specialties.map((s) => (
+                  <button
+                    key={s.label}
+                    onClick={() => { setSelectedSpecialty(s.label); setSpecOpen(false); }}
+                    className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-left transition-colors ${selectedSpecialty === s.label ? "bg-primary/10 text-primary font-medium" : "hover:bg-primary/5"}`}
+                  >
+                    <span className="text-base">{s.emoji}</span>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {templates.map((t) => (
+            {visibleTemplates.map((t) => (
               <button
                 key={t.title}
                 onClick={() => handleClick(t.title)}
