@@ -121,7 +121,6 @@ export default function ContractCard({
           <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
             {([
               { key: "draft", label: "Создан", icon: "FileText" },
-              { key: "sent", label: "Отправлен", icon: "Send" },
               { key: "signed", label: "Подписан", icon: "CheckCircle" },
             ] as const).map((s) => (
               <button
@@ -134,6 +133,13 @@ export default function ContractCard({
                 {contract.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
               </button>
             ))}
+            {contract.status === "sent" && (
+              <div className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary font-medium bg-primary/5">
+                <Icon name="Send" size={15} className="text-primary" />
+                Отправлен
+                <span className="ml-auto text-[10px] text-muted-foreground font-normal">по SMS</span>
+              </div>
+            )}
             {deleted ? (
               <button
                 onClick={() => { setMenuId(null); onStatus(contract.id, "draft"); }}

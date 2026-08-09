@@ -387,7 +387,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       const res = await fetch(CONTRACTS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin }),
+        body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin, channel }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -404,7 +404,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       };
       window.open(urls[channel], "_blank");
       loadContracts();
-      toast("Ссылка отправлена. Она действует 1 час.", { icon: "⏱" });
+      toast(channel === "sms" ? "SMS со ссылкой отправлено. Она действует 1 час." : "Ссылка отправлена. Она действует 1 час.", { icon: "⏱" });
     } catch { toast("Нет связи с сервером"); }
     finally { setContractPdfId(null); }
   };

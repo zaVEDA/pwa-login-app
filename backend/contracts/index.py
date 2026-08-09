@@ -385,12 +385,11 @@ def handler(event: dict, context) -> dict:
                 (signer_name, signer_phone, ip, sign_id, sign_hash, cid, user_id)
             )
         elif status == "sent":
-            cur.execute(
-                "UPDATE contracts SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), signed_at = NULL, "
-                "signer_name = NULL, signer_phone = NULL, signer_ip = NULL, sign_id = NULL, sign_hash = NULL, "
-                "updated_at = NOW() WHERE id = %s AND user_id = %s",
-                (cid, user_id)
-            )
+            # Статус «Отправлен» ставится только автоматически после фактической отправки
+            # SMS со ссылкой на подпись (см. action == "share_link" ниже) — вручную выставить нельзя.
+            cur.close()
+            conn.close()
+            return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "status_sent_is_automatic"})}
         elif status == "draft":
             cur.execute(
                 "UPDATE contracts SET status = 'draft', sent_at = NULL, signed_at = NULL, signer_name = NULL, "
@@ -452,16 +451,19 @@ def handler(event: dict, context) -> dict:
             cur2.close()
             conn2.close()
 
-            conn3 = get_conn()
-            cur3 = conn3.cursor()
-            cur3.execute(
-                "UPDATE contracts SET status = 'sent', sent_at = NOW(), updated_at = NOW() "
-                "WHERE id = %s AND user_id = %s AND status = 'draft'",
-                (cid, user_id)
-            )
-            conn3.commit()
-            cur3.close()
-            conn3.close()
+            # Статус «Отправлен» ставится только при фактической отправке по SMS —
+            # это единственный канал, которым клиент реально получает ссылку на подпись.
+            if body.get("channel") == "sms":
+                conn3 = get_conn()
+                cur3 = conn3.cursor()
+                cur3.execute(
+                    "UPDATE contracts SET status = 'sent', sent_at = NOW(), updated_at = NOW() "
+                    "WHERE id = %s AND user_id = %s AND status = 'draft'",
+                    (cid, user_id)
+                )
+                conn3.commit()
+                cur3.close()
+                conn3.close()
 
             base = (body.get("origin") or "").rstrip("/")
             url = f"{base}/doc/{token}" if base else f"/doc/{token}"

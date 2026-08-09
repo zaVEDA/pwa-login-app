@@ -224,7 +224,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       const res = await fetch(CONTRACTS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin }),
+        body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin, channel }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -239,7 +239,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         email: `mailto:?subject=${encodeURIComponent(subject)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");
-      if (status === "draft") setStatus("sent");
+      if (status === "draft" && channel === "sms") setStatus("sent");
       onSaved?.();
     } catch { setError("Нет связи с сервером"); }
     finally { setPdfLoading(false); }
