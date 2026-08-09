@@ -24,24 +24,29 @@ const ENTITY_LABEL: Record<string, string> = {
   ooo: "ООО",
 };
 
-const draftKey = (docTitle: string, contractId?: number | null) =>
+const draftKey = (docTitle: string, contractId?: number | string | null) =>
   `doc_draft_${docTitle}_${contractId ?? "new"}`;
 
 export default function TemplateFillModal({ doc, phone, userProfile, contract, onClose, onSaved, onGoToAccount }: Props) {
   const draftLoadedRef = useRef(false);
+  // Для нового (ещё не сохранённого) документа генерируем уникальный ключ черновика на каждое открытие,
+  // чтобы при открытии нового шаблона поля не подтягивали данные из прошлого незавершённого документа
+  const newInstanceIdRef = useRef(contract ? null : `new-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   const initialValues = (): Record<string, string> => {
-    // Незавершённый черновик в этом же документе имеет приоритет — не теряем правки
-    try {
-      const raw = localStorage.getItem(draftKey(doc.title, contract?.id ?? null));
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") {
-          draftLoadedRef.current = true;
-          return parsed;
+    // Незавершённый черновик в этом же документе имеет приоритет — не теряем правки (только для редактирования существующего)
+    if (contract) {
+      try {
+        const raw = localStorage.getItem(draftKey(doc.title, contract.id));
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") {
+            draftLoadedRef.current = true;
+            return parsed;
+          }
         }
-      }
-    } catch { /* ignore */ }
+      } catch { /* ignore */ }
+    }
 
     if (contract?.values && Object.keys(contract.values).length) return contract.values;
 
@@ -72,7 +77,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const [shareOpen, setShareOpen] = useState(false);
 
   const locked = status === "signed";
-  const draftStorageKey = draftKey(doc.title, contract?.id ?? null);
+  const draftStorageKey = draftKey(doc.title, contract?.id ?? newInstanceIdRef.current);
 
   useEffect(() => { setError(""); }, [values]);
 

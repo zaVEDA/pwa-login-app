@@ -3,7 +3,7 @@ import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import DocumentModal from "@/components/app/DocumentModal";
 import { formatDate } from "@/lib/date";
-import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract } from "./constants";
+import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract, templates } from "./constants";
 import ContractCard from "./docs/ContractCard";
 import SignDialog from "@/components/app/templates/SignDialog";
 import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
@@ -27,6 +27,8 @@ interface Props {
 export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGoToAccount }: Props) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [openInvoiceId, setOpenInvoiceId] = useState<number | null>(null);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [newAgreementDoc, setNewAgreementDoc] = useState<string | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [statusMenuId, setStatusMenuId] = useState<number | null>(null);
@@ -480,6 +482,16 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
           onGoToAccount={() => { setOpenContract(null); onGoToAccount?.(); }}
         />
       )}
+      {newAgreementDoc && templateDocs[newAgreementDoc] && (
+        <TemplateFillModal
+          doc={templateDocs[newAgreementDoc]}
+          phone={phone}
+          userProfile={{ phone, email: userEmail }}
+          onClose={() => setNewAgreementDoc(null)}
+          onSaved={loadContracts}
+          onGoToAccount={() => { setNewAgreementDoc(null); onGoToAccount?.(); }}
+        />
+      )}
       {openDocId && (
         <DocumentModal
           docId={openDocId}
@@ -491,14 +503,35 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       )}
 
       <div className="space-y-5 animate-slide-up">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between relative">
           <h2 className="font-cormorant text-2xl font-semibold">Мои документы</h2>
           <button
-            onClick={() => setShowInvoice(true)}
+            onClick={() => docFilter === "Договоры" ? setShowTemplatePicker((v) => !v) : setShowInvoice(true)}
             className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center shadow-sm"
           >
             <Icon name="Plus" size={16} className="text-white" />
           </button>
+
+          {showTemplatePicker && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setShowTemplatePicker(false)} />
+              <div className="absolute right-0 top-11 z-40 w-72 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in max-h-80 overflow-y-auto">
+                <p className="px-3.5 pt-2.5 pb-1 text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
+                  Новое соглашение из шаблона
+                </p>
+                {templates.filter((t) => templateDocs[t.title]).map((t) => (
+                  <button
+                    key={t.title}
+                    onClick={() => { setShowTemplatePicker(false); setNewAgreementDoc(t.title); }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
+                  >
+                    <Icon name={t.icon} size={15} className="text-primary flex-shrink-0" />
+                    {t.title}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <DocsFilters
