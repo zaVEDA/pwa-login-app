@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { TemplateDoc } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
+import { CLIENTS_URL } from "@/components/app/invoice/types";
 import TemplateFillHeader from "./TemplateFillHeader";
 import TemplateFillFields from "./TemplateFillFields";
 import TemplateFillFooter from "./TemplateFillFooter";
@@ -170,6 +171,20 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         localStorage.removeItem(draftStorageKey);
         localStorage.removeItem(draftKey(doc.title, parsed.contract.id));
       } catch { /* ignore */ }
+      // Клиент из договора попадает в общий справочник «Мои клиенты» (без ИНН — по имени)
+      const clientName = (values.fio || "").trim();
+      if (clientName && phone) {
+        fetch(CLIENTS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Phone": phone },
+          body: JSON.stringify({
+            client_type: "individual",
+            name: clientName,
+            phone: values.phone || "",
+            email: values.email || "",
+          }),
+        }).catch(() => {});
+      }
       onSaved?.();
     } catch {
       setError("Нет связи с сервером");

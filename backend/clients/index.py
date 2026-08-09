@@ -99,6 +99,10 @@ def handler(event: dict, context) -> dict:
         inn = body.get("inn", "")
         client_phone = body.get("phone", "") or None
         client_email = body.get("email", "") or None
+        if not (body.get("name") or "").strip():
+            cur.close()
+            conn.close()
+            return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "name required"})}
         if inn:
             cur.execute("""
                 INSERT INTO clients (user_id, client_type, name, inn, ogrnip, address, phone, email, updated_at)
@@ -114,11 +118,27 @@ def handler(event: dict, context) -> dict:
                 RETURNING id
             """, (user_id, body.get("client_type"), body.get("name"), inn, body.get("ogrnip"), body.get("address"), client_phone, client_email))
         else:
-            cur.execute("""
-                INSERT INTO clients (user_id, client_type, name, inn, ogrnip, address, phone, email, updated_at)
-                VALUES (%s, %s, %s, NULL, %s, %s, %s, %s, NOW())
-                RETURNING id
-            """, (user_id, body.get("client_type"), body.get("name"), body.get("ogrnip"), body.get("address"), client_phone, client_email))
+            # Без ИНН (физлицо) уникального индекса нет — ищем существующую запись по имени,
+            # чтобы повторное сохранение (например, при каждом сохранении договора) не плодило дубли.
+            name = body.get("name") or ""
+            cur.execute(
+                "SELECT id FROM clients WHERE user_id = %s AND (inn IS NULL OR inn = '') AND name = %s LIMIT 1",
+                (user_id, name)
+            )
+            existing = cur.fetchone()
+            if existing:
+                cur.execute("""
+                    UPDATE clients SET client_type = %s, ogrnip = %s, address = %s,
+                        phone = COALESCE(%s, phone), email = COALESCE(%s, email), updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING id
+                """, (body.get("client_type"), body.get("ogrnip"), body.get("address"), client_phone, client_email, existing[0]))
+            else:
+                cur.execute("""
+                    INSERT INTO clients (user_id, client_type, name, inn, ogrnip, address, phone, email, updated_at)
+                    VALUES (%s, %s, %s, NULL, %s, %s, %s, %s, NOW())
+                    RETURNING id
+                """, (user_id, body.get("client_type"), name, body.get("ogrnip"), body.get("address"), client_phone, client_email))
         client_id = cur.fetchone()[0]
         conn.commit()
         cur.close()
