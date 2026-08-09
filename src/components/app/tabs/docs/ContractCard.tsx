@@ -109,7 +109,7 @@ export default function ContractCard({
           }`}
         >
           {deleted ? "Удалён" :
-            contract.status === "sent" ? "Отправлен" :
+            contract.status === "sent" ? "Отправлен на подпись" :
             signed ? "Подписан" : "Создан"}
           <Icon name="ChevronDown" size={11} />
         </button>
@@ -131,7 +131,7 @@ export default function ContractCard({
             {contract.status === "sent" && (
               <div className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary font-medium bg-primary/5">
                 <Icon name="Send" size={15} className="text-primary" />
-                Отправлен
+                Отправлен на подпись
                 <span className="ml-auto text-[10px] text-muted-foreground font-normal">по SMS</span>
               </div>
             )}

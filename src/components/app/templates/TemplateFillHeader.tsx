@@ -37,7 +37,7 @@ export default function TemplateFillHeader({
                 }`}
               >
                 <Icon name={locked ? "ShieldCheck" : status === "sent" ? "Send" : "FilePlus2"} size={10} />
-                {locked ? "Подписан" : status === "sent" ? "Отправлен" : "Создан"}
+                {locked ? "Подписан" : status === "sent" ? "Отправлен на подпись" : "Создан"}
               </span>
             ) : (
               <span className="text-xs text-muted-foreground truncate">Заполните поля</span>
