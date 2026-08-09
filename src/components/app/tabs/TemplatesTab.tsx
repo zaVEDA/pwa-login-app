@@ -45,7 +45,7 @@ export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onG
         <div className="space-y-5 animate-slide-up">
           <div>
             <h2 className="font-cormorant text-2xl font-semibold mb-1">Шаблоны документов</h2>
-            <p className="text-xs text-muted-foreground">Выберите под вашу деятельность</p>
+            <p className="text-xs text-muted-foreground">Под деятельности</p>
           </div>
 
           <div className="relative">
@@ -57,7 +57,7 @@ export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onG
               <span className="text-base">
                 {selectedSpecialty ? specialties.find((s) => s.label === selectedSpecialty)?.emoji : "🗂️"}
               </span>
-              <span className="flex-1 text-left truncate">{selectedSpecialty || "Все специальности"}</span>
+              <span className="flex-1 text-left truncate">{selectedSpecialty || "Специализация"}</span>
               <Icon name={specOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground flex-shrink-0" />
             </button>
 
@@ -71,7 +71,7 @@ export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onG
                   className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-left transition-colors ${!selectedSpecialty ? "bg-primary/10 text-primary font-medium" : "hover:bg-primary/5"}`}
                 >
                   <span className="text-base">🗂️</span>
-                  Все специальности
+                  Специализация
                 </button>
                 {specialties.map((s) => (
                   <button
