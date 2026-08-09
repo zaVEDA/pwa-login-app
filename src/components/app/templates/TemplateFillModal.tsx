@@ -53,7 +53,8 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
     const v: Record<string, string> = { signDate: todayStr() };
     doc.fields.forEach((f) => {
       if (f.autofill && f.autofill !== "performer" && userProfile?.[f.autofill as "phone" | "email"]) {
-        v[f.key] = userProfile[f.autofill as "phone" | "email"] as string;
+        const raw = userProfile[f.autofill as "phone" | "email"] as string;
+        v[f.key] = f.autofill === "phone" ? raw.replace(/\D/g, "").slice(-10) : raw;
       }
     });
     return v;
@@ -98,7 +99,10 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         if (!r) return;
 
         if (r.sign_phone || r.sign_email) {
-          const contact = { phone: r.sign_phone || undefined, email: r.sign_email || undefined };
+          const contact = {
+            phone: r.sign_phone ? String(r.sign_phone).replace(/\D/g, "").slice(-10) : undefined,
+            email: r.sign_email || undefined,
+          };
           setSignContact(contact);
           setValues((prev) => {
             const next = { ...prev };

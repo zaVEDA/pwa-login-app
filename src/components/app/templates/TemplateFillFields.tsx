@@ -170,8 +170,12 @@ export default function TemplateFillFields({
                 </label>
                 <input
                   type={f.type}
+                  inputMode={f.type === "tel" ? "numeric" : undefined}
                   value={values[f.key] || ""}
-                  onChange={(e) => onSet(f.key, e.target.value)}
+                  onChange={(e) => {
+                    const v = f.type === "tel" ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value;
+                    onSet(f.key, v);
+                  }}
                   readOnly={locked}
                   placeholder={f.placeholder}
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"

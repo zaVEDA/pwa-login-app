@@ -47,7 +47,7 @@ const consentPhotoVideo: TemplateDoc = {
     { key: "alreadyDone", label: "Съёмка уже прошла", type: "checkbox" },
     { key: "shootDate", label: "Дата съёмки", type: "date" },
     { key: "shootPlace", label: "Место съёмки", type: "text", placeholder: "г. Москва, студия «Свет»" },
-    { key: "phone", label: "Ваш контактный номер телефона для отзыва согласия", type: "tel", placeholder: "+7 900 000-00-00", autofill: "phone" },
+    { key: "phone", label: "Ваш контактный номер телефона для отзыва согласия", type: "tel", placeholder: "9001234567", hint: "Только цифры, до 10 знаков. Например: 9001234567", autofill: "phone" },
     { key: "email", label: "Ваш контактный E-mail для отзыва согласия", type: "email", placeholder: "mail@example.ru", autofill: "email" },
     { key: "signDate", label: "Дата подписания", type: "date" },
   ],
