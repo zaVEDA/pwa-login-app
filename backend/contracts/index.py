@@ -280,6 +280,12 @@ def handler(event: dict, context) -> dict:
 
     params = event.get("queryStringParameters") or {}
     token = params.get("token")
+    if not token and event.get("httpMethod") == "POST":
+        try:
+            token = json.loads(event.get("body") or "{}").get("token")
+        except Exception:
+            token = None
+
     if token:
         conn = get_conn()
         cur = conn.cursor()
@@ -298,11 +304,64 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {"statusCode": 410, "headers": cors, "body": json.dumps({"error": "expired"})}
 
+        cid = link[0]
+
+        # Клиент подписывает документ сам по ссылке, полученной по SMS.
+        # Это единственный способ перевести договор в статус «Подписан».
+        if event.get("httpMethod") == "POST":
+            body = json.loads(event.get("body") or "{}")
+            if body.get("action") == "client_sign":
+                cur.execute(
+                    "SELECT status, body, client_name, contract_number, user_id FROM contracts WHERE id = %s",
+                    (cid,)
+                )
+                found = cur.fetchone()
+                if not found:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not_found"})}
+
+                cur_status, doc_text, cname, cnum, _owner_id = found
+                if cur_status == "signed":
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 409, "headers": cors, "body": json.dumps({"error": "already_signed"})}
+
+                signer_name = (body.get("signer_name") or cname or "").strip()
+                signer_phone = (body.get("signer_phone") or "").strip()
+                if not signer_name:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "signer_name required"})}
+
+                ip = ((event.get("requestContext") or {}).get("identity") or {}).get("sourceIp") or ""
+                now = datetime.datetime.now()
+                raw = f"{cid}|{cnum}|{doc_text}|{signer_name}|{signer_phone}|{now.isoformat()}"
+                sign_hash = hashlib.sha256(raw.encode()).hexdigest()
+                sign_id = f"ПЭП-{now.strftime('%Y%m%d')}-{sign_hash[:8].upper()}"
+
+                cur.execute(
+                    "UPDATE contracts SET status = 'signed', signed_at = NOW(), signer_name = %s, signer_phone = %s, "
+                    "signer_ip = %s, sign_id = %s, sign_hash = %s, updated_at = NOW() WHERE id = %s",
+                    (signer_name, signer_phone, ip, sign_id, sign_hash, cid)
+                )
+                conn.commit()
+                cur.close()
+                conn.close()
+                return {
+                    "statusCode": 200,
+                    "headers": cors,
+                    "body": json.dumps({
+                        "status": "signed", "signed_at": now.isoformat(),
+                        "signer_name": signer_name, "sign_id": sign_id,
+                    }, ensure_ascii=False),
+                }
+
         cur.execute("UPDATE contract_links SET opened_count = opened_count + 1 WHERE token = %s", (token,))
         conn.commit()
         cur.execute(
             "SELECT title, contract_number, contract_date, client_name, status, signed_at, signer_name FROM contracts WHERE id = %s",
-            (link[0],)
+            (cid,)
         )
         c = cur.fetchone()
         cur.close()
@@ -363,27 +422,11 @@ def handler(event: dict, context) -> dict:
         status = body.get("status", "draft")
 
         if status == "signed":
-            cur.execute("SELECT body, client_name, contract_number FROM contracts WHERE id = %s AND user_id = %s", (cid, user_id))
-            found = cur.fetchone()
-            if not found:
-                cur.close()
-                conn.close()
-                return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
-
-            doc_text, cname, cnum = found
-            signer_name = body.get("signer_name") or cname or ""
-            signer_phone = body.get("signer_phone") or ""
-            ip = ((event.get("requestContext") or {}).get("identity") or {}).get("sourceIp") or ""
-            now = datetime.datetime.now()
-            raw = f"{cid}|{cnum}|{doc_text}|{signer_name}|{signer_phone}|{now.isoformat()}"
-            sign_hash = hashlib.sha256(raw.encode()).hexdigest()
-            sign_id = f"ПЭП-{now.strftime('%Y%m%d')}-{sign_hash[:8].upper()}"
-
-            cur.execute(
-                "UPDATE contracts SET status = 'signed', signed_at = NOW(), signer_name = %s, signer_phone = %s, "
-                "signer_ip = %s, sign_id = %s, sign_hash = %s, updated_at = NOW() WHERE id = %s AND user_id = %s",
-                (signer_name, signer_phone, ip, sign_id, sign_hash, cid, user_id)
-            )
+            # Статус «Подписан» ставится только клиентом самостоятельно по ссылке
+            # (action == "client_sign" в блоке обработки token выше) — вручную выставить нельзя.
+            cur.close()
+            conn.close()
+            return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "status_signed_is_client_only"})}
         elif status == "sent":
             # Статус «Отправлен» ставится только автоматически после фактической отправки
             # SMS со ссылкой на подпись (см. action == "share_link" ниже) — вручную выставить нельзя.

@@ -119,25 +119,27 @@ export default function ContractCard({
         <>
           <div className="fixed inset-0 z-30" onClick={() => setMenuId(null)} />
           <div className="absolute right-3 top-full -mt-1 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-            {([
-              { key: "draft", label: "Создан", icon: "FileText" },
-              { key: "signed", label: "Подписан", icon: "CheckCircle" },
-            ] as const).map((s) => (
-              <button
-                key={s.key}
-                onClick={() => { setMenuId(null); onStatus(contract.id, s.key); }}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors ${contract.status === s.key ? "text-primary font-medium" : "text-foreground"}`}
-              >
-                <Icon name={s.icon} size={15} className={contract.status === s.key ? "text-primary" : "text-muted-foreground"} />
-                {s.label}
-                {contract.status === s.key && <Icon name="Check" size={14} className="ml-auto text-primary" />}
-              </button>
-            ))}
+            <button
+              onClick={() => { setMenuId(null); onStatus(contract.id, "draft"); }}
+              disabled={contract.status === "draft"}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left hover:bg-amber-50 transition-colors disabled:hover:bg-transparent ${contract.status === "draft" ? "text-primary font-medium" : "text-foreground"}`}
+            >
+              <Icon name="FileText" size={15} className={contract.status === "draft" ? "text-primary" : "text-muted-foreground"} />
+              Создан
+              {contract.status === "draft" && <Icon name="Check" size={14} className="ml-auto text-primary" />}
+            </button>
             {contract.status === "sent" && (
               <div className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-primary font-medium bg-primary/5">
                 <Icon name="Send" size={15} className="text-primary" />
                 Отправлен
                 <span className="ml-auto text-[10px] text-muted-foreground font-normal">по SMS</span>
+              </div>
+            )}
+            {signed && (
+              <div className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-green-700 font-medium bg-green-50">
+                <Icon name="CheckCircle" size={15} className="text-green-700" />
+                Подписан
+                <span className="ml-auto text-[10px] text-muted-foreground font-normal">клиентом</span>
               </div>
             )}
             {deleted ? (

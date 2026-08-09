@@ -5,7 +5,6 @@ import DocumentModal from "@/components/app/DocumentModal";
 import { formatDate } from "@/lib/date";
 import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract, templates } from "./constants";
 import ContractCard from "./docs/ContractCard";
-import SignDialog from "@/components/app/templates/SignDialog";
 import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
 import { templateDocs } from "@/components/app/templates/docs";
 import type { DateRange } from "react-day-picker";
@@ -173,7 +172,6 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [contractMenuId, setContractMenuId] = useState<number | null>(null);
   const [openContract, setOpenContract] = useState<Contract | null>(null);
-  const [signTarget, setSignTarget] = useState<Contract | null>(null);
   const [contractPdfId, setContractPdfId] = useState<number | null>(null);
   const [contractShareId, setContractShareId] = useState<number | null>(null);
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
@@ -342,11 +340,6 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
   };
 
   const changeContractStatus = async (id: number, status: string) => {
-    if (status === "signed") {
-      const c = contracts.find((x) => x.id === id);
-      if (c) setSignTarget(c);
-      return;
-    }
     setContracts((prev) => status === "deleted"
       ? prev.filter((c) => c.id !== id)
       : prev.map((c) => c.id === id ? { ...c, status } : c));
@@ -357,26 +350,6 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
         body: JSON.stringify({ action: "set_status", id, status }),
       });
     } catch { loadContracts(); }
-  };
-
-  const doSign = async (name: string, signerPhone: string) => {
-    if (!signTarget) return;
-    try {
-      await fetch(CONTRACTS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({
-          action: "set_status",
-          id: signTarget.id,
-          status: "signed",
-          signer_name: name,
-          signer_phone: signerPhone,
-        }),
-      });
-      loadContracts();
-      toast("Документ подписан. Скачайте PDF с печатью.", { icon: "🔵" });
-    } catch { /* ignore */ }
-    finally { setSignTarget(null); }
   };
 
   const shareContract = async (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email") => {
@@ -462,13 +435,6 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
           onSaved={() => { loadInvoices(); onDocCreated?.(); }}
           invoiceId={openInvoiceId}
           userPlan={userPlan}
-        />
-      )}
-      {signTarget && (
-        <SignDialog
-          contract={signTarget}
-          onCancel={() => setSignTarget(null)}
-          onConfirm={doSign}
         />
       )}
       {openContract && templateDocs[openContract.template_key] && (

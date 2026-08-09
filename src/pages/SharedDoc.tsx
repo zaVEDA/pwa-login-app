@@ -15,6 +15,8 @@ interface SharedDocData {
   expires_at: string;
 }
 
+const digitsOnly = (v: string) => v.replace(/\D/g, "");
+
 const fmt = (v?: string | null) => {
   if (!v) return "—";
   const d = v.slice(0, 10).split("-");
@@ -26,8 +28,14 @@ export default function SharedDoc() {
   const [data, setData] = useState<SharedDocData | null>(null);
   const [state, setState] = useState<"loading" | "ok" | "expired" | "missing">("loading");
   const [left, setLeft] = useState("");
+  const [signOpen, setSignOpen] = useState(false);
+  const [signName, setSignName] = useState("");
+  const [signPhone, setSignPhone] = useState("");
+  const [signAgree, setSignAgree] = useState(false);
+  const [signLoading, setSignLoading] = useState(false);
+  const [signError, setSignError] = useState("");
 
-  useEffect(() => {
+  const loadDoc = () => {
     if (!token) { setState("missing"); return; }
     fetch(`${CONTRACTS_URL}?token=${encodeURIComponent(token)}`)
       .then(async (r) => {
@@ -36,10 +44,41 @@ export default function SharedDoc() {
         if (r.status === 410) { setState("expired"); return; }
         if (!r.ok || !parsed.file_url) { setState("missing"); return; }
         setData(parsed);
+        setSignName(parsed.client_name || "");
         setState("ok");
       })
       .catch(() => setState("missing"));
-  }, [token]);
+  };
+
+  useEffect(loadDoc, [token]);
+
+  const submitSign = async () => {
+    if (!token || signLoading) return;
+    if (signName.trim().length < 3) { setSignError("Введите ФИО полностью"); return; }
+    if (!signAgree) { setSignError("Подтвердите согласие на подписание"); return; }
+    setSignLoading(true);
+    setSignError("");
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          action: "client_sign",
+          signer_name: signName.trim(),
+          signer_phone: digitsOnly(signPhone),
+        }),
+      });
+      if (res.status === 409) { setSignError("Документ уже подписан"); loadDoc(); return; }
+      if (!res.ok) { setSignError("Не удалось подписать, попробуйте ещё раз"); return; }
+      setSignOpen(false);
+      loadDoc();
+    } catch {
+      setSignError("Нет связи с сервером");
+    } finally {
+      setSignLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!data?.expires_at) return;
@@ -127,6 +166,16 @@ export default function SharedDoc() {
                 <Icon name={signed ? "Stamp" : "FileDown"} size={16} />
                 Открыть документ (PDF)
               </a>
+
+              {!signed && (
+                <button
+                  onClick={() => setSignOpen(true)}
+                  className="mt-2.5 w-full py-3.5 rounded-xl bg-blue-700 text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                >
+                  <Icon name="PenLine" size={16} />
+                  Подписать документ
+                </button>
+              )}
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
@@ -136,6 +185,83 @@ export default function SharedDoc() {
           </>
         )}
       </div>
+
+      {signOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-5">
+          <div className="bg-background rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+            <div className="px-5 pt-5 pb-3 border-b border-border/50">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0">
+                  <Icon name="ShieldCheck" size={17} className="text-blue-700" />
+                </div>
+                <p className="text-sm font-semibold">Подписание документа</p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Простая электронная подпись по 63-ФЗ. После подписания документ изменить нельзя.
+              </p>
+            </div>
+
+            <div className="px-5 py-4 space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваше ФИО</label>
+                <input
+                  value={signName}
+                  onChange={(e) => setSignName(e.target.value)}
+                  placeholder="Иванова Анна Петровна"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваш телефон</label>
+                <input
+                  type="tel"
+                  value={signPhone}
+                  onChange={(e) => setSignPhone(e.target.value)}
+                  placeholder="+7 900 000-00-00"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                />
+              </div>
+
+              <button
+                onClick={() => setSignAgree(!signAgree)}
+                className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-xl border border-border bg-white/70 text-left"
+              >
+                <div className={`w-5 h-5 mt-0.5 rounded-md flex items-center justify-center flex-shrink-0 border ${signAgree ? "bg-blue-600 border-transparent" : "border-border bg-white"}`}>
+                  {signAgree && <Icon name="Check" size={13} className="text-white" />}
+                </div>
+                <span className="text-xs leading-snug">
+                  Подтверждаю согласие подписать документ простой электронной подписью
+                </span>
+              </button>
+
+              <div className="text-[11px] text-muted-foreground bg-muted/50 border border-border rounded-xl px-3 py-2.5 leading-relaxed">
+                В документ будут внесены: ФИО, телефон, дата и время, IP-адрес и отпечаток документа.
+              </div>
+
+              {signError && (
+                <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+                  <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
+                  <p className="text-[11px] text-red-600">{signError}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-5 pb-5 space-y-2">
+              <button
+                onClick={submitSign}
+                disabled={signLoading}
+                className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-40"
+              >
+                <Icon name={signLoading ? "Loader" : "PenLine"} size={15} className={signLoading ? "animate-spin" : ""} />
+                {signLoading ? "Подписываю..." : "Подписать документ"}
+              </button>
+              <button onClick={() => setSignOpen(false)} className="w-full py-2.5 text-sm text-muted-foreground">
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
