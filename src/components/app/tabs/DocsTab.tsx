@@ -352,7 +352,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
     } catch { loadContracts(); }
   };
 
-  const shareContract = async (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email") => {
+  const shareContract = async (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => {
     setContractShareId(null);
     if (contractPdfId) return;
     setContractPdfId(c.id);
@@ -360,7 +360,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       const res = await fetch(CONTRACTS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin, channel }),
+        body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin, channel, client_phone: clientPhone }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -369,10 +369,11 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       const signedNote = c.status === "signed" ? " (подписан электронной подписью)" : "";
       const text = `${c.title} № ${c.contract_number}${signedNote}\nСсылка действует 1 час:\n${parsed.url}`;
       const msg = encodeURIComponent(text);
+      const smsTarget = clientPhone ? `+7${clientPhone}` : "";
       const urls: Record<string, string> = {
         telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(`${c.title} № ${c.contract_number}${signedNote}`)}`,
         whatsapp: `https://wa.me/?text=${msg}`,
-        sms: `sms:?body=${msg}`,
+        sms: `sms:${smsTarget}?body=${msg}`,
         email: `mailto:?subject=${encodeURIComponent(`${c.title} № ${c.contract_number}`)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");

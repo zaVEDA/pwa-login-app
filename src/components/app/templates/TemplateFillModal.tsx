@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { TemplateDoc } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
-import { CLIENTS_URL } from "@/components/app/invoice/types";
 import TemplateFillHeader from "./TemplateFillHeader";
 import TemplateFillFields from "./TemplateFillFields";
 import TemplateFillFooter from "./TemplateFillFooter";
@@ -171,20 +170,6 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         localStorage.removeItem(draftStorageKey);
         localStorage.removeItem(draftKey(doc.title, parsed.contract.id));
       } catch { /* ignore */ }
-      // Клиент из договора попадает в общий справочник «Мои клиенты» (без ИНН — по имени)
-      const clientName = (values.fio || "").trim();
-      if (clientName && phone) {
-        fetch(CLIENTS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Phone": phone },
-          body: JSON.stringify({
-            client_type: "individual",
-            name: clientName,
-            phone: values.phone || "",
-            email: values.email || "",
-          }),
-        }).catch(() => {});
-      }
       onSaved?.();
     } catch {
       setError("Нет связи с сервером");
@@ -231,7 +216,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
     finally { setPdfLoading(false); }
   };
 
-  const share = async (channel: "telegram" | "whatsapp" | "sms" | "email") => {
+  const share = async (channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => {
     setShareOpen(false);
     if (!savedId || pdfLoading) return;
     setPdfLoading(true);
@@ -239,7 +224,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       const res = await fetch(CONTRACTS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Phone": phone },
-        body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin, channel }),
+        body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin, channel, client_phone: clientPhone }),
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -247,10 +232,11 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       const note = locked ? " (подписан электронной подписью)" : "";
       const subject = `${doc.title} № ${savedNumber}${note}`;
       const msg = encodeURIComponent(`${subject}\nСсылка действует 1 час:\n${parsed.url}`);
+      const smsTarget = clientPhone ? `+7${clientPhone}` : "";
       const urls: Record<string, string> = {
         telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(subject)}`,
         whatsapp: `https://wa.me/?text=${msg}`,
-        sms: `sms:?body=${msg}`,
+        sms: `sms:${smsTarget}?body=${msg}`,
         email: `mailto:?subject=${encodeURIComponent(subject)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");

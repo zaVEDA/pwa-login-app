@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { formatDate } from "@/lib/date";
 import { Contract } from "../constants";
@@ -12,7 +13,7 @@ interface Props {
   pdfLoadingId: number | null;
   shareId: number | null;
   setShareId: (id: number | null) => void;
-  onShare: (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email") => void;
+  onShare: (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => void;
 }
 
 const CHANNELS = [
@@ -27,6 +28,8 @@ export default function ContractCard({
 }: Props) {
   const signed = contract.status === "signed";
   const deleted = contract.status === "deleted";
+  const [smsMode, setSmsMode] = useState(false);
+  const [smsPhone, setSmsPhone] = useState(contract.client_phone || "");
 
   return (
     <div className={`relative w-full card-warm rounded-2xl p-4 shadow-sm flex gap-3 transition-opacity ${deleted ? "opacity-50" : ""}`}>
@@ -69,7 +72,7 @@ export default function ContractCard({
             <Icon name={pdfLoadingId === contract.id ? "Loader" : signed ? "Stamp" : "FileDown"} size={15} className={pdfLoadingId === contract.id ? "animate-spin" : ""} />
           </button>
           <button
-            onClick={() => setShareId(shareId === contract.id ? null : contract.id)}
+            onClick={() => { setShareId(shareId === contract.id ? null : contract.id); setSmsMode(false); }}
             disabled={pdfLoadingId === contract.id || deleted}
             aria-label="Отправить"
             className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
@@ -80,21 +83,47 @@ export default function ContractCard({
 
         {shareId === contract.id && (
           <>
-            <div className="fixed inset-0 z-30" onClick={() => setShareId(null)} />
-            <div className="absolute right-3 top-12 z-40 w-44 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-              <p className="px-3.5 pt-2.5 pb-1 text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                Отправить {signed ? "подписанный" : "документ"}
-              </p>
-              {CHANNELS.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => onShare(contract, c.id)}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
-                >
-                  <Icon name={c.icon} size={15} className="text-primary" />
-                  {c.label}
-                </button>
-              ))}
+            <div className="fixed inset-0 z-30" onClick={() => { setShareId(null); setSmsMode(false); }} />
+            <div className="absolute right-3 top-12 z-40 w-56 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
+              {!smsMode ? (
+                <>
+                  <p className="px-3.5 pt-2.5 pb-1 text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
+                    Отправить {signed ? "подписанный" : "документ"}
+                  </p>
+                  {CHANNELS.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => c.id === "sms" ? setSmsMode(true) : onShare(contract, c.id)}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
+                    >
+                      <Icon name={c.icon} size={15} className="text-primary" />
+                      {c.label}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <div className="p-3 space-y-2">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
+                    Телефон клиента
+                  </p>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    autoFocus
+                    value={smsPhone}
+                    onChange={(e) => setSmsPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="9001234567"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm outline-none focus:border-primary"
+                  />
+                  <button
+                    onClick={() => { onShare(contract, "sms", smsPhone); setShareId(null); setSmsMode(false); }}
+                    disabled={smsPhone.length < 10}
+                    className="w-full py-2 rounded-lg gold-gradient text-white text-xs font-medium disabled:opacity-40"
+                  >
+                    Отправить SMS
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
 interface Props {
@@ -15,7 +16,7 @@ interface Props {
   onOpenShare: () => void;
   onCopy: () => void;
   onCloseShare: () => void;
-  onShare: (channel: "telegram" | "whatsapp" | "sms" | "email") => void;
+  onShare: (channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => void;
   onSaveAndClose: () => void;
   onCloseWithoutSaving: () => void;
   onCancelClose: () => void;
@@ -40,6 +41,8 @@ export default function TemplateFillFooter({
   onCloseWithoutSaving,
   onCancelClose,
 }: Props) {
+  const [smsMode, setSmsMode] = useState(false);
+  const [smsPhone, setSmsPhone] = useState("");
   return (
     <>
       <div
@@ -88,33 +91,62 @@ export default function TemplateFillFooter({
       </div>
 
       {shareOpen && (
-        <div className="absolute inset-0 z-20 flex flex-col justify-end" onClick={onCloseShare}>
+        <div className="absolute inset-0 z-20 flex flex-col justify-end" onClick={() => { onCloseShare(); setSmsMode(false); }}>
           <div className="absolute inset-0 bg-black/30" />
           <div
             className="relative bg-background rounded-t-3xl p-5 pb-10 space-y-2 shadow-2xl border-t border-border/50"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-              Отправить {locked ? "подписанный документ" : "документ"}
-            </p>
-            {[
-              { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
-              { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
-              { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
-              { id: "email" as const, icon: "Mail", label: "Электронная почта", color: "text-orange-500" },
-            ].map((ch) => (
-              <button
-                key={ch.id}
-                onClick={() => onShare(ch.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform"
-              >
-                <Icon name={ch.icon} size={18} className={ch.color} />
-                <span className="text-sm font-medium">{ch.label}</span>
-              </button>
-            ))}
-            <button onClick={onCloseShare} className="w-full py-3 text-sm text-muted-foreground">
-              Отмена
-            </button>
+            {!smsMode ? (
+              <>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Отправить {locked ? "подписанный документ" : "документ"}
+                </p>
+                {[
+                  { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
+                  { id: "whatsapp" as const, icon: "MessageCircle", label: "WhatsApp", color: "text-green-500" },
+                  { id: "sms" as const, icon: "Smartphone", label: "SMS", color: "text-purple-500" },
+                  { id: "email" as const, icon: "Mail", label: "Электронная почта", color: "text-orange-500" },
+                ].map((ch) => (
+                  <button
+                    key={ch.id}
+                    onClick={() => ch.id === "sms" ? setSmsMode(true) : onShare(ch.id)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white/60 active:scale-[0.98] transition-transform"
+                  >
+                    <Icon name={ch.icon} size={18} className={ch.color} />
+                    <span className="text-sm font-medium">{ch.label}</span>
+                  </button>
+                ))}
+                <button onClick={onCloseShare} className="w-full py-3 text-sm text-muted-foreground">
+                  Отмена
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Телефон клиента
+                </p>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  autoFocus
+                  value={smsPhone}
+                  onChange={(e) => setSmsPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  placeholder="9001234567"
+                  className="w-full px-3.5 py-3 rounded-xl border border-border bg-white text-sm outline-none focus:border-primary"
+                />
+                <button
+                  onClick={() => { onShare("sms", smsPhone); setSmsMode(false); }}
+                  disabled={smsPhone.length < 10}
+                  className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium disabled:opacity-40"
+                >
+                  Отправить SMS
+                </button>
+                <button onClick={() => setSmsMode(false)} className="w-full py-2.5 text-sm text-muted-foreground">
+                  Назад
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

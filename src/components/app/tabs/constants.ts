@@ -19,6 +19,7 @@ export interface Contract {
   signer_ip?: string | null;
   sign_id?: string | null;
   sign_hash?: string | null;
+  client_phone?: string | null;
 }
 
 export interface HelpTip { key: string; title: string; body: string; category: string; }

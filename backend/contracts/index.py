@@ -52,11 +52,12 @@ def row_to_dict(row):
         "sign_id": row[13],
         "sign_hash": row[14],
         "sent_at": row[15].isoformat() if row[15] else None,
+        "client_phone": row[16],
     }
 
 
 COLS = ("id, template_key, title, contract_number, contract_date, client_name, field_values, body, status, "
-        "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash, sent_at")
+        "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash, sent_at, client_phone")
 
 
 PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150}
@@ -496,14 +497,34 @@ def handler(event: dict, context) -> dict:
 
             # Статус «Отправлен» ставится только при фактической отправке по SMS —
             # это единственный канал, которым клиент реально получает ссылку на подпись.
+            # Заодно фиксируем номер телефона клиента (вводится прямо перед отправкой)
+            # и добавляем/обновляем клиента в общем справочнике «Мои клиенты».
             if body.get("channel") == "sms":
+                client_phone = "".join(ch for ch in (body.get("client_phone") or "") if ch.isdigit())[-10:]
                 conn3 = get_conn()
                 cur3 = conn3.cursor()
                 cur3.execute(
-                    "UPDATE contracts SET status = 'sent', sent_at = NOW(), updated_at = NOW() "
-                    "WHERE id = %s AND user_id = %s AND status = 'draft'",
-                    (cid, user_id)
+                    "UPDATE contracts SET status = 'sent', sent_at = NOW(), client_phone = COALESCE(NULLIF(%s, ''), client_phone), "
+                    "updated_at = NOW() WHERE id = %s AND user_id = %s AND status = 'draft'",
+                    (client_phone, cid, user_id)
                 )
+                if client_phone and c.get("client_name"):
+                    cur3.execute(
+                        "SELECT id FROM clients WHERE user_id = %s AND (inn IS NULL OR inn = '') AND name = %s LIMIT 1",
+                        (user_id, c["client_name"])
+                    )
+                    existing = cur3.fetchone()
+                    if existing:
+                        cur3.execute(
+                            "UPDATE clients SET phone = %s, updated_at = NOW() WHERE id = %s",
+                            (client_phone, existing[0])
+                        )
+                    else:
+                        cur3.execute(
+                            "INSERT INTO clients (user_id, client_type, name, phone, updated_at) "
+                            "VALUES (%s, 'individual', %s, %s, NOW())",
+                            (user_id, c["client_name"], client_phone)
+                        )
                 conn3.commit()
                 cur3.close()
                 conn3.close()
