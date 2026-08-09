@@ -38,8 +38,8 @@ const consentPhotoVideo: TemplateDoc = {
       label: "Как указать личность в документе",
       type: "radio",
       options: [
-        { value: "passport", label: "Указать паспортные данные", description: "Клиент не зарегистрирован в приложении — данные вносите вручную" },
-        { value: "none", label: "Не указывать паспорт", description: "Данные не указываются при электронной подписи" },
+        { value: "passport", label: "Указать паспортные данные" },
+        { value: "none", label: "Не указывать паспорт" },
       ],
     },
     { key: "passport", label: "Паспорт (серия, номер)", type: "text", placeholder: "4510 123456", optional: true },
@@ -47,8 +47,8 @@ const consentPhotoVideo: TemplateDoc = {
     { key: "alreadyDone", label: "Съёмка уже прошла", type: "checkbox" },
     { key: "shootDate", label: "Дата съёмки", type: "date" },
     { key: "shootPlace", label: "Место съёмки", type: "text", placeholder: "г. Москва, студия «Свет»" },
-    { key: "phone", label: "Телефон для отзыва согласия", type: "tel", placeholder: "+7 900 000-00-00", autofill: "phone" },
-    { key: "email", label: "E-mail для отзыва согласия", type: "email", placeholder: "mail@example.ru", autofill: "email" },
+    { key: "phone", label: "Ваш контактный номер телефона для отзыва согласия", type: "tel", placeholder: "+7 900 000-00-00", autofill: "phone" },
+    { key: "email", label: "Ваш контактный E-mail для отзыва согласия", type: "email", placeholder: "mail@example.ru", autofill: "email" },
     { key: "signDate", label: "Дата подписания", type: "date" },
   ],
   build: (v) => {
