@@ -168,10 +168,10 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="flex items-end gap-2 mb-8" style={{ alignItems: "flex-end" }}>
-          <img src="/logo-capydoc.png" alt="CapyDoc" width="72" height="72" className="flex-shrink-0 rounded-2xl" style={{ marginTop: "12px" }} />
+          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="72" height="72" className="flex-shrink-0 rounded-2xl" style={{ marginTop: "12px" }} />
           <div>
-            <h1 className="font-cormorant font-semibold text-foreground leading-tight" style={{ fontSize: "3.4rem" }}>
-              <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc
+            <h1 className="font-cormorant font-semibold text-foreground leading-tight" style={{ fontSize: "2.7rem" }}>
+              <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc<span style={{ fontSize: "1.6rem" }}>.ru</span>
             </h1>
             <p className="font-cormorant italic font-semibold text-foreground/90 leading-tight text-center whitespace-nowrap" style={{ fontSize: "1.7rem", letterSpacing: "0.12em" }}>
               Вашими документами
@@ -433,7 +433,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
             </div>
             <div className="px-5 py-4 overflow-y-auto text-sm text-muted-foreground leading-relaxed space-y-3">
               <p>
-                Регистрируясь в сервисе «CapyDoc», я даю согласие на обработку моих персональных
+                Регистрируясь в сервисе «CapyDoc.ru», я даю согласие на обработку моих персональных
                 данных (номер телефона, адрес электронной почты, ФИО и иные данные, которые я укажу)
                 в целях регистрации, идентификации и предоставления мне услуг сервиса.
               </p>

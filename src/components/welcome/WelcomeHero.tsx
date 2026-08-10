@@ -33,9 +33,9 @@ export default function WelcomeHero() {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-end justify-center gap-2 mb-6">
-          <img src="/logo-capydoc.png" alt="CapyDoc" width="52" height="52" className="flex-shrink-0 rounded-xl" />
+          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="52" height="52" className="flex-shrink-0 rounded-xl" />
           <h2 className="font-cormorant font-semibold leading-tight text-3xl" style={{ color: "hsl(24 20% 13%)" }}>
-            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc
+            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc.ru
           </h2>
         </div>
 
