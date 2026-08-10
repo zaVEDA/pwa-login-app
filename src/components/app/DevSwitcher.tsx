@@ -13,12 +13,12 @@ export default function DevSwitcher() {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    // Виден везде (предпросмотр, тестовые адреса), КРОМЕ боевого zavdoc.ru.
+    // Виден везде (предпросмотр, тестовые адреса), КРОМЕ боевого capydoc.ru.
     // Можно принудительно скрыть через ?dev=0 или показать через ?dev=1.
     const params = new URLSearchParams(window.location.search);
     if (params.get("dev") === "1") { setEnabled(true); return; }
     if (params.get("dev") === "0") { setEnabled(false); return; }
-    const isProd = window.location.hostname.endsWith("zavdoc.ru");
+    const isProd = window.location.hostname.endsWith("capydoc.ru");
     setEnabled(!isProd);
   }, []);
 

@@ -110,7 +110,7 @@ function FamilyScreen({ onBack }: { onBack: () => void }) {
 
 const mockAddons = [
   { name: "SMS.ru", icon: "MessageSquare", paidAt: "01.07.2025", amount: "₽1 500", until: "01.10.2025" },
-  { name: "Домен zavdoc.ru", icon: "Globe", paidAt: "15.03.2025", amount: "₽990", until: "15.03.2026" },
+  { name: "Домен capydoc.ru", icon: "Globe", paidAt: "15.03.2025", amount: "₽990", until: "15.03.2026" },
 ];
 
 function AddonsScreen({ onBack }: { onBack: () => void }) {

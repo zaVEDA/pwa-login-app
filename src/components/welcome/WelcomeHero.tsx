@@ -33,18 +33,9 @@ export default function WelcomeHero() {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-end justify-center gap-2 mb-6">
-          <svg width="52" height="80" viewBox="0 0 56 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-            <rect x="10" y="2" width="40" height="76" rx="10" stroke="#C8862A" strokeWidth="3.5" fill="none" />
-            <rect x="19" y="2" width="18" height="7" rx="3.5" stroke="#C8862A" strokeWidth="2" fill="none" />
-            <rect x="6" y="24" width="4" height="9" rx="2" fill="#C8862A" />
-            <rect x="6" y="36" width="4" height="9" rx="2" fill="#C8862A" />
-            <rect x="14" y="16" width="32" height="10" rx="5" stroke="#C8862A" strokeWidth="2.5" fill="none" />
-            <rect x="16" y="26" width="28" height="26" stroke="#C8862A" strokeWidth="2" fill="none" />
-            <rect x="14" y="52" width="32" height="10" rx="5" stroke="#C8862A" strokeWidth="2.5" fill="none" />
-            <path d="M23 40 L29 47 L43 30" stroke="#C8862A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <img src="/logo-capydoc.png" alt="CapyDoc" width="52" height="52" className="flex-shrink-0 rounded-xl" />
           <h2 className="font-cormorant font-semibold leading-tight text-3xl" style={{ color: "hsl(24 20% 13%)" }}>
-            <span style={{ color: "hsl(35 72% 42%)" }}>За</span>Ведующая
+            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc
           </h2>
         </div>
 

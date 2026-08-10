@@ -52,7 +52,7 @@ export default function AdminPanel() {
       <header className="px-5 pt-10 pb-5 max-w-3xl mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-muted-foreground mb-0.5">ЗаВедующая</p>
+            <p className="text-xs text-muted-foreground mb-0.5">CapyDoc</p>
             <h1 className="font-cormorant text-2xl font-semibold">Кабинет Заведующей</h1>
           </div>
           <div className="flex items-center gap-2">
