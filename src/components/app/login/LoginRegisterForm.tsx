@@ -24,7 +24,25 @@ export default function LoginRegisterForm({ m }: Props) {
     captchaKey, setCaptchaPassToken, captchaPassToken,
     loading,
     handleRegister,
+    emailValid,
+    passwordValid,
+    registerFieldsReady,
   } = m;
+
+  // Пока не заполнены поля и не приняты условия — капча заблокирована
+  const captchaLocked = !registerFieldsReady || !consent;
+  let captchaHint = "";
+  if (phone.replace(/\D/g, "").length !== 10) {
+    captchaHint = "Введите номер телефона";
+  } else if (!emailValid) {
+    captchaHint = "Введите электронный адрес";
+  } else if (!passwordValid) {
+    captchaHint = "Придумайте пароль";
+  } else if (password !== passwordConfirm) {
+    captchaHint = "Пароли не совпадают — повторите пароль";
+  } else if (!consent) {
+    captchaHint = "Для регистрации и входа Вам необходимо принять условия использования сервиса (выше)";
+  }
 
   return (
     <>
@@ -153,8 +171,8 @@ export default function LoginRegisterForm({ m }: Props) {
       <PuzzleCaptcha
         key={captchaKey}
         onVerified={setCaptchaPassToken}
-        disabled={!consent}
-        disabledHint="Для регистрации и входа Вам необходимо принять условия использования сервиса (выше)"
+        disabled={captchaLocked}
+        disabledHint={captchaHint}
       />
       <button
         onClick={handleRegister}

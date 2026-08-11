@@ -153,7 +153,17 @@ export function useLoginScreen({ onAuth }: Args) {
     onAuth(r.data.user);
   });
 
+  // Капчу можно двигать, только когда заполнены все поля и приняты условия
+  const registerFieldsReady =
+    phone.replace(/\D/g, "").length === 10 &&
+    emailValid &&
+    passwordValid &&
+    password === passwordConfirm;
+
   return {
+    emailValid,
+    passwordValid,
+    registerFieldsReady,
     mode, setMode,
     phone, setPhone,
     code, setCode,
