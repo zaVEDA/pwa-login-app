@@ -35,7 +35,7 @@ export default function WelcomeHero() {
         <div className="flex items-end justify-center gap-2 mb-6">
           <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="52" height="52" className="flex-shrink-0 rounded-xl" />
           <h2 className="font-cormorant font-semibold leading-tight text-3xl" style={{ color: "hsl(24 20% 13%)" }}>
-            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc.ru
+            Сервис <span style={{ color: "hsl(35 72% 42%)" }}>capydoc</span>.ru
           </h2>
         </div>
 
