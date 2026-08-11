@@ -149,6 +149,9 @@ def handler(event: dict, context) -> dict:
 
             reg_email = None
             reg_password_hash = None
+            consent_personal = False
+            consent_offer = False
+            consent_pep = False
 
             user_id = None
             if channel == "sms":
@@ -167,13 +170,22 @@ def handler(event: dict, context) -> dict:
                         return resp(409, {"error": "Аккаунт с таким номером уже существует"})
                     reg_email = (body.get("email") or "").strip().lower()
                     password = body.get("password") or ""
-                    consent = bool(body.get("consent"))
+                    # Три документа принимаются по отдельности. Старый флаг consent
+                    # оставляем для совместимости: если пришёл только он — считаем все три принятыми.
+                    legacy_consent = bool(body.get("consent"))
+                    consent_personal = bool(body.get("consent_personal", legacy_consent))
+                    consent_offer = bool(body.get("consent_offer", legacy_consent))
+                    consent_pep = bool(body.get("consent_pep", legacy_consent))
                     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", reg_email):
                         return resp(400, {"error": "Введите корректный email"})
                     if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{1,6}$", password):
                         return resp(400, {"error": "Пароль: латиница, цифры и знаки, до 6 символов"})
-                    if not consent:
+                    if not consent_personal:
                         return resp(400, {"error": "Нужно согласие на обработку персональных данных"})
+                    if not consent_offer:
+                        return resp(400, {"error": "Нужно принять публичную оферту"})
+                    if not consent_pep:
+                        return resp(400, {"error": "Нужно принять соглашение об использовании ПЭП"})
                     cur.execute("SELECT id FROM users WHERE email = %s", (reg_email,))
                     if cur.fetchone():
                         return resp(409, {"error": "Аккаунт с таким email уже существует"})
@@ -248,9 +260,11 @@ def handler(event: dict, context) -> dict:
             code = gen_code()
             expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
             cur.execute(
-                "INSERT INTO auth_codes (user_id, phone, email, code, purpose, channel, expires_at, reg_email, reg_password_hash) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                (user_id, phone or None, email or None, code, purpose, channel, expires, reg_email, reg_password_hash)
+                "INSERT INTO auth_codes (user_id, phone, email, code, purpose, channel, expires_at, reg_email, reg_password_hash, "
+                "consent_personal, consent_offer, consent_pep) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (user_id, phone or None, email or None, code, purpose, channel, expires, reg_email, reg_password_hash,
+                 consent_personal, consent_offer, consent_pep)
             )
             conn.commit()
             print(f"[AUTH CODE] purpose={purpose} channel={channel} phone={phone} email={email} CODE={code}")
@@ -294,12 +308,14 @@ def handler(event: dict, context) -> dict:
 
             if channel == "sms":
                 cur.execute(
-                    "SELECT id, code, reg_email, reg_password_hash FROM auth_codes WHERE phone = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+                    "SELECT id, code, reg_email, reg_password_hash, consent_personal, consent_offer, consent_pep "
+                    "FROM auth_codes WHERE phone = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
                     (phone, purpose)
                 )
             else:
                 cur.execute(
-                    "SELECT id, code, reg_email, reg_password_hash FROM auth_codes WHERE email = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+                    "SELECT id, code, reg_email, reg_password_hash, consent_personal, consent_offer, consent_pep "
+                    "FROM auth_codes WHERE email = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
                     (email, purpose)
                 )
             row = cur.fetchone()
@@ -321,6 +337,9 @@ def handler(event: dict, context) -> dict:
             cur.execute("DELETE FROM auth_attempts WHERE identifier = %s", (ident,))
             reg_email = row[2]
             reg_password_hash = row[3]
+            ok_personal = bool(row[4])
+            ok_offer = bool(row[5])
+            ok_pep = bool(row[6])
             cur.execute("UPDATE auth_codes SET used = TRUE WHERE id = %s", (row[0],))
 
             # Находим или создаём пользователя
@@ -336,18 +355,33 @@ def handler(event: dict, context) -> dict:
                     if cur.fetchone():
                         return resp(409, {"error": "Аккаунт с таким email уже существует"})
                     cur.execute(
-                        "INSERT INTO users (phone, email, login, password_hash, consent_pep, consent_at, last_login_at, created_at) "
-                        "VALUES (%s, %s, %s, %s, TRUE, NOW(), NOW(), NOW()) RETURNING id",
+                        "INSERT INTO users (phone, email, login, password_hash, consent_pep, consent_at, "
+                        "consent_personal, consent_personal_at, consent_offer, consent_offer_at, last_login_at, created_at) "
+                        "VALUES (%s, %s, %s, %s, TRUE, NOW(), TRUE, NOW(), TRUE, NOW(), NOW(), NOW()) RETURNING id",
                         (phone, reg_email, reg_email, reg_password_hash)
                     )
                     uid = cur.fetchone()[0]
                     ip = (event.get("requestContext") or {}).get("identity", {}).get("sourceIp", "")
+                    ua = headers.get("user-agent", "")
+                    text_hash = consent_text_hash()
                     cur.execute(
                         "INSERT INTO document_signatures "
                         "(subject_type, signer_user_id, signer_role, signer_phone, auth_code_id, code, signed_at, ip_address, user_agent, consent_text_hash) "
                         "VALUES ('consent_pep', %s, 'client', %s, %s, %s, NOW(), %s, %s, %s)",
-                        (uid, phone, row[0], code, ip, headers.get("user-agent", ""), consent_text_hash())
+                        (uid, phone, row[0], code, ip, ua, text_hash)
                     )
+                    # Каждый из трёх документов фиксируем отдельной записью в журнале согласий
+                    for doc_type, accepted in (
+                        ("personal_data", ok_personal),
+                        ("offer", ok_offer),
+                        ("pep", ok_pep),
+                    ):
+                        cur.execute(
+                            "INSERT INTO user_consents "
+                            "(user_id, doc_type, accepted, accepted_at, phone, auth_code_id, code, ip_address, user_agent, consent_text_hash) "
+                            "VALUES (%s, %s, %s, NOW(), %s, %s, %s, %s, %s, %s)",
+                            (uid, doc_type, accepted, phone, row[0], code, ip, ua, text_hash)
+                        )
                 else:
                     cur.execute(
                         "INSERT INTO users (phone, consent_pep, consent_at, last_login_at, created_at) VALUES (%s, TRUE, NOW(), NOW(), NOW()) RETURNING id",

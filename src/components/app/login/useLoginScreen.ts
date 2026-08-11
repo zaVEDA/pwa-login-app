@@ -90,6 +90,9 @@ export function useLoginScreen({ onAuth }: Args) {
       email: email.trim().toLowerCase(),
       password,
       consent,
+      consent_personal: consentPersonal,
+      consent_offer: consentOffer,
+      consent_pep: consentPep,
       captcha_pass_token: captchaPassToken,
     });
     if (r.status !== 200) { setCaptchaPassToken(""); setCaptchaKey((k) => k + 1); return setError(r.data.error || "Не удалось отправить код"); }

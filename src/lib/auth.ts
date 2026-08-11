@@ -65,7 +65,7 @@ async function call(action: string, payload: Record<string, unknown> = {}) {
 }
 
 export const authApi = {
-  requestCode: (p: { purpose: string; channel: string; phone?: string; email?: string; password?: string; consent?: boolean; captcha_pass_token?: string }) =>
+  requestCode: (p: { purpose: string; channel: string; phone?: string; email?: string; password?: string; consent?: boolean; consent_personal?: boolean; consent_offer?: boolean; consent_pep?: boolean; captcha_pass_token?: string }) =>
     call("request_code", p),
   verifyCode: (p: { purpose: string; channel: string; phone?: string; email?: string; code: string }) =>
     call("verify_code", p),
