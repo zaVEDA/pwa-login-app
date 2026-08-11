@@ -42,6 +42,13 @@ def gen_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+CONSENT_TEXT_VERSION = "capydoc-consent-offer-privacy-pep-v1"
+
+
+def consent_text_hash() -> str:
+    return hashlib.sha256(CONSENT_TEXT_VERSION.encode()).hexdigest()
+
+
 def sms_text(purpose: str, code: str) -> str:
     if purpose == "register":
         return f"ZavDoc: kod podtverzhdeniya registracii {code}. Deystvuet 10 minut."
@@ -334,6 +341,13 @@ def handler(event: dict, context) -> dict:
                         (phone, reg_email, reg_email, reg_password_hash)
                     )
                     uid = cur.fetchone()[0]
+                    ip = (event.get("requestContext") or {}).get("identity", {}).get("sourceIp", "")
+                    cur.execute(
+                        "INSERT INTO document_signatures "
+                        "(subject_type, signer_user_id, signer_role, signer_phone, auth_code_id, code, signed_at, ip_address, user_agent, consent_text_hash) "
+                        "VALUES ('consent_pep', %s, 'client', %s, %s, %s, NOW(), %s, %s, %s)",
+                        (uid, phone, row[0], code, ip, headers.get("user-agent", ""), consent_text_hash())
+                    )
                 else:
                     cur.execute(
                         "INSERT INTO users (phone, consent_pep, consent_at, last_login_at, created_at) VALUES (%s, TRUE, NOW(), NOW(), NOW()) RETURNING id",
