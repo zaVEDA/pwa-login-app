@@ -33,9 +33,10 @@ export default function WelcomeHero() {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-end justify-center gap-2 mb-6">
-          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="52" height="52" className="flex-shrink-0 rounded-xl" />
-          <h2 className="font-cormorant font-semibold leading-tight text-3xl" style={{ color: "hsl(24 20% 13%)" }}>
-            Сервис <span style={{ color: "hsl(35 72% 42%)" }}>capydoc</span>.ru
+          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="60" height="60" className="flex-shrink-0 rounded-xl" />
+          <h2 className="font-cormorant font-semibold text-left" style={{ color: "hsl(24 20% 13%)" }}>
+            <span className="block text-lg leading-tight">Сервис</span>
+            <span className="block text-3xl leading-tight" style={{ color: "hsl(35 72% 42%)" }}>capydoc<span style={{ color: "hsl(24 20% 13%)" }}>.ru</span></span>
           </h2>
         </div>
 
