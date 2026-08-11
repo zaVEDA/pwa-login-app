@@ -56,25 +56,37 @@ def img_to_b64(img: Image.Image, fmt="PNG") -> str:
     return base64.b64encode(buf.getvalue()).decode()
 
 
-def fit_cover(img: Image.Image, width: int, height: int) -> Image.Image:
-    """Вписывает картинку в кадр без искажения пропорций: масштабирует
-    по большей стороне и обрезает лишнее по центру (аналог CSS object-fit: cover)."""
+def fit_contain(img: Image.Image, width: int, height: int) -> Image.Image:
+    """Вписывает картинку в кадр целиком, без искажения пропорций и без обрезки
+    (аналог CSS object-fit: contain). Поля по бокам заливаются фоновым цветом
+    самой картинки — у иллюстраций он однотонный, стык незаметен."""
     src_w, src_h = img.size
-    scale = max(width / src_w, height / src_h)
+    scale = min(width / src_w, height / src_h)
     new_w, new_h = round(src_w * scale), round(src_h * scale)
-    img = img.resize((new_w, new_h), Image.LANCZOS)
-    left = (new_w - width) // 2
-    top = (new_h - height) // 2
-    return img.crop((left, top, left + width, top + height))
+    resized = img.resize((new_w, new_h), Image.LANCZOS)
+
+    # Фон берём из угловых пикселей оригинала — это цвет подложки иллюстрации
+    corners = [img.getpixel((1, 1)), img.getpixel((src_w - 2, 1)),
+               img.getpixel((1, src_h - 2)), img.getpixel((src_w - 2, src_h - 2))]
+    bg_color = tuple(sum(c[i] for c in corners) // len(corners) for i in range(3))
+
+    off_x, off_y = (width - new_w) // 2, (height - new_h) // 2
+    canvas = Image.new("RGB", (width, height), bg_color)
+    canvas.paste(resized, (off_x, off_y))
+    # Возвращаем и границы самой иллюстрации — пазл вырезаем только внутри неё,
+    # чтобы фрагмент не попал на однотонное поле и оставался различимым
+    return canvas, (off_x, off_y, new_w, new_h)
 
 
 def generate_challenge() -> dict:
     raw = base64.b64decode(IMAGES_B64[random.choice(IMAGE_KEYS)])
     bg = Image.open(io.BytesIO(raw)).convert("RGB")
-    bg = fit_cover(bg, CANVAS_W, CANVAS_H)
+    bg, (img_x, img_y, img_w, img_h) = fit_contain(bg, CANVAS_W, CANVAS_H)
 
-    piece_y = random.randint(MARGIN, CANVAS_H - PIECE_H - MARGIN)
-    target_x = random.randint(MARGIN + PIECE_W, CANVAS_W - PIECE_W - MARGIN)
+    # Пазл вырезаем строго внутри самой иллюстрации, отступив от её краёв
+    pad = min(MARGIN, max(0, (img_w - PIECE_W) // 4), max(0, (img_h - PIECE_H) // 4))
+    piece_y = random.randint(img_y + pad, img_y + img_h - PIECE_H - pad)
+    target_x = random.randint(img_x + pad + PIECE_W, img_x + img_w - PIECE_W - pad)
 
     mask = piece_mask()
 
