@@ -4,9 +4,11 @@ import { captchaApi, CaptchaChallenge } from "@/lib/captcha";
 
 interface Props {
   onVerified: (passToken: string) => void;
+  disabled?: boolean;
+  disabledHint?: string;
 }
 
-export default function PuzzleCaptcha({ onVerified }: Props) {
+export default function PuzzleCaptcha({ onVerified, disabled, disabledHint }: Props) {
   const [challenge, setChallenge] = useState<CaptchaChallenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -159,13 +161,13 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
         </button>
       </div>
 
-      <p className="text-[11px] text-center text-muted-foreground">
-        Передвиньте пазл на место
+      <p className={`text-[11px] text-center ${disabled ? "text-amber-700" : "text-muted-foreground"}`}>
+        {disabled ? (disabledHint || "Сначала примите условия выше") : "Передвиньте пазл на место"}
       </p>
 
       <div
         ref={trackRef}
-        className="relative h-10 w-full rounded-xl bg-muted/60 border border-border"
+        className={`relative h-10 w-full rounded-xl bg-muted/60 border border-border ${disabled ? "opacity-50" : ""}`}
         style={{ maxWidth: `${challenge.canvas_width}px` }}
       >
         <div
@@ -173,15 +175,17 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
           style={{ width: `${sliderRatio * 100}%` }}
         />
         <div
-          onMouseDown={(e) => { e.preventDefault(); setDragging(true); }}
-          onTouchStart={() => setDragging(true)}
-          className="absolute top-0 h-10 w-10 rounded-xl gold-gradient flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md"
+          onMouseDown={(e) => { if (disabled) return; e.preventDefault(); setDragging(true); }}
+          onTouchStart={() => { if (disabled) return; setDragging(true); }}
+          className={`absolute top-0 h-10 w-10 rounded-xl gold-gradient flex items-center justify-center shadow-md ${
+            disabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"
+          }`}
           style={{
             left: `calc(${sliderRatio * 100}% - ${sliderRatio * 40}px)`,
             transition: dragging ? "none" : "left 0.25s ease",
           }}
         >
-          <Icon name="ArrowRightLeft" size={16} className="text-white" />
+          <Icon name={disabled ? "Lock" : "ArrowRightLeft"} size={16} className="text-white" />
         </div>
       </div>
     </div>

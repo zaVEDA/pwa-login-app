@@ -150,7 +150,12 @@ export default function LoginRegisterForm({ m }: Props) {
         </label>
       </div>
 
-      <PuzzleCaptcha key={captchaKey} onVerified={setCaptchaPassToken} />
+      <PuzzleCaptcha
+        key={captchaKey}
+        onVerified={setCaptchaPassToken}
+        disabled={!consent}
+        disabledHint="Поставьте все три галочки выше, чтобы пройти проверку"
+      />
       <button
         onClick={handleRegister}
         disabled={loading || !consent || !captchaPassToken || !password || password !== passwordConfirm}
