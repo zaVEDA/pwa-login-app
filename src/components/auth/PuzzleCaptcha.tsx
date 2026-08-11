@@ -95,6 +95,27 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
 
   const sliderRatio = maxX ? sliderX / maxX : 0;
 
+  if (status === "success") {
+    return (
+      <div className="w-full flex flex-col items-center justify-center gap-3 py-6 px-4 rounded-xl border border-primary/30 animate-fade-in"
+        style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.10), hsl(35 60% 55% / 0.05))" }}
+      >
+        <img
+          src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/6cb6d028-daf5-4e98-aab3-f719df5a4e8c.jpg"
+          alt="CapyDoc.ru"
+          width="88"
+          height="88"
+          className="rounded-2xl shadow-sm"
+        />
+        <p className="font-cormorant text-xl font-semibold text-center leading-snug">
+          Добро пожаловать в<br />
+          <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>
+          <span className="text-foreground">Doc.ru</span>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-2 flex flex-col items-center">
       <div
@@ -123,11 +144,6 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
             transition: dragging ? "none" : "left 0.25s ease",
           }}
         />
-        {status === "success" && (
-          <div className="absolute inset-0 bg-green-600/20 flex items-center justify-center">
-            <Icon name="CircleCheck" size={28} className="text-green-600" />
-          </div>
-        )}
         {status === "fail" && (
           <div className="absolute inset-0 bg-red-600/15 flex items-center justify-center">
             <Icon name="X" size={28} className="text-red-600" />
@@ -143,7 +159,7 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
       </div>
 
       <p className="text-[11px] text-center text-muted-foreground">
-        {status === "success" ? "Проверка пройдена" : "Передвиньте пазл на место"}
+        Передвиньте пазл на место
       </p>
 
       <div
