@@ -33,12 +33,12 @@ export default function WelcomeHero() {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-end justify-center gap-2 mb-6">
-          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="48" height="48" className="flex-shrink-0 rounded-xl" />
+          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="59" height="59" className="flex-shrink-0 rounded-xl" />
           <div className="flex flex-col items-stretch text-left">
-            <span className="flex justify-between text-[11px] font-semibold uppercase" style={{ color: "hsl(24 20% 13%)" }}>
+            <span className="flex justify-between text-sm font-extrabold uppercase" style={{ color: "hsl(24 20% 13%)" }}>
               {"Сервис".split("").map((ch, i) => <span key={i}>{ch}</span>)}
             </span>
-            <span className="font-cormorant font-semibold text-2xl leading-tight whitespace-nowrap">
+            <span className="font-cormorant font-semibold text-[30px] leading-tight whitespace-nowrap">
               <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span><span style={{ color: "hsl(24 20% 13%)" }}>Doc.ru</span>
             </span>
           </div>
