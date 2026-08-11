@@ -112,6 +112,19 @@ def handler(event: dict, context) -> dict:
     headers = event.get("headers") or {}
     device_id = headers.get("x-device-id") or headers.get("X-Device-Id") or body.get("device_id") or ""
 
+    def check_captcha_pass(cur, pass_token: str) -> bool:
+        if not pass_token:
+            return False
+        cur.execute(
+            "SELECT id FROM captcha_challenges WHERE pass_token = %s AND verified = TRUE AND used = FALSE AND expires_at > NOW()",
+            (pass_token,)
+        )
+        row = cur.fetchone()
+        if not row:
+            return False
+        cur.execute("UPDATE captcha_challenges SET used = TRUE WHERE id = %s", (row[0],))
+        return True
+
     conn = get_conn()
     cur = conn.cursor()
     try:
@@ -121,6 +134,11 @@ def handler(event: dict, context) -> dict:
             channel = body.get("channel", "sms")    # sms | email
             phone = normalize_phone(body.get("phone", ""))
             email = (body.get("email") or "").strip().lower()
+
+            if channel == "sms":
+                if not check_captcha_pass(cur, body.get("captcha_pass_token", "")):
+                    conn.rollback()
+                    return resp(400, {"error": "Пройдите проверку «не робот»", "captcha_required": True})
 
             reg_email = None
             reg_password_hash = None

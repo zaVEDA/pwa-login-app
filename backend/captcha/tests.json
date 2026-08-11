@@ -1,0 +1,38 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Генерация капчи",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "generate" },
+      "expectedStatus": 200
+    },
+    {
+      "name": "Проверка без токена",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "verify", "x": 100 },
+      "expectedStatus": 400
+    },
+    {
+      "name": "Проверка несуществующего токена",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "verify", "token": "not-exists", "x": 100 },
+      "expectedStatus": 404
+    },
+    {
+      "name": "Неизвестное действие",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "unknown" },
+      "expectedStatus": 400
+    }
+  ]
+}

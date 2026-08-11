@@ -2,6 +2,7 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi, setToken, AuthUser } from "@/lib/auth";
 import { reachGoal } from "@/lib/metrika";
+import PuzzleCaptcha from "@/components/auth/PuzzleCaptcha";
 
 const specialtyColors = [
   { emoji: "🧠", label: "Психолог", bg: "linear-gradient(135deg, #FDCEDF, #F17EAA)" },
@@ -44,6 +45,8 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   const [error, setError] = useState("");
   const [devCode, setDevCode] = useState("");
   const [codePurpose, setCodePurpose] = useState<"login" | "register">("login");
+  const [captchaPassToken, setCaptchaPassToken] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const busy = (fn: () => Promise<void>) => async () => {
     setError("");
@@ -60,6 +63,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     if (!emailValid) return setError("Введите корректный email");
     if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, до 6 символов");
     if (!consent) return setError("Поставьте галочку согласия на обработку данных");
+    if (!captchaPassToken) return setError("Пройдите проверку «не робот»");
 
     // Если аккаунт уже есть — вход по паролю (если задан) или по SMS
     const chk = await authApi.checkDevice(phone);
@@ -69,8 +73,8 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
         setLogin(phone);
         return;
       }
-      const r = await authApi.requestCode({ purpose: "login", channel: "sms", phone });
-      if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
+      const r = await authApi.requestCode({ purpose: "login", channel: "sms", phone, captcha_pass_token: captchaPassToken });
+      if (r.status !== 200) { setCaptchaPassToken(""); setCaptchaKey((k) => k + 1); return setError(r.data.error || "Не удалось отправить код"); }
       setDevCode(r.data.dev_code || "");
       setCodePurpose("login");
       setMode("code");
@@ -85,8 +89,9 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
       email: email.trim().toLowerCase(),
       password,
       consent,
+      captcha_pass_token: captchaPassToken,
     });
-    if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
+    if (r.status !== 200) { setCaptchaPassToken(""); setCaptchaKey((k) => k + 1); return setError(r.data.error || "Не удалось отправить код"); }
     setDevCode(r.data.dev_code || "");
     setCodePurpose("register");
     setMode("code");
@@ -109,9 +114,13 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   });
 
   const handleRecoverRequest = busy(async () => {
-    const p = recoverChannel === "sms" ? { phone } : { email };
+    if (recoverChannel === "sms" && !captchaPassToken) return setError("Пройдите проверку «не робот»");
+    const p = recoverChannel === "sms" ? { phone, captcha_pass_token: captchaPassToken } : { email };
     const r = await authApi.requestCode({ purpose: "reset", channel: recoverChannel, ...p });
-    if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
+    if (r.status !== 200) {
+      if (recoverChannel === "sms") { setCaptchaPassToken(""); setCaptchaKey((k) => k + 1); }
+      return setError(r.data.error || "Не удалось отправить код");
+    }
     setDevCode(r.data.dev_code || "");
     setMode("recover_code");
   });
@@ -277,9 +286,10 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                   и принимаю условия использования
                 </span>
               </label>
+              <PuzzleCaptcha key={captchaKey} onVerified={setCaptchaPassToken} />
               <button
                 onClick={handleRegister}
-                disabled={loading || !consent}
+                disabled={loading || !consent || !captchaPassToken}
                 className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}
@@ -359,16 +369,19 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                 </button>
               </div>
               {recoverChannel === "sms" ? (
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
-                  <input type="tel" placeholder="900 000-00-00" value={phone} onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-                </div>
+                <>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
+                    <input type="tel" placeholder="900 000-00-00" value={phone} onChange={(e) => setPhone(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                  </div>
+                  <PuzzleCaptcha key={captchaKey} onVerified={setCaptchaPassToken} />
+                </>
               ) : (
                 <input type="email" placeholder="you@mail.ru" value={email} onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
               )}
-              <button onClick={handleRecoverRequest} disabled={loading}
+              <button onClick={handleRecoverRequest} disabled={loading || (recoverChannel === "sms" && !captchaPassToken)}
                 className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}
                 Отправить код
