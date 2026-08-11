@@ -154,7 +154,7 @@ export default function LoginRegisterForm({ m }: Props) {
         key={captchaKey}
         onVerified={setCaptchaPassToken}
         disabled={!consent}
-        disabledHint="Поставьте все три галочки выше, чтобы пройти проверку"
+        disabledHint="Для регистрации и входа Вам необходимо принять условия использования сервиса (выше)"
       />
       <button
         onClick={handleRegister}
