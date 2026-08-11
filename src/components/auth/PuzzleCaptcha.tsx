@@ -96,10 +96,14 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
   const sliderRatio = maxX ? sliderX / maxX : 0;
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-2 flex flex-col items-center">
       <div
         className="relative rounded-xl overflow-hidden border border-border select-none"
-        style={{ width: "100%", aspectRatio: `${challenge.canvas_width} / ${challenge.canvas_height}` }}
+        style={{
+          width: "100%",
+          maxWidth: `${challenge.canvas_width}px`,
+          aspectRatio: `${challenge.canvas_width} / ${challenge.canvas_height}`,
+        }}
       >
         <img
           src={challenge.background}
@@ -144,7 +148,8 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
 
       <div
         ref={trackRef}
-        className="relative h-10 rounded-xl bg-muted/60 border border-border"
+        className="relative h-10 w-full rounded-xl bg-muted/60 border border-border"
+        style={{ maxWidth: `${challenge.canvas_width}px` }}
       >
         <div
           className="absolute top-0 left-0 h-full rounded-xl gold-gradient opacity-30"
