@@ -11,11 +11,11 @@ from images_data import IMAGES_B64
 
 IMAGE_KEYS = list(IMAGES_B64.keys())
 
-CANVAS_W, CANVAS_H = 300, 170
-PIECE_W, PIECE_H = 52, 52
-BUMP_R = 9
-TOLERANCE = 6
-MARGIN = 24
+CANVAS_W, CANVAS_H = 600, 340
+PIECE_W, PIECE_H = 104, 104
+BUMP_R = 18
+TOLERANCE = 14
+MARGIN = 48
 
 
 def get_conn():
@@ -40,7 +40,7 @@ def piece_mask() -> Image.Image:
     mask = Image.new("L", (PIECE_W, PIECE_H), 0)
     d = ImageDraw.Draw(mask)
     pad = BUMP_R
-    d.rounded_rectangle([pad, pad, PIECE_W - pad, PIECE_H - pad], radius=6, fill=255)
+    d.rounded_rectangle([pad, pad, PIECE_W - pad, PIECE_H - pad], radius=12, fill=255)
     cy = PIECE_H // 2
     d.ellipse([PIECE_W - pad - BUMP_R, cy - BUMP_R, PIECE_W - pad + BUMP_R, cy + BUMP_R], fill=255)
     d.ellipse([pad - BUMP_R, cy - BUMP_R, pad + BUMP_R, cy + BUMP_R], fill=0)
@@ -49,14 +49,29 @@ def piece_mask() -> Image.Image:
 
 def img_to_b64(img: Image.Image, fmt="PNG") -> str:
     buf = io.BytesIO()
-    img.save(buf, format=fmt)
+    if fmt == "JPEG":
+        img.save(buf, format=fmt, quality=92, subsampling=0)
+    else:
+        img.save(buf, format=fmt)
     return base64.b64encode(buf.getvalue()).decode()
+
+
+def fit_cover(img: Image.Image, width: int, height: int) -> Image.Image:
+    """Вписывает картинку в кадр без искажения пропорций: масштабирует
+    по большей стороне и обрезает лишнее по центру (аналог CSS object-fit: cover)."""
+    src_w, src_h = img.size
+    scale = max(width / src_w, height / src_h)
+    new_w, new_h = round(src_w * scale), round(src_h * scale)
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+    left = (new_w - width) // 2
+    top = (new_h - height) // 2
+    return img.crop((left, top, left + width, top + height))
 
 
 def generate_challenge() -> dict:
     raw = base64.b64decode(IMAGES_B64[random.choice(IMAGE_KEYS)])
     bg = Image.open(io.BytesIO(raw)).convert("RGB")
-    bg = bg.resize((CANVAS_W, CANVAS_H))
+    bg = fit_cover(bg, CANVAS_W, CANVAS_H)
 
     piece_y = random.randint(MARGIN, CANVAS_H - PIECE_H - MARGIN)
     target_x = random.randint(MARGIN + PIECE_W, CANVAS_W - PIECE_W - MARGIN)

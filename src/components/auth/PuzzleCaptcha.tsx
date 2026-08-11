@@ -101,11 +101,12 @@ export default function PuzzleCaptcha({ onVerified }: Props) {
         style={{ background: "linear-gradient(135deg, hsl(35 72% 48% / 0.10), hsl(35 60% 55% / 0.05))" }}
       >
         <img
-          src="https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/6cb6d028-daf5-4e98-aab3-f719df5a4e8c.jpg"
+          src="/logo-capydoc.png"
           alt="CapyDoc.ru"
           width="88"
           height="88"
-          className="rounded-2xl shadow-sm"
+          className="w-22 h-22 rounded-2xl shadow-sm object-contain flex-shrink-0"
+          style={{ width: "88px", height: "88px" }}
         />
         <p className="font-cormorant text-xl font-semibold text-center leading-snug">
           Добро пожаловать в<br />
