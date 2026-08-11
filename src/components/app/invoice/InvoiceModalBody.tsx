@@ -15,7 +15,7 @@ interface Props {
   userPlan?: PlanType | null;
 }
 
-export default function InvoiceModalBody({ m, onClose, userPlan }: Props) {
+export default function InvoiceModalBody({ m, onClose }: Props) {
   const {
     savedClients,
     showClientList, setShowClientList,
@@ -138,7 +138,6 @@ export default function InvoiceModalBody({ m, onClose, userPlan }: Props) {
           handleSave={handleSave}
           handleCreatePdf={handleCreatePdf}
           handleShare={handleShare}
-          noPlan={!userPlan}
         />
       </div>
 

@@ -14,7 +14,6 @@ interface Props {
   handleSave: () => void;
   handleCreatePdf: () => void;
   handleShare: (channel: "email" | "telegram" | "whatsapp" | "sms") => void;
-  noPlan?: boolean;
 }
 
 export default function InvoiceModalFooter({
@@ -31,7 +30,6 @@ export default function InvoiceModalFooter({
   handleSave,
   handleCreatePdf,
   handleShare,
-  noPlan,
 }: Props) {
   return (
     <>
@@ -82,12 +80,6 @@ export default function InvoiceModalFooter({
             <p className="text-[11px] text-red-600">{saveError}</p>
           </div>
         )}
-        {saved && noPlan && (
-          <div className="mb-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-center gap-2">
-            <Icon name="Lock" size={14} className="text-amber-600 flex-shrink-0" />
-            <p className="text-[11px] text-amber-700">Выберите тариф в Аккаунте, чтобы скачать PDF и отправить документ</p>
-          </div>
-        )}
         <div className="flex items-end justify-between gap-3 mb-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground">Итого к оплате</p>
@@ -121,21 +113,20 @@ export default function InvoiceModalFooter({
           <div className="flex gap-2">
             <button
               onClick={handleCreatePdf}
-              disabled={pdfLoading || noPlan}
+              disabled={pdfLoading}
               className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50"
             >
               {pdfLoading
                 ? <Icon name="Loader" size={14} className="animate-spin" />
-                : <Icon name={noPlan ? "Lock" : "FileDown"} size={14} />
+                : <Icon name="FileDown" size={14} />
               }
               {pdfLoading ? "Генерирую..." : "Скачать PDF"}
             </button>
             <button
               onClick={() => setShowShareSheet(true)}
-              disabled={noPlan}
               className="flex-1 py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50"
             >
-              <Icon name={noPlan ? "Lock" : "Share2"} size={14} />
+              <Icon name="Share2" size={14} />
               Отправить
             </button>
           </div>

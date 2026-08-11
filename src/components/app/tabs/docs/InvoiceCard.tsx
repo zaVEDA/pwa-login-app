@@ -1,11 +1,9 @@
 import Icon from "@/components/ui/icon";
 import { formatDate } from "@/lib/date";
 import { Invoice } from "../constants";
-import { PlanType } from "@/lib/auth";
 
 interface Props {
   inv: Invoice;
-  userPlan?: PlanType | null;
   pdfLoadingId: number | null;
   docLoadingId: number | null;
   basisMenuId: number | null;
@@ -28,7 +26,6 @@ interface Props {
 
 export default function InvoiceCard({
   inv,
-  userPlan,
   pdfLoadingId,
   docLoadingId,
   basisMenuId,
@@ -82,19 +79,19 @@ export default function InvoiceCard({
           <div className="flex items-center gap-1">
           <button
             onClick={() => downloadPdf(inv.id, inv.invoice_number)}
-            disabled={pdfLoadingId === inv.id || inv.status === "deleted" || !userPlan}
-            aria-label={userPlan ? "Скачать PDF" : "Выберите тариф в Аккаунте"}
+            disabled={pdfLoadingId === inv.id || inv.status === "deleted"}
+            aria-label="Скачать PDF"
             className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
           >
-            <Icon name={pdfLoadingId === inv.id ? "Loader" : userPlan ? "FileDown" : "Lock"} size={15} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
+            <Icon name={pdfLoadingId === inv.id ? "Loader" : "FileDown"} size={15} className={pdfLoadingId === inv.id ? "animate-spin" : ""} />
           </button>
           <button
             onClick={() => setShareMenuId(shareMenuId === inv.id ? null : inv.id)}
-            disabled={inv.status === "deleted" || !userPlan}
-            aria-label={userPlan ? "Отправить счёт" : "Выберите тариф в Аккаунте"}
+            disabled={inv.status === "deleted"}
+            aria-label="Отправить счёт"
             className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
           >
-            <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
+            <Icon name="Share2" size={14} />
           </button>
           <button
             onClick={() => setBasisMenuId(basisMenuId === inv.id ? null : inv.id)}

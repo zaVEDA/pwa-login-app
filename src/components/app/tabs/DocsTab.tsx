@@ -564,7 +564,6 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
               <InvoiceCard
                 key={inv.id}
                 inv={inv}
-                userPlan={userPlan}
                 pdfLoadingId={pdfLoadingId}
                 docLoadingId={docLoadingId}
                 basisMenuId={basisMenuId}
@@ -595,7 +594,6 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
               <RealizationDocCard
                 key={`doc-${doc.id}`}
                 doc={doc}
-                userPlan={userPlan}
                 docLoadingId={docLoadingId}
                 statusMenuId={statusMenuId}
                 setStatusMenuId={setStatusMenuId}

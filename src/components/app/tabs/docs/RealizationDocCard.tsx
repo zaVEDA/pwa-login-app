@@ -1,11 +1,9 @@
 import Icon from "@/components/ui/icon";
 import { formatDate } from "@/lib/date";
 import { RealizationDoc } from "../constants";
-import { PlanType } from "@/lib/auth";
 
 interface Props {
   doc: RealizationDoc;
-  userPlan?: PlanType | null;
   docLoadingId: number | null;
   statusMenuId: number | null;
   setStatusMenuId: (id: number | null) => void;
@@ -20,7 +18,6 @@ interface Props {
 
 export default function RealizationDocCard({
   doc,
-  userPlan,
   docLoadingId,
   statusMenuId,
   setStatusMenuId,
@@ -69,27 +66,27 @@ export default function RealizationDocCard({
           <div className="flex items-center gap-1">
             <button
               onClick={() => downloadDocPdf(doc)}
-              disabled={docLoadingId === doc.id || doc.status === "deleted" || !userPlan}
-              aria-label={userPlan ? "Скачать PDF" : "Выберите тариф в Аккаунте"}
+              disabled={docLoadingId === doc.id || doc.status === "deleted"}
+              aria-label="Скачать PDF"
               className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
             >
-              <Icon name={docLoadingId === doc.id ? "Loader" : userPlan ? "FileDown" : "Lock"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
+              <Icon name={docLoadingId === doc.id ? "Loader" : "FileDown"} size={15} className={docLoadingId === doc.id ? "animate-spin" : ""} />
             </button>
             <button
               onClick={() => printDocPdf(doc)}
-              disabled={docLoadingId === doc.id || doc.status === "deleted" || !userPlan}
-              aria-label={userPlan ? "Печать" : "Выберите тариф в Аккаунте"}
+              disabled={docLoadingId === doc.id || doc.status === "deleted"}
+              aria-label="Печать"
               className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
             >
-              <Icon name={userPlan ? "Printer" : "Lock"} size={15} />
+              <Icon name="Printer" size={15} />
             </button>
             <button
               onClick={() => setShareDocId(shareDocId === doc.id ? null : doc.id)}
-              disabled={doc.status === "deleted" || !userPlan}
-              aria-label={userPlan ? "Поделиться" : "Выберите тариф в Аккаунте"}
+              disabled={doc.status === "deleted"}
+              aria-label="Поделиться"
               className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
             >
-              <Icon name={userPlan ? "Share2" : "Lock"} size={14} />
+              <Icon name="Share2" size={14} />
             </button>
           </div>
         </div>
