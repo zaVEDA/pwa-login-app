@@ -38,7 +38,7 @@ export default function WelcomeCta() {
           ООО «ЗАВЕДУЮЩАЯ» · ИНН 3801165360 · ОГРН 1253800010320
         </p>
         <p className="text-xs text-muted-foreground">
-          e-mail: 89016625752@mail.ru · тел.: +7 901 662-57-52
+          e-mail: capydoc@mail.ru · тел.: +7 901 662-57-52
         </p>
         <div className="flex items-center justify-center gap-4 mt-3">
           <a

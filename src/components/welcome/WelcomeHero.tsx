@@ -35,8 +35,8 @@ export default function WelcomeHero() {
         <div className="flex items-end justify-center gap-2 mb-6">
           <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="78" height="78" className="flex-shrink-0 rounded-xl" />
           <div className="flex flex-col items-stretch text-left">
-            <span className="flex justify-between text-[18px] font-extrabold uppercase" style={{ color: "hsl(24 20% 13%)", width: "90%" }}>
-              {"Сервис".split("").map((ch, i) => <span key={i}>{ch}</span>)}
+            <span className="block w-full text-center text-[18px] font-black uppercase tracking-wide" style={{ color: "hsl(24 20% 13%)" }}>
+              Сервис
             </span>
             <span className="font-cormorant font-semibold text-[36px] leading-tight whitespace-nowrap">
               <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span><span style={{ color: "hsl(24 20% 13%)" }}>Doc.ru</span>
