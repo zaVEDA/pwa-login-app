@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Icon from "@/components/ui/icon";
 
 const STORAGE_KEY = "cookie_consent_accepted";
 
@@ -35,9 +34,11 @@ export default function CookieBanner() {
         style={{ borderColor: "hsl(var(--primary) / 0.3)" }}
       >
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center flex-shrink-0">
-            <Icon name="Cookie" size={18} className="text-white" />
-          </div>
+          <img
+            src="/capy-cookie.png"
+            alt="Капибара с печенькой"
+            className="w-14 h-14 flex-shrink-0 rounded-xl object-cover"
+          />
           <p className="text-xs leading-relaxed text-muted-foreground">
             Мы используем cookie и похожие технологии, чтобы сайт работал корректно
             и был удобнее. Продолжая пользоваться сайтом, вы соглашаетесь на их
