@@ -47,6 +47,14 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   const [codePurpose, setCodePurpose] = useState<"login" | "register">("login");
   const [captchaPassToken, setCaptchaPassToken] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showNewPasswordConfirm, setShowNewPasswordConfirm] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
 
   const busy = (fn: () => Promise<void>) => async () => {
     setError("");
@@ -62,6 +70,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
     if (phone.replace(/\D/g, "").length < 10) return setError("Введите корректный номер телефона");
     if (!emailValid) return setError("Введите корректный email");
     if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, до 6 символов");
+    if (password !== passwordConfirm) return setError("Пароли не совпадают");
     if (!consent) return setError("Поставьте галочку согласия на обработку данных");
     if (!captchaPassToken) return setError("Пройдите проверку «не робот»");
 
@@ -135,6 +144,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
 
   const handleRecoverNew = busy(async () => {
     if (password.length < 6) return setError("Пароль не короче 6 символов");
+    if (password !== newPasswordConfirm) return setError("Пароли не совпадают");
     const r = await authApi.resetPassword(password);
     if (r.status !== 200) return setError(r.data.error || "Не удалось сменить пароль");
     const me = await authApi.me();
@@ -256,17 +266,43 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
                 className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
               />
               <div>
-                <input
-                  type="password"
-                  autoCapitalize="none"
-                  placeholder="Пароль (до 6 символов)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    autoCapitalize="none"
+                    placeholder="Пароль (до 6 символов)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
+                    className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    <Icon name={showPassword ? "EyeOff" : "Eye"} size={17} />
+                  </button>
+                </div>
                 <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
                   Латинские буквы, цифры и знаки, до 6 символов
                 </p>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPasswordConfirm ? "text" : "password"}
+                  autoCapitalize="none"
+                  placeholder="Повторите пароль"
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
+                  className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm((v) => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                >
+                  <Icon name={showPasswordConfirm ? "EyeOff" : "Eye"} size={17} />
+                </button>
               </div>
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
@@ -301,7 +337,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
               <PuzzleCaptcha key={captchaKey} onVerified={setCaptchaPassToken} />
               <button
                 onClick={handleRegister}
-                disabled={loading || !consent || !captchaPassToken}
+                disabled={loading || !consent || !captchaPassToken || !password || password !== passwordConfirm}
                 className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}
@@ -340,14 +376,23 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
           {/* PASSWORD LOGIN */}
           {mode === "password" && (
             <>
-              <input
-                type="password"
-                placeholder="Пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoFocus
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  placeholder="Пароль"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoFocus
+                  className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((v) => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                >
+                  <Icon name={showLoginPassword ? "EyeOff" : "Eye"} size={17} />
+                </button>
+              </div>
               <button
                 onClick={handlePassword}
                 disabled={loading}
@@ -405,9 +450,21 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
           {/* RECOVER NEW PASSWORD */}
           {mode === "recover_new" && (
             <>
-              <input type="password" placeholder="Новый пароль (мин. 6 символов)" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-              <button onClick={handleRecoverNew} disabled={loading}
+              <div className="relative">
+                <input type={showNewPassword ? "text" : "password"} placeholder="Новый пароль (мин. 6 символов)" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus
+                  className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                <button type="button" onClick={() => setShowNewPassword((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Icon name={showNewPassword ? "EyeOff" : "Eye"} size={17} />
+                </button>
+              </div>
+              <div className="relative">
+                <input type={showNewPasswordConfirm ? "text" : "password"} placeholder="Повторите новый пароль" value={newPasswordConfirm} onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                  className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                <button type="button" onClick={() => setShowNewPasswordConfirm((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Icon name={showNewPasswordConfirm ? "EyeOff" : "Eye"} size={17} />
+                </button>
+              </div>
+              <button onClick={handleRecoverNew} disabled={loading || !password || password !== newPasswordConfirm}
                 className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}
                 Сохранить и войти
@@ -420,8 +477,13 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
             <>
               <input type="text" placeholder="Логин" value={login} onChange={(e) => setLogin(e.target.value)} autoFocus
                 className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-              <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+              <div className="relative">
+                <input type={showAdminPassword ? "text" : "password"} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+                <button type="button" onClick={() => setShowAdminPassword((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Icon name={showAdminPassword ? "EyeOff" : "Eye"} size={17} />
+                </button>
+              </div>
               <button onClick={handleAdmin} disabled={loading}
                 className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}
