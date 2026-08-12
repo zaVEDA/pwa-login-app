@@ -2,20 +2,15 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
-import KnowledgeManager from "@/components/admin/KnowledgeManager";
-import AdminMaintenanceToggle from "@/components/admin/AdminMaintenanceToggle";
 import AdminSmsStats from "@/components/admin/AdminSmsStats";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms";
+type Section = "menu" | "family" | "addons" | "calendar" | "tasks" | "sms";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
-  { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, оплаты, подписи ПЭП", badge: "5" },
   { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Список, активации, подписи" },
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
   { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
-  { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
   { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
-  { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Сообщения пользователей", badge: "2" },
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой", badge: "3" },
 ];
 
@@ -38,47 +33,6 @@ const mockUsers = [
   { name: "Дмитрий Козлов", phone: "+7 999 333-44-55", plan: "Творец", activated: "28.05.2025", until: "28.11.2025", signed: 13, logins: 22, operator: "Теле2" },
   { name: "Елена Фролова", phone: "+7 912 444-55-66", plan: "—", activated: "—", until: "—", signed: 0, logins: 4, operator: "МТС" },
 ];
-
-function StatChip({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-white/60 rounded-xl p-3 text-center border border-border/50">
-      <p className="font-cormorant text-2xl font-semibold text-amber-700">{value}</p>
-      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{label}</p>
-    </div>
-  );
-}
-
-function UsersScreen({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="space-y-4">
-      <ScreenHeader title="Пользователи" subtitle="Тарифы · оплаты · сроки · подписи ПЭП · входы" onBack={onBack} />
-      <div className="grid grid-cols-3 gap-2.5">
-        <StatChip label="Всего" value="5" />
-        <StatChip label="С тарифом" value="3" />
-        <StatChip label="Подписей" value="28" />
-      </div>
-      <div className="space-y-2.5">
-        {mockUsers.map((u) => (
-          <div key={u.phone} className="card-warm rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm font-semibold text-foreground">{u.name}</p>
-                <p className="text-xs text-muted-foreground">{u.phone} · {u.operator}</p>
-              </div>
-              <span className="text-[11px] px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">{u.plan}</span>
-            </div>
-            <div className="grid grid-cols-4 gap-2 text-center">
-              <div><p className="text-sm font-semibold">{u.activated}</p><p className="text-[9px] text-muted-foreground">активация</p></div>
-              <div><p className="text-sm font-semibold">{u.until}</p><p className="text-[9px] text-muted-foreground">до</p></div>
-              <div><p className="text-sm font-semibold text-green-600">{u.signed}</p><p className="text-[9px] text-muted-foreground">подписей</p></div>
-              <div><p className="text-sm font-semibold">{u.logins}</p><p className="text-[9px] text-muted-foreground">входов</p></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function FamilyScreen({ onBack }: { onBack: () => void }) {
   const fam = mockUsers.filter((_, i) => i % 2 === 0);
@@ -167,41 +121,6 @@ function CalendarScreen({ onBack }: { onBack: () => void }) {
       <button className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium flex items-center justify-center gap-2">
         <Icon name="Plus" size={15} /> Добавить фразу
       </button>
-    </div>
-  );
-}
-
-const mockTickets = [
-  { name: "Мария Волкова", msg: "Не приходит код по SMS", date: "18.07.2025", answered: false },
-  { name: "Игорь Петров", msg: "Как продлить тариф?", date: "16.07.2025", answered: true, answerDate: "16.07.2025" },
-];
-
-function SupportScreen({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="space-y-4">
-      <ScreenHeader title="Поддержка" subtitle="Сообщения пользователей · ответы · даты" onBack={onBack} />
-      <div className="space-y-2.5">
-        {mockTickets.map((t, i) => (
-          <div key={i} className="card-warm rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-sm font-semibold text-foreground">{t.name}</p>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${t.answered ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                {t.answered ? "Отвечено" : "Новое"}
-              </span>
-            </div>
-            <p className="text-sm text-foreground mb-2">«{t.msg}»</p>
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>Получено {t.date}</span>
-              {t.answered && <span>Ответ {t.answerDate}</span>}
-            </div>
-            {!t.answered && (
-              <button className="mt-2.5 w-full py-2 rounded-xl bg-primary/15 text-primary text-xs font-medium flex items-center justify-center gap-1.5">
-                <Icon name="Send" size={12} /> Ответить
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -419,19 +338,6 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function KnowledgeScreen({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="space-y-4">
-      <ScreenHeader
-        title="База знаний"
-        subtitle="Видео · текст · порядок · публикация"
-        onBack={onBack}
-      />
-      <KnowledgeManager />
-    </div>
-  );
-}
-
 function SmsScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-4">
@@ -448,13 +354,10 @@ function SmsScreen({ onBack }: { onBack: () => void }) {
 export default function AdminDashboard() {
   const [section, setSection] = useState<Section>("menu");
 
-  if (section === "users") return <UsersScreen onBack={() => setSection("menu")} />;
   if (section === "family") return <FamilyScreen onBack={() => setSection("menu")} />;
-  if (section === "knowledge") return <KnowledgeScreen onBack={() => setSection("menu")} />;
   if (section === "addons") return <AddonsScreen onBack={() => setSection("menu")} />;
   if (section === "sms") return <SmsScreen onBack={() => setSection("menu")} />;
   if (section === "calendar") return <CalendarScreen onBack={() => setSection("menu")} />;
-  if (section === "support") return <SupportScreen onBack={() => setSection("menu")} />;
   if (section === "tasks") return <TasksScreen onBack={() => setSection("menu")} />;
 
   return (
@@ -468,8 +371,6 @@ export default function AdminDashboard() {
           <Icon name="Home" size={13} /> На главную
         </a>
       </div>
-
-      <AdminMaintenanceToggle />
 
       <div className="grid grid-cols-2 gap-3">
         {tiles.map((t) => (
