@@ -151,19 +151,24 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
       {mode === "recover_new" && (
         <>
           <div className="relative">
-            <input type={showNewPassword ? "text" : "password"} placeholder="Новый пароль (мин. 6 символов)" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus
+            <input type={showNewPassword ? "text" : "password"} autoCapitalize="none" placeholder="Новый пароль (4–6 символов)" value={password}
+              onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))} autoFocus
               className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
             <button type="button" onClick={() => setShowNewPassword((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Icon name={showNewPassword ? "EyeOff" : "Eye"} size={17} />
             </button>
           </div>
           <div className="relative">
-            <input type={showNewPasswordConfirm ? "text" : "password"} placeholder="Повторите новый пароль" value={newPasswordConfirm} onChange={(e) => setNewPasswordConfirm(e.target.value)}
+            <input type={showNewPasswordConfirm ? "text" : "password"} autoCapitalize="none" placeholder="Повторите новый пароль" value={newPasswordConfirm}
+              onChange={(e) => setNewPasswordConfirm(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
               className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
             <button type="button" onClick={() => setShowNewPasswordConfirm((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Icon name={showNewPasswordConfirm ? "EyeOff" : "Eye"} size={17} />
             </button>
           </div>
+          <p className="text-[11px] text-muted-foreground px-1 -mt-1">
+            Латинские буквы, цифры и знаки, от 4 до 6 символов
+          </p>
           <button onClick={handleRecoverNew} disabled={loading || !password || password !== newPasswordConfirm}
             className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
             {loading && <Icon name="Loader" size={15} className="animate-spin" />}

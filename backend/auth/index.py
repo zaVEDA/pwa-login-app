@@ -286,6 +286,10 @@ def handler(event: dict, context) -> dict:
             code = (body.get("code") or "").strip()
 
             ident = phone if channel == "sms" else email
+            if not ident:
+                return resp(400, {"error": "Введите номер телефона" if channel == "sms" else "Введите email"})
+            if not code:
+                return resp(400, {"error": "Введите код из сообщения"})
 
             # Блокировка: 3 неверных ввода кода → блок на 30 минут
             cur.execute(
@@ -569,8 +573,8 @@ def handler(event: dict, context) -> dict:
         if action == "reset_password":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
             password = body.get("password") or ""
-            if len(password) < 6:
-                return resp(400, {"error": "Пароль должен быть не короче 6 символов"})
+            if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{4,6}$", password):
+                return resp(400, {"error": "Пароль: латиница, цифры и знаки, от 4 до 6 символов"})
             cur.execute("SELECT user_id FROM user_sessions WHERE token = %s AND (expires_at IS NULL OR expires_at > NOW())", (token,))
             s = cur.fetchone()
             if not s:

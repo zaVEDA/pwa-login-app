@@ -139,7 +139,8 @@ export function useLoginScreen({ onAuth }: Args) {
   });
 
   const handleRecoverNew = busy(async () => {
-    if (password.length < 6) return setError("Пароль не короче 6 символов");
+    if (!/^[A-Za-z0-9!-/:-@[-`{-~]{4,6}$/.test(password))
+      return setError("Пароль: латиница, цифры и знаки, от 4 до 6 символов");
     if (password !== newPasswordConfirm) return setError("Пароли не совпадают");
     const r = await authApi.resetPassword(password);
     if (r.status !== 200) return setError(r.data.error || "Не удалось сменить пароль");
