@@ -33,7 +33,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
     handleRecoverRequest,
     handleRecoverNew,
     handleAdmin,
-    handleAdminSms,
+    handleAdminForgot,
   } = m;
 
   return (
@@ -61,7 +61,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
           </button>
           <button
             onClick={() => {
-              setMode(mode === "code" ? (codeFromAdmin ? "admin" : "phone") : "recover");
+              setMode(codeFromAdmin ? "admin" : mode === "code" ? "phone" : "recover");
               setCodeFromAdmin(false);
               setCode("");
               setError("");
@@ -208,7 +208,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
           </button>
           <p className="text-[11px] text-center text-muted-foreground">С нового устройства придёт код в SMS</p>
           <div className="flex items-center justify-between">
-            <button onClick={handleAdminSms} disabled={loading} className="text-xs text-primary">Войти по SMS</button>
+            <button onClick={handleAdminForgot} disabled={loading} className="text-xs text-primary">Забыли пароль?</button>
             <button onClick={() => { setMode("phone"); setError(""); }} className="text-xs text-muted-foreground">Назад</button>
           </div>
         </>

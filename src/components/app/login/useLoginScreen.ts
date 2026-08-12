@@ -143,20 +143,22 @@ export function useLoginScreen({ onAuth }: Args) {
     if (password !== newPasswordConfirm) return setError("Пароли не совпадают");
     const r = await authApi.resetPassword(password);
     if (r.status !== 200) return setError(r.data.error || "Не удалось сменить пароль");
+    setCodeFromAdmin(false);
     const me = await authApi.me();
     if (me.data.user) onAuth(me.data.user);
   });
 
-  // Вход Заведующей сразу по SMS — без пароля
-  const handleAdminSms = busy(async () => {
+  // Заведующая забыла пароль — код в SMS, затем новый пароль
+  const handleAdminForgot = busy(async () => {
     const digits = (login || "").replace(/\D/g, "");
     if (digits.length < 10) return setError("Введите номер телефона Заведующей");
-    const r = await authApi.requestAdminSms(digits);
+    const r = await authApi.requestAdminSms(digits, "reset");
     if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
     setPhone(r.data.phone);
-    setCodePurpose("login");
+    setRecoverChannel("sms");
     setCodeFromAdmin(true);
-    setMode("code");
+    setPassword("");
+    setMode("recover_code");
   });
 
   const handleAdmin = busy(async () => {
@@ -221,6 +223,6 @@ export function useLoginScreen({ onAuth }: Args) {
     handleRecoverVerify,
     handleRecoverNew,
     handleAdmin,
-    handleAdminSms,
+    handleAdminForgot,
   };
 }
