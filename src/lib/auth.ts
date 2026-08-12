@@ -88,5 +88,7 @@ export const authApi = {
     call("admin_grant_access", p),
   adminListAccess: () => call("admin_list_access"),
   adminRevokeAccess: (id: number) => call("admin_revoke_access", { id }),
+  getMaintenance: () => call("get_maintenance"),
+  adminSetMaintenance: (enabled: boolean) => call("admin_set_maintenance", { enabled }),
   logout: () => call("logout"),
 };

@@ -24,6 +24,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
     showNewPasswordConfirm, setShowNewPasswordConfirm,
     showAdminPassword, setShowAdminPassword,
     captchaKey, setCaptchaPassToken, captchaPassToken,
+    codeFromAdmin, setCodeFromAdmin,
     loading,
     setError,
     handleVerifyCode,
@@ -57,7 +58,15 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
             {loading && <Icon name="Loader" size={15} className="animate-spin" />}
             Подтвердить
           </button>
-          <button onClick={() => { setMode(mode === "code" ? "phone" : "recover"); setCode(""); setError(""); }} className="w-full py-1 text-xs text-muted-foreground">
+          <button
+            onClick={() => {
+              setMode(mode === "code" ? (codeFromAdmin ? "admin" : "phone") : "recover");
+              setCodeFromAdmin(false);
+              setCode("");
+              setError("");
+            }}
+            className="w-full py-1 text-xs text-muted-foreground"
+          >
             Назад
           </button>
         </>

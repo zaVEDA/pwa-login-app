@@ -432,6 +432,41 @@ def handler(event: dict, context) -> dict:
             keys = USER_KEYS + ["password_hash"]
             d = dict(zip(keys, urow))
             uid = d["id"]
+
+            # Заведующая: с нового устройства первый вход только после кода из SMS
+            if d.get("role") == "admin":
+                if not verify_password(password, d.get("password_hash") or ""):
+                    return resp(401, {"error": "Неверный логин или пароль"})
+                trusted = False
+                if device_id:
+                    cur.execute(
+                        "SELECT trusted FROM user_devices WHERE user_id = %s AND device_id = %s",
+                        (uid, device_id)
+                    )
+                    dev = cur.fetchone()
+                    trusted = bool(dev and dev[0])
+                if not trusted:
+                    admin_phone = d.get("phone") or ""
+                    if not admin_phone:
+                        return resp(400, {"error": "У аккаунта Заведующей не указан телефон"})
+                    code = gen_code()
+                    expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+                    cur.execute(
+                        "INSERT INTO auth_codes (user_id, phone, code, purpose, channel, expires_at) "
+                        "VALUES (%s,%s,%s,'login','sms',%s)",
+                        (uid, admin_phone, code, expires)
+                    )
+                    conn.commit()
+                    sms_res = send_sms(admin_phone, sms_text("login", code))
+                    if sms_res.get("status") != "OK":
+                        return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже."})
+                    masked = admin_phone[:2] + "*" * max(0, len(admin_phone) - 6) + admin_phone[-4:]
+                    return resp(200, {
+                        "ok": True,
+                        "sms_required": True,
+                        "phone": admin_phone,
+                        "phone_masked": masked,
+                    })
             # Первый вход (пароль ещё не задан) — назначаем введённый пароль
             if not (d.get("password_hash") or ""):
                 if len(password) < 6:
@@ -569,6 +604,31 @@ def handler(event: dict, context) -> dict:
             cur.execute("INSERT INTO family_requests (user_id, code_word) VALUES (%s, %s)", (uid, code_word))
             conn.commit()
             return resp(200, {"ok": True})
+
+        # 8.1 Состояние заглушки «Скоро запуск» — доступно всем без авторизации
+        if action == "get_maintenance":
+            cur.execute("SELECT maintenance_enabled FROM app_settings WHERE id = 1")
+            row = cur.fetchone()
+            return resp(200, {"ok": True, "maintenance": bool(row[0]) if row else False})
+
+        # 8.2 Админ: включить/выключить заглушку для всех пользователей
+        if action == "admin_set_maintenance":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            enabled = bool(body.get("enabled"))
+            cur.execute(
+                "INSERT INTO app_settings (id, maintenance_enabled, updated_at) VALUES (1, %s, NOW()) "
+                "ON CONFLICT (id) DO UPDATE SET maintenance_enabled = %s, updated_at = NOW()",
+                (enabled, enabled)
+            )
+            conn.commit()
+            return resp(200, {"ok": True, "maintenance": enabled})
 
         # 9. Выход
         if action == "logout":

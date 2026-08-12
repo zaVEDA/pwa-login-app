@@ -67,6 +67,23 @@ export default function Index() {
   const [authChecked, setAuthChecked] = useState(false);
   const [demoMode, setDemoMode] = useState(isDemo);
 
+  // Ранний доступ: мои личные ссылки ?enter=1 (админ) и ?demo=1 (Гость)
+  const [hasEarlyAccess] = useState(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("enter") === "1" || p.get("demo") === "1") {
+      localStorage.setItem("earlyAccess", "1");
+    }
+    return localStorage.getItem("earlyAccess") === "1";
+  });
+  const [maintenance, setMaintenance] = useState<boolean | null>(hasEarlyAccess ? false : null);
+
+  useEffect(() => {
+    if (hasEarlyAccess) return;
+    authApi.getMaintenance()
+      .then(({ data }) => setMaintenance(Boolean(data.maintenance)))
+      .catch(() => setMaintenance(false));
+  }, [hasEarlyAccess]);
+
   const phone = user?.phone || (demoMode ? "+70000000000" : "");
 
   const [docLimits, setDocLimits] = useState<DocLimits | null>(null);
@@ -143,22 +160,17 @@ export default function Index() {
     setActiveTab("home");
   };
 
-  // Заглушка «Скоро запуск» вместо входа в приложение.
-  // Доступ открывается ссылкой ?enter=1 и запоминается (для Заведующей/тестов).
-  const MAINTENANCE = true;
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("enter") === "1") localStorage.setItem("earlyAccess", "1");
-  const hasAccess = localStorage.getItem("earlyAccess") === "1";
-  if (MAINTENANCE && !hasAccess) {
-    return <ComingSoon />;
-  }
-
-  if (!authChecked) {
+  // Заглушка «Скоро запуск»: включается Заведующей в её кабинете.
+  // Обходят её только ссылки ?enter=1 (мой вход) и ?demo=1 (мой Гость).
+  if (maintenance === null || !authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(36 25% 96%)" }}>
         <Icon name="Loader" size={28} className="animate-spin text-primary" />
       </div>
     );
+  }
+  if (maintenance && !hasEarlyAccess) {
+    return <ComingSoon />;
   }
 
   if (!user && !demoMode) {

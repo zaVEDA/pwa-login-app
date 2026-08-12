@@ -26,6 +26,7 @@ export function useLoginScreen({ onAuth }: Args) {
   const [error, setError] = useState("");
   const [devCode, setDevCode] = useState("");
   const [codePurpose, setCodePurpose] = useState<"login" | "register">("login");
+  const [codeFromAdmin, setCodeFromAdmin] = useState(false);
   const [captchaPassToken, setCaptchaPassToken] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -149,6 +150,14 @@ export function useLoginScreen({ onAuth }: Args) {
   const handleAdmin = busy(async () => {
     const r = await authApi.loginPassword({ login: login || "zaVed", password });
     if (r.status !== 200) return setError(r.data.error || "Неверный логин или пароль");
+    // Новое устройство: сначала подтверждаем код из SMS
+    if (r.data.sms_required) {
+      setPhone(r.data.phone);
+      setCodePurpose("login");
+      setCodeFromAdmin(true);
+      setMode("code");
+      return;
+    }
     setToken(r.data.token);
     onAuth(r.data.user);
   });
@@ -180,6 +189,7 @@ export function useLoginScreen({ onAuth }: Args) {
     loading,
     error, setError,
     devCode,
+    codeFromAdmin, setCodeFromAdmin,
     captchaPassToken, setCaptchaPassToken,
     captchaKey,
     passwordConfirm, setPasswordConfirm,

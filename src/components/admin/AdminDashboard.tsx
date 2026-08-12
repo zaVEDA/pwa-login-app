@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
 import KnowledgeManager from "@/components/admin/KnowledgeManager";
+import AdminMaintenanceToggle from "@/components/admin/AdminMaintenanceToggle";
 
 type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge";
 
@@ -442,7 +443,18 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-4 animate-slide-up">
-      <h2 className="font-cormorant text-xl font-semibold">Управление</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-cormorant text-xl font-semibold">Управление</h2>
+        <a
+          href="/"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground px-3 py-1.5 rounded-lg border border-border bg-white/60"
+        >
+          <Icon name="Home" size={13} /> На главную
+        </a>
+      </div>
+
+      <AdminMaintenanceToggle />
+
       <div className="grid grid-cols-2 gap-3">
         {tiles.map((t) => (
           <button
