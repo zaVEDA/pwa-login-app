@@ -4,13 +4,15 @@ import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
 import KnowledgeManager from "@/components/admin/KnowledgeManager";
 import AdminMaintenanceToggle from "@/components/admin/AdminMaintenanceToggle";
+import AdminSmsStats from "@/components/admin/AdminSmsStats";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge";
+type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
   { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, оплаты, подписи ПЭП", badge: "5" },
   { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Список, активации, подписи" },
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
+  { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
   { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
   { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
   { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Сообщения пользователей", badge: "2" },
@@ -430,6 +432,19 @@ function KnowledgeScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+function SmsScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader
+        title="Расход SMS"
+        subtitle="Вход · восстановление · подписание · повторы"
+        onBack={onBack}
+      />
+      <AdminSmsStats />
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [section, setSection] = useState<Section>("menu");
 
@@ -437,6 +452,7 @@ export default function AdminDashboard() {
   if (section === "family") return <FamilyScreen onBack={() => setSection("menu")} />;
   if (section === "knowledge") return <KnowledgeScreen onBack={() => setSection("menu")} />;
   if (section === "addons") return <AddonsScreen onBack={() => setSection("menu")} />;
+  if (section === "sms") return <SmsScreen onBack={() => setSection("menu")} />;
   if (section === "calendar") return <CalendarScreen onBack={() => setSection("menu")} />;
   if (section === "support") return <SupportScreen onBack={() => setSection("menu")} />;
   if (section === "tasks") return <TasksScreen onBack={() => setSection("menu")} />;

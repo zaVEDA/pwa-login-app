@@ -90,6 +90,7 @@ export const authApi = {
   adminRevokeAccess: (id: number) => call("admin_revoke_access", { id }),
   requestAdminSms: (phone: string, purpose: "login" | "reset" = "login") =>
     call("admin_request_sms", { phone, purpose }),
+  adminSmsStats: (days: number) => call("admin_sms_stats", { days }),
   getMaintenance: () => call("get_maintenance"),
   adminSetMaintenance: (enabled: boolean) => call("admin_set_maintenance", { enabled }),
   logout: () => call("logout"),

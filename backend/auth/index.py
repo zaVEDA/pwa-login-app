@@ -80,6 +80,31 @@ def send_sms(phone: str, text: str) -> dict:
         return {"status": "ERROR", "error": str(e)}
 
 
+SMS_KINDS = {
+    "login": "login",
+    "register": "register",
+    "reset": "reset",
+    "sign": "sign",
+}
+
+
+def log_sms(cur, phone: str, user_id, kind: str, is_repeat: bool, ok: bool) -> None:
+    """Записывает факт отправки SMS для счётчика расхода в кабинете Заведующей."""
+    cur.execute(
+        "INSERT INTO sms_log (phone, user_id, kind, is_repeat, status) VALUES (%s,%s,%s,%s,%s)",
+        (phone, user_id, SMS_KINDS.get(kind, kind), is_repeat, "sent" if ok else "error")
+    )
+
+
+def is_repeat_sms(cur, phone: str, kind: str) -> bool:
+    """Повтор — если по этому номеру и виду код уже отправляли за последние 30 минут."""
+    cur.execute(
+        "SELECT 1 FROM sms_log WHERE phone = %s AND kind = %s AND created_at > NOW() - INTERVAL '30 minutes' LIMIT 1",
+        (phone, SMS_KINDS.get(kind, kind))
+    )
+    return cur.fetchone() is not None
+
+
 def user_public(row, keys) -> dict:
     d = dict(zip(keys, row))
     d.pop("password_hash", None)
@@ -270,8 +295,12 @@ def handler(event: dict, context) -> dict:
             print(f"[AUTH CODE] purpose={purpose} channel={channel} phone={phone} email={email} CODE={code}")
 
             if channel == "sms":
+                repeat = is_repeat_sms(cur, phone, purpose)
                 sms_res = send_sms(phone, sms_text(purpose, code))
-                if sms_res.get("status") != "OK":
+                ok = sms_res.get("status") == "OK"
+                log_sms(cur, phone, user_id, purpose, repeat, ok)
+                conn.commit()
+                if not ok:
                     return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже.", "sms_status": sms_res.get("status")})
                 return resp(200, {"ok": True, "sent": True, "channel": channel})
 
@@ -466,9 +495,12 @@ def handler(event: dict, context) -> dict:
                         "VALUES (%s,%s,%s,'login','sms',%s)",
                         (uid, admin_phone, code, expires)
                     )
-                    conn.commit()
+                    repeat = is_repeat_sms(cur, admin_phone, "login")
                     sms_res = send_sms(admin_phone, sms_text("login", code))
-                    if sms_res.get("status") != "OK":
+                    ok_sms = sms_res.get("status") == "OK"
+                    log_sms(cur, admin_phone, uid, "login", repeat, ok_sms)
+                    conn.commit()
+                    if not ok_sms:
                         return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже."})
                     masked = admin_phone[:2] + "*" * max(0, len(admin_phone) - 6) + admin_phone[-4:]
                     return resp(200, {
@@ -644,11 +676,63 @@ def handler(event: dict, context) -> dict:
                 "VALUES (%s,%s,%s,%s,'sms',%s)",
                 (uid, admin_phone, code, purpose, expires)
             )
-            conn.commit()
+            repeat = is_repeat_sms(cur, admin_phone, purpose)
             sms_res = send_sms(admin_phone, sms_text(purpose, code))
-            if sms_res.get("status") != "OK":
+            ok_sms = sms_res.get("status") == "OK"
+            log_sms(cur, admin_phone, uid, purpose, repeat, ok_sms)
+            conn.commit()
+            if not ok_sms:
                 return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже."})
             return resp(200, {"ok": True, "sent": True, "phone": admin_phone, "purpose": purpose})
+
+        # 8.05 Админ: расход SMS по видам и по номерам
+        if action == "admin_sms_stats":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            days = body.get("days")
+            days = int(days) if str(days).isdigit() and 0 < int(days) <= 365 else 30
+            where = f"created_at > NOW() - INTERVAL '{days} days' AND status = 'sent'"
+
+            cur.execute(f"SELECT kind, is_repeat, COUNT(*) FROM sms_log WHERE {where} GROUP BY kind, is_repeat")
+            by_kind = [{"kind": r[0], "is_repeat": bool(r[1]), "count": r[2]} for r in cur.fetchall()]
+
+            cur.execute(f"SELECT COUNT(*) FROM sms_log WHERE {where}")
+            total = cur.fetchone()[0] or 0
+
+            cur.execute(f"SELECT COUNT(*) FROM sms_log WHERE {where} AND created_at > NOW() - INTERVAL '1 day'")
+            today = cur.fetchone()[0] or 0
+
+            cur.execute(
+                f"SELECT l.phone, MAX(u.full_name), COUNT(*), "
+                f"SUM(CASE WHEN l.kind = 'login' AND NOT l.is_repeat THEN 1 ELSE 0 END), "
+                f"SUM(CASE WHEN l.kind = 'login' AND l.is_repeat THEN 1 ELSE 0 END), "
+                f"SUM(CASE WHEN l.kind = 'reset' AND NOT l.is_repeat THEN 1 ELSE 0 END), "
+                f"SUM(CASE WHEN l.kind = 'reset' AND l.is_repeat THEN 1 ELSE 0 END), "
+                f"SUM(CASE WHEN l.kind = 'sign' AND NOT l.is_repeat THEN 1 ELSE 0 END), "
+                f"SUM(CASE WHEN l.kind = 'sign' AND l.is_repeat THEN 1 ELSE 0 END), "
+                f"SUM(CASE WHEN l.kind = 'register' THEN 1 ELSE 0 END), MAX(l.created_at) "
+                f"FROM sms_log l LEFT JOIN users u ON u.id = l.user_id WHERE {where} "
+                f"GROUP BY l.phone ORDER BY COUNT(*) DESC LIMIT 200"
+            )
+            by_phone = [
+                {
+                    "phone": r[0], "full_name": r[1], "total": r[2],
+                    "login": r[3] or 0, "login_repeat": r[4] or 0,
+                    "reset": r[5] or 0, "reset_repeat": r[6] or 0,
+                    "sign": r[7] or 0, "sign_repeat": r[8] or 0,
+                    "register": r[9] or 0,
+                    "last_at": str(r[10]) if r[10] else None,
+                }
+                for r in cur.fetchall()
+            ]
+            return resp(200, {"ok": True, "days": days, "total": total, "today": today,
+                              "by_kind": by_kind, "by_phone": by_phone})
 
         # 8.1 Состояние заглушки «Скоро запуск» — доступно всем без авторизации
         if action == "get_maintenance":
