@@ -211,7 +211,9 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
             {loading && <Icon name="Loader" size={15} className="animate-spin" />}
             Войти
           </button>
-          <p className="text-[11px] text-center text-muted-foreground">С нового устройства придёт код в SMS</p>
+          <p className="text-[11px] text-center text-muted-foreground">
+            Первый вход — введённый пароль станет постоянным. С нового устройства придёт код в SMS
+          </p>
           <div className="flex items-center justify-between">
             <button onClick={handleAdminForgot} disabled={loading} className="text-xs text-primary">Забыли пароль?</button>
             <button onClick={() => { setMode("phone"); setError(""); }} className="text-xs text-muted-foreground">Назад</button>

@@ -439,7 +439,13 @@ def handler(event: dict, context) -> dict:
 
             # Заведующая: с нового устройства первый вход только после кода из SMS
             if d.get("role") == "admin":
-                if not verify_password(password, d.get("password_hash") or ""):
+                if not (d.get("password_hash") or ""):
+                    # Пароль ещё не задан — назначаем введённый
+                    if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{6,20}$", password):
+                        return resp(400, {"error": "Придумайте пароль: латиница, цифры и знаки, от 6 символов"})
+                    cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hash_password(password), uid))
+                    conn.commit()
+                elif not verify_password(password, d.get("password_hash") or ""):
                     return resp(401, {"error": "Неверный логин или пароль"})
                 trusted = False
                 if device_id:
