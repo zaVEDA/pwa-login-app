@@ -33,6 +33,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
     handleRecoverRequest,
     handleRecoverNew,
     handleAdmin,
+    handleAdminSms,
   } = m;
 
   return (
@@ -174,22 +175,42 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
       {/* ADMIN */}
       {mode === "admin" && (
         <>
-          <input type="text" placeholder="Логин" value={login} onChange={(e) => setLogin(e.target.value)} autoFocus
-            className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-          <div className="relative">
-            <input type={showAdminPassword ? "text" : "password"} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-            <button type="button" onClick={() => setShowAdminPassword((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-              <Icon name={showAdminPassword ? "EyeOff" : "Eye"} size={17} />
-            </button>
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-1.5 px-1">Телефон Заведующей</label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
+              <input
+                type="tel"
+                inputMode="numeric"
+                autoComplete="username"
+                placeholder="901 662-57-52"
+                value={login}
+                onChange={(e) => setLogin(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                autoFocus
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-1.5 px-1">Пароль</label>
+            <div className="relative">
+              <input type={showAdminPassword ? "text" : "password"} autoComplete="current-password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
+              <button type="button" onClick={() => setShowAdminPassword((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <Icon name={showAdminPassword ? "EyeOff" : "Eye"} size={17} />
+              </button>
+            </div>
           </div>
           <button onClick={handleAdmin} disabled={loading}
             className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
             {loading && <Icon name="Loader" size={15} className="animate-spin" />}
             Войти
           </button>
-          <p className="text-[11px] text-center text-muted-foreground">Первый вход — введённый пароль станет постоянным</p>
-          <button onClick={() => { setMode("phone"); setError(""); }} className="w-full py-1 text-xs text-muted-foreground">Назад</button>
+          <p className="text-[11px] text-center text-muted-foreground">С нового устройства придёт код в SMS</p>
+          <div className="flex items-center justify-between">
+            <button onClick={handleAdminSms} disabled={loading} className="text-xs text-primary">Войти по SMS</button>
+            <button onClick={() => { setMode("phone"); setError(""); }} className="text-xs text-muted-foreground">Назад</button>
+          </div>
         </>
       )}
     </>

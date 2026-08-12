@@ -147,8 +147,22 @@ export function useLoginScreen({ onAuth }: Args) {
     if (me.data.user) onAuth(me.data.user);
   });
 
+  // Вход Заведующей сразу по SMS — без пароля
+  const handleAdminSms = busy(async () => {
+    const digits = (login || "").replace(/\D/g, "");
+    if (digits.length < 10) return setError("Введите номер телефона Заведующей");
+    const r = await authApi.requestAdminSms(digits);
+    if (r.status !== 200) return setError(r.data.error || "Не удалось отправить код");
+    setPhone(r.data.phone);
+    setCodePurpose("login");
+    setCodeFromAdmin(true);
+    setMode("code");
+  });
+
   const handleAdmin = busy(async () => {
-    const r = await authApi.loginPassword({ login: login || "zaVed", password });
+    const digits = (login || "").replace(/\D/g, "");
+    if (!digits) return setError("Введите номер телефона Заведующей");
+    const r = await authApi.loginPassword({ login: digits, password });
     if (r.status !== 200) return setError(r.data.error || "Неверный логин или пароль");
     // Новое устройство: сначала подтверждаем код из SMS
     if (r.data.sms_required) {
@@ -207,5 +221,6 @@ export function useLoginScreen({ onAuth }: Args) {
     handleRecoverVerify,
     handleRecoverNew,
     handleAdmin,
+    handleAdminSms,
   };
 }

@@ -605,6 +605,38 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return resp(200, {"ok": True})
 
+        # 8.0 Заведующая: запрос кода в SMS для входа без пароля
+        if action == "admin_request_sms":
+            admin_phone = normalize_phone(body.get("phone", ""))
+            cur.execute("SELECT id, role FROM users WHERE phone = %s", (admin_phone,))
+            r = cur.fetchone()
+            if not r or r[1] != "admin":
+                return resp(403, {"error": "Этот номер не принадлежит Заведующей"})
+            uid = r[0]
+            cur.execute(
+                "SELECT created_at FROM auth_codes WHERE phone = %s AND purpose = 'login' AND channel = 'sms' "
+                "ORDER BY created_at DESC LIMIT 1",
+                (admin_phone,)
+            )
+            last = cur.fetchone()
+            if last and last[0]:
+                elapsed = (datetime.datetime.utcnow() - last[0]).total_seconds()
+                if elapsed < 60:
+                    wait = int(60 - elapsed)
+                    return resp(429, {"error": f"Подождите {wait} сек перед повторной отправкой"})
+            code = gen_code()
+            expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+            cur.execute(
+                "INSERT INTO auth_codes (user_id, phone, code, purpose, channel, expires_at) "
+                "VALUES (%s,%s,%s,'login','sms',%s)",
+                (uid, admin_phone, code, expires)
+            )
+            conn.commit()
+            sms_res = send_sms(admin_phone, sms_text("login", code))
+            if sms_res.get("status") != "OK":
+                return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже."})
+            return resp(200, {"ok": True, "sent": True, "phone": admin_phone})
+
         # 8.1 Состояние заглушки «Скоро запуск» — доступно всем без авторизации
         if action == "get_maintenance":
             cur.execute("SELECT maintenance_enabled FROM app_settings WHERE id = 1")
