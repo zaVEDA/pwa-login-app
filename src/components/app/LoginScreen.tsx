@@ -15,7 +15,11 @@ interface Props {
 
 export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, onAuth, onDemo }: Props) {
   const m = useLoginScreen({ onAuth });
-  const { mode, setMode, phone, error, setError, devCode, showConsent, setShowConsent, acceptAllConsents } = m;
+  const { mode, phone, error, devCode, showConsent, setShowConsent, acceptAllConsents } = m;
+
+  // Гостевой вход виден только по моим личным ссылкам (?demo=1 / ?enter=1)
+  const p = new URLSearchParams(window.location.search);
+  const showGuestEntry = p.get("demo") === "1" || p.get("enter") === "1";
 
   const errBlock = error && (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200">
@@ -73,16 +77,11 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
           <LoginOtherForms m={m} devBlock={devBlock} />
         </div>
 
-        {mode === "phone" && (
-          <>
-            <button onClick={onDemo}
-              className="w-full mt-4 py-2.5 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm shadow-amber-900/20 active:scale-[0.98] transition-transform">
-              Посмотреть без регистрации →
-            </button>
-            <button onClick={() => { setMode("admin"); setError(""); }} className="w-full mt-3 py-1 text-[11px] text-muted-foreground">
-              Вход для Заведующей
-            </button>
-          </>
+        {mode === "phone" && showGuestEntry && (
+          <button onClick={onDemo}
+            className="w-full mt-4 py-2.5 rounded-xl gold-gradient text-white text-xs font-medium shadow-sm shadow-amber-900/20 active:scale-[0.98] transition-transform">
+            Посмотреть без регистрации →
+          </button>
         )}
       </div>
 

@@ -36,6 +36,9 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/doc/:token" element={<SharedDoc />} />
           <Route path="/legal-flow" element={<Navigate to="/legal" replace />} />
+          {/* Личные ссылки Заведующей: вход в кабинет и режим «Гость» */}
+          <Route path="/zaved" element={<Navigate to="/app?enter=1&admin=1" replace />} />
+          <Route path="/guest" element={<Navigate to="/app?enter=1&demo=1" replace />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

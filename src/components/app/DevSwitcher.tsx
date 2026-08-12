@@ -4,8 +4,8 @@ import Icon from "@/components/ui/icon";
 const MODES = [
   { key: "landing", label: "Лендинг", sub: "для пользователей", icon: "Globe", href: "/" },
   { key: "legal", label: "Юристу", sub: "скрытая страница", icon: "Scale", href: "/legal" },
-  { key: "guest", label: "Гость", sub: "вход + тестовые доки", icon: "UserRound", href: "/app?demo=1" },
-  { key: "admin", label: "Заведующая", sub: "мой админ-вход", icon: "ShieldCheck", href: "/app?enter=1&admin=1" },
+  { key: "guest", label: "Гость", sub: "вход + тестовые доки", icon: "UserRound", href: "/guest" },
+  { key: "admin", label: "Заведующая", sub: "мой админ-вход", icon: "ShieldCheck", href: "/zaved" },
 ] as const;
 
 export default function DevSwitcher() {
