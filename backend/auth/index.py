@@ -699,10 +699,13 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 "SELECT u.id, u.full_name, u.phone, u.email, u.plan, u.plan_expires_at, u.role, "
                 "u.created_at, u.last_login_at, "
-                "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id), "
-                "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id AND c.signed_at IS NOT NULL), "
-                "(SELECT COUNT(*) FROM invoices i WHERE i.user_id = u.id) "
-                "FROM users u ORDER BY u.created_at DESC LIMIT 300"
+                "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id "
+                "  AND c.status NOT IN ('deleted','archived_test')), "
+                "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id AND c.signed_at IS NOT NULL "
+                "  AND c.status NOT IN ('deleted','archived_test')), "
+                "(SELECT COUNT(*) FROM invoices i WHERE i.user_id = u.id "
+                "  AND i.status NOT IN ('deleted','archived_test')) "
+                "FROM users u WHERE u.is_test = FALSE ORDER BY u.created_at DESC LIMIT 300"
             )
             users = [
                 {
@@ -714,7 +717,7 @@ def handler(event: dict, context) -> dict:
                 }
                 for r in cur.fetchall()
             ]
-            paid = sum(1 for u in users if u["plan"])
+            paid = sum(1 for u in users if u["plan"] and u["role"] != "admin")
             return resp(200, {"ok": True, "users": users, "total": len(users), "paid": paid,
                               "docs": sum(u["docs_total"] for u in users),
                               "signed": sum(u["docs_signed"] for u in users)})
