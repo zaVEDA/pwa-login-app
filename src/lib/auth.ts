@@ -91,6 +91,11 @@ export const authApi = {
   requestAdminSms: (phone: string, purpose: "login" | "reset" = "login") =>
     call("admin_request_sms", { phone, purpose }),
   adminSmsStats: (days: number) => call("admin_sms_stats", { days }),
+  adminListUsers: () => call("admin_list_users"),
+  adminListTickets: () => call("admin_list_tickets"),
+  adminAnswerTicket: (id: number, answer: string) => call("admin_answer_ticket", { id, answer }),
+  supportCreate: (message: string, name?: string, phone?: string, email?: string) =>
+    call("support_create", { message, name, phone, email }),
   getMaintenance: () => call("get_maintenance"),
   adminSetMaintenance: (enabled: boolean) => call("admin_set_maintenance", { enabled }),
   logout: () => call("logout"),

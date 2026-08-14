@@ -685,6 +685,105 @@ def handler(event: dict, context) -> dict:
                 return resp(502, {"error": "Не удалось отправить SMS. Попробуйте позже."})
             return resp(200, {"ok": True, "sent": True, "phone": admin_phone, "purpose": purpose})
 
+        # 8.03 Админ: реальный список пользователей со статистикой
+        if action == "admin_list_users":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute(
+                "SELECT u.id, u.full_name, u.phone, u.email, u.plan, u.plan_expires_at, u.role, "
+                "u.created_at, u.last_login_at, "
+                "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id), "
+                "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id AND c.signed_at IS NOT NULL), "
+                "(SELECT COUNT(*) FROM invoices i WHERE i.user_id = u.id) "
+                "FROM users u ORDER BY u.created_at DESC LIMIT 300"
+            )
+            users = [
+                {
+                    "id": r[0], "full_name": r[1], "phone": r[2], "email": r[3],
+                    "plan": r[4], "plan_expires_at": str(r[5]) if r[5] else None, "role": r[6],
+                    "created_at": str(r[7]) if r[7] else None,
+                    "last_login_at": str(r[8]) if r[8] else None,
+                    "docs_total": r[9] or 0, "docs_signed": r[10] or 0, "invoices": r[11] or 0,
+                }
+                for r in cur.fetchall()
+            ]
+            paid = sum(1 for u in users if u["plan"])
+            return resp(200, {"ok": True, "users": users, "total": len(users), "paid": paid,
+                              "docs": sum(u["docs_total"] for u in users),
+                              "signed": sum(u["docs_signed"] for u in users)})
+
+        # 8.04 Поддержка: обращения пользователей
+        if action == "support_create":
+            message = (body.get("message") or "").strip()
+            if len(message) < 5:
+                return resp(400, {"error": "Опишите вопрос подробнее"})
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or ""
+            uid = None
+            if token:
+                cur.execute(
+                    "SELECT user_id FROM user_sessions WHERE token = %s AND (expires_at IS NULL OR expires_at > NOW())",
+                    (token,)
+                )
+                r = cur.fetchone()
+                uid = r[0] if r else None
+            cur.execute(
+                "INSERT INTO support_tickets (user_id, name, phone, email, message) VALUES (%s,%s,%s,%s,%s)",
+                (uid, (body.get("name") or "")[:200], normalize_phone(body.get("phone") or ""),
+                 (body.get("email") or "")[:200], message[:4000])
+            )
+            conn.commit()
+            return resp(200, {"ok": True})
+
+        if action == "admin_list_tickets":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute(
+                "SELECT t.id, COALESCE(NULLIF(t.name,''), u.full_name), COALESCE(NULLIF(t.phone,''), u.phone), "
+                "t.email, t.message, t.answer, t.answered_at, t.created_at "
+                "FROM support_tickets t LEFT JOIN users u ON u.id = t.user_id "
+                "ORDER BY t.answered_at IS NOT NULL, t.created_at DESC LIMIT 200"
+            )
+            tickets = [
+                {"id": r[0], "name": r[1], "phone": r[2], "email": r[3], "message": r[4],
+                 "answer": r[5], "answered_at": str(r[6]) if r[6] else None,
+                 "created_at": str(r[7]) if r[7] else None}
+                for r in cur.fetchall()
+            ]
+            return resp(200, {"ok": True, "tickets": tickets,
+                              "new_count": sum(1 for t in tickets if not t["answered_at"])})
+
+        if action == "admin_answer_ticket":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            tid = body.get("id")
+            answer = (body.get("answer") or "").strip()
+            if not tid or not answer:
+                return resp(400, {"error": "Укажите обращение и ответ"})
+            cur.execute(
+                "UPDATE support_tickets SET answer = %s, answered_at = NOW() WHERE id = %s",
+                (answer[:4000], int(tid))
+            )
+            conn.commit()
+            return resp(200, {"ok": True})
+
         # 8.05 Админ: расход SMS по видам и по номерам
         if action == "admin_sms_stats":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""

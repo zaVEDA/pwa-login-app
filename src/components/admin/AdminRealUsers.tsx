@@ -1,0 +1,127 @@
+import { useState, useEffect } from "react";
+import Icon from "@/components/ui/icon";
+import { authApi } from "@/lib/auth";
+
+interface Row {
+  id: number;
+  full_name: string | null;
+  phone: string | null;
+  email: string | null;
+  plan: string | null;
+  plan_expires_at: string | null;
+  role: string | null;
+  created_at: string | null;
+  last_login_at: string | null;
+  docs_total: number;
+  docs_signed: number;
+  invoices: number;
+}
+
+const PLAN_LABELS: Record<string, string> = {
+  start: "Старт", opora: "Опора", rost: "Рост", tvorets: "Творец", family: "Для родных",
+};
+
+function fmtPhone(p: string | null) {
+  if (!p) return "—";
+  const d = p.replace(/\D/g, "").slice(-10);
+  if (d.length !== 10) return p;
+  return `+7 ${d.slice(0, 3)} ${d.slice(3, 6)}-${d.slice(6, 8)}-${d.slice(8)}`;
+}
+
+function fmtDate(s: string | null) {
+  if (!s) return "—";
+  const d = new Date(s.replace(" ", "T"));
+  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("ru-RU");
+}
+
+export default function AdminRealUsers() {
+  const [rows, setRows] = useState<Row[]>([]);
+  const [stats, setStats] = useState({ total: 0, paid: 0, docs: 0, signed: 0 });
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState<number | null>(null);
+
+  useEffect(() => {
+    authApi.adminListUsers()
+      .then(({ status, data }) => {
+        if (status !== 200) return;
+        setRows(data.users || []);
+        setStats({ total: data.total || 0, paid: data.paid || 0, docs: data.docs || 0, signed: data.signed || 0 });
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Icon name="Loader" size={22} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-4 gap-2">
+        {[
+          ["Всего", stats.total],
+          ["С тарифом", stats.paid],
+          ["Документов", stats.docs],
+          ["Подписано", stats.signed],
+        ].map(([label, v]) => (
+          <div key={label as string} className="bg-white/60 rounded-xl p-2.5 text-center border border-border/50">
+            <p className="font-cormorant text-xl font-semibold text-amber-700">{v}</p>
+            <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {rows.length === 0 && (
+        <p className="text-xs text-muted-foreground text-center py-6">Пока нет зарегистрированных пользователей</p>
+      )}
+
+      <div className="space-y-2">
+        {rows.map((u) => {
+          const isOpen = open === u.id;
+          return (
+            <div key={u.id} className="card-warm rounded-xl overflow-hidden">
+              <button onClick={() => setOpen(isOpen ? null : u.id)} className="w-full px-4 py-3 flex items-center gap-3 text-left">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {u.full_name || "Без имени"}
+                    {u.role === "admin" && <span className="ml-1.5 text-[10px] text-amber-600">заведующая</span>}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate">{fmtPhone(u.phone)}</p>
+                </div>
+                {u.plan ? (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex-shrink-0">
+                    {PLAN_LABELS[u.plan] || u.plan}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-muted-foreground flex-shrink-0">без тарифа</span>
+                )}
+                <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={15} className="text-muted-foreground flex-shrink-0" />
+              </button>
+              {isOpen && (
+                <div className="px-4 pb-3 border-t border-border/50 pt-2.5 space-y-1.5">
+                  {[
+                    ["Почта", u.email || "—"],
+                    ["Регистрация", fmtDate(u.created_at)],
+                    ["Последний вход", fmtDate(u.last_login_at)],
+                    ["Тариф до", fmtDate(u.plan_expires_at)],
+                    ["Документов создано", String(u.docs_total)],
+                    ["Подписано клиентами", String(u.docs_signed)],
+                    ["Счетов", String(u.invoices)],
+                  ].map(([label, v]) => (
+                    <div key={label} className="flex items-center justify-between gap-3">
+                      <span className="text-[11px] text-muted-foreground flex-shrink-0">{label}</span>
+                      <span className="text-xs font-medium text-foreground truncate">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

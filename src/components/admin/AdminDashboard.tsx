@@ -4,15 +4,21 @@ import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
 import AdminSmsStats from "@/components/admin/AdminSmsStats";
 import AdminMaintenanceToggle from "@/components/admin/AdminMaintenanceToggle";
+import AdminRealUsers from "@/components/admin/AdminRealUsers";
+import AdminSupport from "@/components/admin/AdminSupport";
+import KnowledgeManager from "@/components/admin/KnowledgeManager";
 
-type Section = "menu" | "family" | "addons" | "calendar" | "tasks" | "sms";
+type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
-  { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Список, активации, подписи" },
+  { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, документы, входы" },
+  { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Кодовое слово и заявки" },
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
   { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
+  { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
+  { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Вопросы пользователей" },
   { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
-  { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой", badge: "3" },
+  { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой" },
 ];
 
 function ScreenHeader({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
@@ -310,6 +316,33 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+function UsersScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader title="Пользователи" subtitle="Тарифы · документы · подписи · входы" onBack={onBack} />
+      <AdminRealUsers />
+    </div>
+  );
+}
+
+function SupportScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader title="Поддержка" subtitle="Вопросы пользователей и ваши ответы" onBack={onBack} />
+      <AdminSupport />
+    </div>
+  );
+}
+
+function KnowledgeScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader title="База знаний" subtitle="Видео и текстовые материалы" onBack={onBack} />
+      <KnowledgeManager />
+    </div>
+  );
+}
+
 function SmsScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-4">
@@ -326,6 +359,9 @@ function SmsScreen({ onBack }: { onBack: () => void }) {
 export default function AdminDashboard() {
   const [section, setSection] = useState<Section>("menu");
 
+  if (section === "users") return <UsersScreen onBack={() => setSection("menu")} />;
+  if (section === "support") return <SupportScreen onBack={() => setSection("menu")} />;
+  if (section === "knowledge") return <KnowledgeScreen onBack={() => setSection("menu")} />;
   if (section === "family") return <FamilyScreen onBack={() => setSection("menu")} />;
   if (section === "addons") return <AddonsScreen onBack={() => setSection("menu")} />;
   if (section === "sms") return <SmsScreen onBack={() => setSection("menu")} />;

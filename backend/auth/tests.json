@@ -222,6 +222,45 @@
         "id": 1
       },
       "expectedStatus": 403
+    },
+    {
+      "name": "Список пользователей без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "admin_list_users"
+      },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Обращение в поддержку без текста",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "support_create",
+        "message": ""
+      },
+      "expectedStatus": 400
+    },
+    {
+      "name": "Список обращений без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "admin_list_tickets"
+      },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Ответ на обращение без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "admin_answer_ticket",
+        "id": 1,
+        "answer": "тест"
+      },
+      "expectedStatus": 403
     }
   ]
 }
