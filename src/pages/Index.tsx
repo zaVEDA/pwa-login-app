@@ -61,6 +61,7 @@ export default function Index() {
   const paymentResult = new URLSearchParams(window.location.search).get("payment");
   const [activeTab, setActiveTab] = useState<Tab>(paymentResult ? "account" : "home");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [adminSection, setAdminSection] = useState("menu");
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
 
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -235,7 +236,7 @@ export default function Index() {
         )}
         {activeTab === "home" && (
           user?.role === "admin" ? (
-            <AdminDashboard />
+            <AdminDashboard section={adminSection} onSection={setAdminSection} />
           ) : (
             <HomeTab
               colorTheme={colorTheme}
@@ -278,7 +279,8 @@ export default function Index() {
         />
       </main>
 
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={user?.role} />
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={user?.role}
+        adminSection={adminSection} onAdminSection={setAdminSection} />
 
       <LimitDialog
         open={limitDialogOpen}

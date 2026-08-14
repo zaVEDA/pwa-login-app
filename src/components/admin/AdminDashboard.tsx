@@ -390,8 +390,10 @@ function SmsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-export default function AdminDashboard() {
-  const [section, setSection] = useState<Section>("menu");
+export default function AdminDashboard({ section: outer, onSection }: { section?: string; onSection?: (s: string) => void } = {}) {
+  const [inner, setInner] = useState<Section>("menu");
+  const section = (outer as Section) || inner;
+  const setSection = (s: Section) => { setInner(s); onSection?.(s); };
 
   if (section !== "menu") {
     const back = () => setSection("menu");
