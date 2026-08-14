@@ -47,7 +47,7 @@ export const briefSteps: BriefStep[] = [
   {
     title: "Деньги",
     subtitle: "Цена и порядок оплаты",
-    capyLine: "Самая частая причина споров — деньги. Давайте всё запишем",
+    capyLine: "Деньги — очень важная часть энергообмена) Давайте всё запишем",
     fields: [
       { key: "price_type", label: "Как считается цена?", type: "choice", options: ["Фиксированная за единицу", "За час", "Зависит от объёма", "Договорная"] },
       { key: "price", label: "Укажите цену", type: "text", placeholder: "Например: 5000 ₽ за встречу", optional: true },
