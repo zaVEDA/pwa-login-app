@@ -60,8 +60,7 @@ export default function AccountTab({
     <>
       {userRole === "admin" && (
         <div className="space-y-5 animate-slide-up">
-          <div className="flex items-center justify-between">
-            <h2 className="font-cormorant text-2xl font-semibold">Пользователи</h2>
+          <div className="flex items-center justify-end">
             <button onClick={onLogout} className="text-xs text-red-500 flex items-center gap-1">
               <Icon name="LogOut" size={13} /> Выйти
             </button>

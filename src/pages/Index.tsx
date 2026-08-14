@@ -205,7 +205,9 @@ export default function Index() {
               {user?.role === "admin" ? "Кабинет Заведующей" : "Добро пожаловать"}
             </p>
             <h1 className="font-cormorant text-2xl font-semibold text-foreground">
-              {user?.full_name || (demoMode ? "Гость" : "Пользователь")}
+              {user?.role === "admin" && activeTab === "account"
+                ? "Пользователи"
+                : user?.full_name || (demoMode ? "Гость" : "Пользователь")}
             </h1>
           </div>
           <button className="relative" onClick={() => setActiveTab("account")}>
