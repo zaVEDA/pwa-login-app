@@ -41,6 +41,14 @@ interface Props {
   onWant?: () => void;
 }
 
+function plural(n: number) {
+  const d = n % 10;
+  const h = n % 100;
+  if (d === 1 && h !== 11) return "место";
+  if (d >= 2 && d <= 4 && (h < 12 || h > 14)) return "места";
+  return "мест";
+}
+
 export default function PromoTemplateBanner({ compact = false, onWant }: Props) {
   const promo = usePromoStatus();
   if (!promo || !promo.active) return null;
@@ -82,21 +90,27 @@ export default function PromoTemplateBanner({ compact = false, onWant }: Props) 
           <br className="hidden sm:block" /> разработаем 1 шаблон по вашему запросу
         </p>
 
-        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+        <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-sm"
-            style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))" }}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
+            style={{ background: "hsl(45 55% 97% / 0.85)", borderColor: "hsl(35 55% 74%)" }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span className={`font-bold text-white ${compact ? "text-xs" : "text-sm"}`}>
-              Осталось {promo.left} из {promo.total}
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: "hsl(35 72% 48%)" }}
+            />
+            <span
+              className={`font-semibold ${compact ? "text-[11px]" : "text-xs"}`}
+              style={{ color: "hsl(24 25% 26%)" }}
+            >
+              Свободно {promo.left} {plural(promo.left)}
             </span>
           </span>
           <span
-            className={`font-bold ${compact ? "text-xs" : "text-sm"}`}
-            style={{ color: "hsl(35 72% 38%)" }}
+            className={`font-semibold ${compact ? "text-[11px]" : "text-xs"}`}
+            style={{ color: "hsl(24 15% 45%)" }}
           >
-            до 21 августа 2026
+            · до 21 августа 2026
           </span>
         </div>
 
