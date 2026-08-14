@@ -13,12 +13,6 @@ type Template = {
 
 const initialTemplates: Template[] = [
   { id: 7, icon: "Camera", title: "Соглашение на фото и видео съемку", desc: "Для того чтобы разместить у себя на страничке портфолио работ, или рилс/шортс после проведенной сессии, мероприятия — нужно получить официальное согласие того человека, чьи фото или видео материалы вы используете", tag: "Фотограф", specialty: "photographer", active: true },
-  { id: 1, icon: "FileText", title: "Договор услуг", desc: "Базовый договор с клиентом", tag: "Универсальный", specialty: "all", active: true },
-  { id: 2, icon: "Receipt", title: "Акт выполненных работ", desc: "Закрывающий документ", tag: "Универсальный", specialty: "all", active: true },
-  { id: 3, icon: "CreditCard", title: "Счёт на оплату", desc: "Выставить счёт клиенту", tag: "Финансы", specialty: "all", active: true },
-  { id: 4, icon: "Shield", title: "Соглашение о конфиденциальности", desc: "NDA для сессий", tag: "Психолог", specialty: "psychologist", active: true },
-  { id: 5, icon: "Calendar", title: "Абонемент на занятия", desc: "Пакет сессий или уроков", tag: "Репетитор", specialty: "tutor", active: true },
-  { id: 6, icon: "Image", title: "Договор фотосъёмки", desc: "Права на фото и сроки", tag: "Фотограф", specialty: "photographer", active: true },
 ];
 
 const specialtyOptions = [
