@@ -50,11 +50,12 @@ def consent_text_hash() -> str:
 
 
 def sms_text(purpose: str, code: str) -> str:
+    # Имя отправителя (capydoc.ru) уже видно в заголовке SMS — в тексте не дублируем.
     if purpose == "register":
-        return f"ZavDoc: kod podtverzhdeniya registracii {code}. Deystvuet 10 minut."
+        return f"Kod podtverzhdeniya registracii: {code}. Deystvuet 10 minut."
     if purpose == "reset":
-        return f"ZavDoc: kod dlya vosstanovleniya dostupa {code}. Nikomu ne soobshchayte."
-    return f"ZavDoc: kod dlya vhoda {code}. Nikomu ne soobshchayte."
+        return f"Kod dlya vosstanovleniya dostupa: {code}. Nikomu ne soobshchayte."
+    return f"Kod dlya vhoda: {code}. Nikomu ne soobshchayte."
 
 
 def send_sms(phone: str, text: str) -> dict:
@@ -66,7 +67,7 @@ def send_sms(phone: str, text: str) -> dict:
         "api_id": api_id,
         "to": to,
         "msg": text,
-        "from": "ZavDoc",
+        "from": "capydoc.ru",
         "json": 1,
     })
     url = f"https://sms.ru/sms/send?{params}"
