@@ -98,7 +98,9 @@ export default function Index() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) { setAuthChecked(true); return; }
+    // В гостевом режиме (?demo=1) не подтягиваем свою сессию — иначе
+    // открылся бы личный кабинет вместо демонстрационного.
+    if (!token || isDemo) { setAuthChecked(true); return; }
     authApi.me().then(({ status, data }) => {
       if (status === 200 && data.user) {
         setUser(data.user);
