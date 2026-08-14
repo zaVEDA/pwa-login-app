@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import PromoTemplateBanner from "@/components/promo/PromoTemplateBanner";
 import { reachGoal } from "@/lib/metrika";
 
 const PRESALE_UNTIL = new Date("2026-08-01T23:59:59");
@@ -38,6 +39,10 @@ export default function WelcomePricing() {
           </p>
         </div>
       )}
+
+      <div className="mb-8">
+        <PromoTemplateBanner />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {paidPlans.map((p) => {

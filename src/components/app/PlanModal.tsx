@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import PromoTemplateBanner from "@/components/promo/PromoTemplateBanner";
 import { authApi, AuthUser, PlanType, getToken } from "@/lib/auth";
 import { reachGoal } from "@/lib/metrika";
 
@@ -98,6 +99,8 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
+          <PromoTemplateBanner compact />
+
           {isPresale && (
             <div className="px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2">
               <Icon name="Sparkles" size={14} className="text-primary flex-shrink-0" />

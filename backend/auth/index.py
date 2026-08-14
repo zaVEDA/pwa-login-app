@@ -687,6 +687,33 @@ def handler(event: dict, context) -> dict:
             return resp(200, {"ok": True, "sent": True, "phone": admin_phone, "purpose": purpose})
 
         # 8.03 Админ: реальный список пользователей со статистикой
+        # Акция «12 шаблонов»: кому досталось место и что человек попросил
+        if action == "admin_promo_slots":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute(
+                "SELECT p.slot_number, p.status, p.request_text, p.created_at, p.done_at, "
+                "u.full_name, u.phone, u.email "
+                "FROM promo_template_slots p JOIN users u ON u.id = p.user_id "
+                "ORDER BY p.slot_number"
+            )
+            slots = [
+                {
+                    "slot": r[0], "status": r[1], "request_text": r[2],
+                    "created_at": str(r[3]) if r[3] else None,
+                    "done_at": str(r[4]) if r[4] else None,
+                    "full_name": r[5], "phone": r[6], "email": r[7],
+                }
+                for r in cur.fetchall()
+            ]
+            return resp(200, {"ok": True, "slots": slots, "total": 12, "left": max(0, 12 - len(slots))})
+
         if action == "admin_list_users":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
             cur.execute(

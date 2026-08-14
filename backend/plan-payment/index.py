@@ -13,6 +13,8 @@ PLANS = {
     "pro": {"name": "Творец", "month": 7777.00, "half_year": 38888.00, "presale_half_year": 33777.00},
 }
 PRESALE_UNTIL = datetime.date(2026, 7, 15)
+PROMO_TOTAL = 12
+PROMO_UNTIL = datetime.date(2026, 8, 21)
 ROBOKASSA_URL = "https://auth.robokassa.ru/Merchant/Index.aspx"
 
 
@@ -58,6 +60,27 @@ def handler(event: dict, context) -> dict:
     headers = event.get("headers") or {}
     token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or ""
     body = json.loads(event.get("body") or "{}")
+
+    # Публичный статус акции «12 бесплатных шаблонов» — доступен без входа.
+    if (body.get("action") or "") == "promo_status":
+        conn = get_conn()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT COUNT(*) FROM promo_template_slots")
+            taken = cur.fetchone()[0] or 0
+        finally:
+            cur.close()
+            conn.close()
+        left = max(0, PROMO_TOTAL - taken)
+        return resp(200, {
+            "ok": True,
+            "total": PROMO_TOTAL,
+            "taken": taken,
+            "left": left,
+            "until": PROMO_UNTIL.isoformat(),
+            "active": left > 0 and datetime.date.today() <= PROMO_UNTIL,
+        })
+
     plan = (body.get("plan") or "").strip()
     period = (body.get("period") or "").strip()
     success_url = str(body.get("success_url") or "")

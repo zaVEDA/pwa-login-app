@@ -10,24 +10,51 @@
       "name": "Оплата без токена",
       "method": "POST",
       "path": "/",
-      "body": { "plan": "start", "period": "month" },
+      "body": {
+        "plan": "start",
+        "period": "month"
+      },
       "expectedStatus": 401
     },
     {
       "name": "Неизвестный тариф",
       "method": "POST",
       "path": "/",
-      "headers": { "X-Auth-Token": "test" },
-      "body": { "plan": "unknown", "period": "month" },
+      "headers": {
+        "X-Auth-Token": "test"
+      },
+      "body": {
+        "plan": "unknown",
+        "period": "month"
+      },
       "expectedStatus": 400
     },
     {
       "name": "Неизвестный период",
       "method": "POST",
       "path": "/",
-      "headers": { "X-Auth-Token": "test" },
-      "body": { "plan": "start", "period": "year" },
+      "headers": {
+        "X-Auth-Token": "test"
+      },
+      "body": {
+        "plan": "start",
+        "period": "year"
+      },
       "expectedStatus": 400
+    },
+    {
+      "name": "Статус акции без входа",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "promo_status"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "ok": true,
+        "total": 12
+      },
+      "bodyMatcher": "partial"
     }
   ]
 }
