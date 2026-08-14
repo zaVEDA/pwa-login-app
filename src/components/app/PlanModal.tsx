@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import PromoTemplateBanner from "@/components/promo/PromoTemplateBanner";
+import SupportModal from "@/components/app/SupportModal";
 import { authApi, AuthUser, PlanType, getToken } from "@/lib/auth";
 import { reachGoal } from "@/lib/metrika";
 
@@ -33,6 +34,7 @@ interface Props {
 
 export default function PlanModal({ currentPlan, familyRequestStatus, onClose }: Props) {
   const [openPlan, setOpenPlan] = useState<PaidPlanOption["id"] | null>(null);
+  const [templateRequest, setTemplateRequest] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [codeWord, setCodeWord] = useState("");
@@ -88,6 +90,8 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
   };
 
   return (
+    <>
+    {templateRequest && <SupportModal topic="Шаблон" onClose={() => setTemplateRequest(false)} />}
     <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
       <div className="absolute inset-0 bg-background" />
       <div className="relative flex flex-col h-full">
@@ -99,7 +103,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
-          <PromoTemplateBanner compact onWant={() => setOpenPlan("medium")} />
+          <PromoTemplateBanner compact onWant={() => setTemplateRequest(true)} />
 
           {isPresale && (
             <div className="px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2">
@@ -213,5 +217,6 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
         </div>
       </div>
     </div>
+    </>
   );
 }

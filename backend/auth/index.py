@@ -764,9 +764,11 @@ def handler(event: dict, context) -> dict:
                 r = cur.fetchone()
                 uid = r[0] if r else None
             cur.execute(
-                "INSERT INTO support_tickets (user_id, name, phone, email, message) VALUES (%s,%s,%s,%s,%s)",
+                "INSERT INTO support_tickets (user_id, name, phone, email, message, topic) "
+                "VALUES (%s,%s,%s,%s,%s,%s)",
                 (uid, (body.get("name") or "")[:200], normalize_phone(body.get("phone") or ""),
-                 (body.get("email") or "")[:200], message[:4000])
+                 (body.get("email") or "")[:200], message[:4000],
+                 ((body.get("topic") or "").strip() or None))
             )
             conn.commit()
             return resp(200, {"ok": True})
@@ -782,14 +784,14 @@ def handler(event: dict, context) -> dict:
                 return resp(403, {"error": "Доступ запрещён"})
             cur.execute(
                 "SELECT t.id, COALESCE(NULLIF(t.name,''), u.full_name), COALESCE(NULLIF(t.phone,''), u.phone), "
-                "t.email, t.message, t.answer, t.answered_at, t.created_at "
+                "t.email, t.message, t.answer, t.answered_at, t.created_at, t.topic "
                 "FROM support_tickets t LEFT JOIN users u ON u.id = t.user_id "
                 "ORDER BY t.answered_at IS NOT NULL, t.created_at DESC LIMIT 200"
             )
             tickets = [
                 {"id": r[0], "name": r[1], "phone": r[2], "email": r[3], "message": r[4],
                  "answer": r[5], "answered_at": str(r[6]) if r[6] else None,
-                 "created_at": str(r[7]) if r[7] else None}
+                 "created_at": str(r[7]) if r[7] else None, "topic": r[8]}
                 for r in cur.fetchall()
             ]
             return resp(200, {"ok": True, "tickets": tickets,

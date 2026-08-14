@@ -12,6 +12,7 @@ interface Ticket {
   answer: string | null;
   answered_at: string | null;
   created_at: string | null;
+  topic?: string | null;
 }
 
 function fmtPhone(p: string | null) {
@@ -83,7 +84,15 @@ export default function AdminSupport() {
         <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{t.name || "Без имени"}</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-sm font-semibold text-foreground truncate">{t.name || "Без имени"}</p>
+                {t.topic && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex-shrink-0">
+                    <Icon name="Tag" size={9} />
+                    {t.topic}
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-muted-foreground truncate">
                 {[fmtPhone(t.phone), t.email].filter(Boolean).join(" · ") || "контакт не указан"}
               </p>

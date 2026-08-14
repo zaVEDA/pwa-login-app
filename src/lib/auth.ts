@@ -94,8 +94,8 @@ export const authApi = {
   adminListUsers: () => call("admin_list_users"),
   adminListTickets: () => call("admin_list_tickets"),
   adminAnswerTicket: (id: number, answer: string) => call("admin_answer_ticket", { id, answer }),
-  supportCreate: (message: string, name?: string, phone?: string, email?: string) =>
-    call("support_create", { message, name, phone, email }),
+  supportCreate: (message: string, name?: string, phone?: string, email?: string, topic?: string) =>
+    call("support_create", { message, name, phone, email, topic }),
   getMaintenance: () => call("get_maintenance"),
   adminSetMaintenance: (enabled: boolean) => call("admin_set_maintenance", { enabled }),
   logout: () => call("logout"),
