@@ -14,9 +14,13 @@ interface Props {
 
 function Capy({ line }: { line: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl px-3.5 py-3 bg-primary/[0.07] border border-primary/15">
-      <img src={CAPY_IMG} alt="" className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
-      <p className="text-xs leading-relaxed text-foreground/80 font-medium">{line}</p>
+    <div className="flex items-center gap-3.5 rounded-2xl px-3.5 py-3.5 bg-primary/[0.07] border border-primary/15">
+      <img
+        src={CAPY_IMG}
+        alt=""
+        className="w-[68px] h-[68px] rounded-2xl object-cover flex-shrink-0 shadow-sm"
+      />
+      <p className="text-[13px] leading-relaxed text-foreground/85 font-medium">{line}</p>
     </div>
   );
 }
@@ -207,7 +211,7 @@ export default function TemplateBriefModal({ onClose, initialStep = -1 }: Props)
 
         {sent && (
           <div className="text-center py-8">
-            <img src={CAPY_IMG} alt="" className="w-24 h-24 rounded-3xl object-cover mx-auto mb-4 shadow-md" />
+            <img src={CAPY_IMG} alt="" className="w-32 h-32 rounded-3xl object-cover mx-auto mb-4 shadow-md" />
             <p className="font-cormorant text-2xl font-semibold mb-1.5">Спасибо!</p>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
               Мы получили вашу анкету и готовим шаблон. Свяжемся, если понадобятся уточнения.
