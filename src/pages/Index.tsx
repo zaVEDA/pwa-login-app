@@ -94,7 +94,7 @@ export default function Index() {
     try { return JSON.parse(localStorage.getItem("requisites") || "{}").fullName || ""; } catch { return ""; }
   });
   const [innSaved, setInnSaved] = useState(false);
-  const [isSelfEmployed, setIsSelfEmployed] = useState<boolean | null>(null);
+  const [isSelfEmployed] = useState<boolean | null>(null);
 
   useEffect(() => {
     const token = getToken();
