@@ -18,9 +18,9 @@ interface PaidPlanOption {
 }
 
 const paidPlans: PaidPlanOption[] = [
-  { id: "start", label: "Опора", desc: "До 15 документов в месяц, до 9 подписей по ПЭП, шаблоны из базы", icon: "Sprout", month: 1444, halfYear: 6868, presaleHalfYear: 5955 },
-  { id: "medium", label: "Рост", desc: "До 150 документов в месяц, до 33 подписей по ПЭП", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333 },
-  { id: "pro", label: "Творец", desc: "До 150 документов в месяц, до 88 подписей по ПЭП, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
+  { id: "start", label: "Опора", desc: "До 15 документов в месяц, до 9 подписей по СМС, шаблоны из базы", icon: "Sprout", month: 1444, halfYear: 6868, presaleHalfYear: 5955 },
+  { id: "medium", label: "Рост", desc: "До 150 документов в месяц, до 33 подписей по СМС", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333 },
+  { id: "pro", label: "Творец", desc: "До 150 документов в месяц, до 88 подписей по СМС, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
 ];
 
 interface Props {
@@ -30,7 +30,7 @@ interface Props {
   onSelected: (user: AuthUser) => void;
 }
 
-export default function PlanModal({ currentPlan, familyRequestStatus, onClose, onSelected }: Props) {
+export default function PlanModal({ currentPlan, familyRequestStatus, onClose }: Props) {
   const [openPlan, setOpenPlan] = useState<PaidPlanOption["id"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

@@ -59,7 +59,7 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
           <div>
             <h2 className="font-cormorant text-2xl font-semibold mb-1">{titles[mode]}</h2>
             <p className="text-muted-foreground text-sm">
-              {mode === "phone" && "Телефон, email и пароль — вход через ПЭП"}
+              {mode === "phone" && "Телефон, email и пароль — вход по СМС"}
               {mode === "code" && `Код отправлен на ${phone}`}
               {mode === "password" && "Устройство распознано — введите пароль"}
               {mode === "recover" && "Выберите способ восстановления"}

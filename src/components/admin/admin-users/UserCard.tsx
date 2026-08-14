@@ -76,7 +76,7 @@ export default function UserCard({ user, onBack }: { user: User; onBack: () => v
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: "Создано", value: user.docsTotal, color: "text-amber-700" },
-            { label: "Подписано через ПЭП", value: user.docsSigned, color: "text-green-600" },
+            { label: "Подписано по СМС", value: user.docsSigned, color: "text-green-600" },
             { label: "Конверсия", value: user.docsTotal ? `${Math.round(user.docsSigned / user.docsTotal * 100)}%` : "0%", color: "text-amber-700" },
           ].map((d) => (
             <div key={d.label} className="bg-white/50 rounded-xl p-3 text-center">

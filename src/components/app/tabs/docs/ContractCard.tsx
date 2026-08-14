@@ -55,7 +55,7 @@ export default function ContractCard({
         {signed && contract.sign_id && (
           <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
             <Icon name="BadgeCheck" size={10} />
-            ПЭП
+            Подписан по СМС
           </span>
         )}
       </button>
