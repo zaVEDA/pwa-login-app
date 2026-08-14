@@ -412,7 +412,7 @@ export default function AdminDashboard({ section: outer, onSection }: { section?
     return (
       <div>
         {screens[section]}
-        <QuickTiles current={section} onGo={go} />
+        {section !== "sms" && <QuickTiles current={section} onGo={go} />}
       </div>
     );
   }
