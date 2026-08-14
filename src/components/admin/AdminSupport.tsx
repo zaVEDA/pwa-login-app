@@ -34,6 +34,7 @@ export default function AdminSupport() {
   const [answering, setAnswering] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  const [topicFilter, setTopicFilter] = useState<string>("all");
 
   const load = () => {
     authApi.adminListTickets()
@@ -68,8 +69,63 @@ export default function AdminSupport() {
     );
   }
 
+  // Темы, которые реально встречаются в обращениях
+  const topics = Array.from(new Set(tickets.map((t) => t.topic).filter(Boolean))) as string[];
+  const newByTopic = (topic: string) =>
+    tickets.filter((t) => !t.answered_at && (topic === "all" || t.topic === topic)).length;
+
+  const filters: { key: string; label: string }[] = [
+    { key: "all", label: "Все" },
+    ...topics.map((t) => ({ key: t, label: t })),
+    ...(tickets.some((t) => !t.topic) ? [{ key: "none", label: "Без темы" }] : []),
+  ];
+
+  const visible = tickets.filter((t) => {
+    if (topicFilter === "all") return true;
+    if (topicFilter === "none") return !t.topic;
+    return t.topic === topicFilter;
+  });
+
   return (
     <div className="space-y-2.5">
+      {filters.length > 1 && (
+        <div className="flex gap-1.5 flex-wrap">
+          {filters.map((f) => {
+            const active = topicFilter === f.key;
+            const unread = f.key === "none"
+              ? tickets.filter((t) => !t.answered_at && !t.topic).length
+              : newByTopic(f.key);
+            return (
+              <button
+                key={f.key}
+                onClick={() => setTopicFilter(f.key)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  active
+                    ? "gold-gradient text-white border-transparent shadow-sm"
+                    : "bg-white/70 border-border text-foreground"
+                }`}
+              >
+                {f.label}
+                {unread > 0 && (
+                  <span className={`px-1.5 rounded-full text-[10px] font-bold ${
+                    active ? "bg-white/25 text-white" : "bg-amber-100 text-amber-700"
+                  }`}>
+                    {unread}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {tickets.length > 0 && visible.length === 0 && (
+        <div className="card-warm rounded-2xl p-6 text-center">
+          <Icon name="SearchX" size={24} className="text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-foreground font-medium">По этой теме обращений нет</p>
+        </div>
+      )}
+
       {tickets.length === 0 && (
         <div className="card-warm rounded-2xl p-6 text-center">
           <Icon name="Inbox" size={26} className="text-muted-foreground mx-auto mb-2" />
@@ -80,7 +136,7 @@ export default function AdminSupport() {
         </div>
       )}
 
-      {tickets.map((t) => (
+      {visible.map((t) => (
         <div key={t.id} className="card-warm rounded-2xl p-4 shadow-sm">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
