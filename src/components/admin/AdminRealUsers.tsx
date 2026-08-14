@@ -82,7 +82,7 @@ export default function AdminRealUsers() {
         <Icon name="Search" size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Поиск по имени или телефону..."
+          placeholder="Поиск по телефону, почте или имени..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
@@ -98,7 +98,12 @@ export default function AdminRealUsers() {
           .filter((u) => {
             const q = search.trim().toLowerCase();
             if (!q) return true;
-            return (u.full_name || "").toLowerCase().includes(q) || (u.phone || "").includes(q.replace(/\D/g, ""));
+            const digits = q.replace(/\D/g, "");
+            return (
+              (u.full_name || "").toLowerCase().includes(q) ||
+              (u.email || "").toLowerCase().includes(q) ||
+              (!!digits && (u.phone || "").includes(digits))
+            );
           })
           .map((u) => {
           const isOpen = open === u.id;
@@ -107,10 +112,13 @@ export default function AdminRealUsers() {
               <button onClick={() => setOpen(isOpen ? null : u.id)} className="w-full px-4 py-3 flex items-center gap-3 text-left">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">
-                    {u.full_name || "Без имени"}
+                    {fmtPhone(u.phone)}
                     {u.role === "admin" && <span className="ml-1.5 text-[10px] text-amber-600">заведующая</span>}
                   </p>
-                  <p className="text-[11px] text-muted-foreground truncate">{fmtPhone(u.phone)}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{u.email || "почта не указана"}</p>
+                  {u.full_name && (
+                    <p className="text-[11px] text-muted-foreground/80 truncate">{u.full_name}</p>
+                  )}
                 </div>
                 {u.plan ? (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex-shrink-0">
@@ -124,7 +132,7 @@ export default function AdminRealUsers() {
               {isOpen && (
                 <div className="px-4 pb-3 border-t border-border/50 pt-2.5 space-y-1.5">
                   {[
-                    ["Почта", u.email || "—"],
+                    ["ФИО", u.full_name || "—"],
                     ["Регистрация", fmtDate(u.created_at)],
                     ["Последний вход", fmtDate(u.last_login_at)],
                     ["Тариф до", fmtDate(u.plan_expires_at)],
