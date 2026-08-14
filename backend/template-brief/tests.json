@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Статус без входа",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401
+    },
+    {
+      "name": "Отправка без входа",
+      "method": "POST",
+      "path": "/",
+      "body": { "answers": { "a": 1 } },
+      "expectedStatus": 401
+    }
+  ]
+}

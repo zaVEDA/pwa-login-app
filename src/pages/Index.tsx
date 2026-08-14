@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import TemplateBriefModal from "@/components/promo/TemplateBriefModal";
 import LoginScreen from "@/components/app/LoginScreen";
 import HomeTab from "@/components/app/HomeTab";
 import AdminDashboard from "@/components/admin/AdminDashboard";
@@ -60,6 +61,7 @@ export default function Index() {
 
   const paymentResult = new URLSearchParams(window.location.search).get("payment");
   const [activeTab, setActiveTab] = useState<Tab>(paymentResult ? "account" : "home");
+  const [showBrief, setShowBrief] = useState(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [adminSection, setAdminSection] = useState("menu");
   const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
@@ -111,6 +113,16 @@ export default function Index() {
       }
       setAuthChecked(true);
     }).catch(() => setAuthChecked(true));
+
+    if (paymentResult === "success") {
+      // Попал ли человек в 12 участников акции — тогда сразу показываем анкету
+      fetch("https://functions.poehali.dev/b9cceef8-d56c-4b6d-9fbb-85f2732e8839", {
+        headers: { "X-Auth-Token": localStorage.getItem("authToken") || "" },
+      })
+        .then((r) => r.json())
+        .then((d) => { if (d?.has_slot && !d?.brief_sent) setShowBrief(true); })
+        .catch(() => undefined);
+    }
 
     if (paymentResult) {
       reachGoal(paymentResult === "success" ? "payment_success" : "payment_fail");
@@ -283,6 +295,8 @@ export default function Index() {
 
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={user?.role}
         adminSection={adminSection} onAdminSection={setAdminSection} />
+
+      {showBrief && <TemplateBriefModal onClose={() => setShowBrief(false)} />}
 
       <LimitDialog
         open={limitDialogOpen}
