@@ -19,8 +19,8 @@ interface PaidPlanOption {
 
 const paidPlans: PaidPlanOption[] = [
   { id: "start", label: "Опора", desc: "До 15 документов в месяц, до 9 подписей по ПЭП, шаблоны из базы", icon: "Sprout", month: 1444, halfYear: 6868, presaleHalfYear: 5955 },
-  { id: "medium", label: "Рост", desc: "Безграничное создание документов, до 33 подписей по ПЭП в месяц", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333 },
-  { id: "pro", label: "Творец", desc: "До 88 подписей по ПЭП в месяц, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
+  { id: "medium", label: "Рост", desc: "До 150 документов в месяц, до 33 подписей по ПЭП", icon: "TrendingUp", month: 3333, halfYear: 15555, presaleHalfYear: 12333 },
+  { id: "pro", label: "Творец", desc: "До 150 документов в месяц, до 88 подписей по ПЭП, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
 ];
 
 interface Props {
