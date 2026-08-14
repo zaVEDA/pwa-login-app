@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import { tasksApi, AdminTask, TaskStatus } from "@/lib/adminTasks";
 import { FamilyCodeSettings, FamilyRequests } from "@/components/admin/AdminUsers";
 import AdminSmsStats from "@/components/admin/AdminSmsStats";
+import AdminMaintenanceToggle from "@/components/admin/AdminMaintenanceToggle";
 
 type Section = "menu" | "family" | "addons" | "calendar" | "tasks" | "sms";
 
@@ -26,41 +27,12 @@ function ScreenHeader({ title, subtitle, onBack }: { title: string; subtitle: st
   );
 }
 
-const mockUsers = [
-  { name: "Анна Смирнова", phone: "+7 916 000-00-01", plan: "Рост", activated: "05.05.2025", until: "05.11.2025", signed: 9, logins: 34, operator: "МТС" },
-  { name: "Игорь Петров", phone: "+7 903 111-22-33", plan: "Опора", activated: "15.05.2025", until: "15.08.2025", signed: 5, logins: 18, operator: "Билайн" },
-  { name: "Мария Волкова", phone: "+7 926 222-33-44", plan: "—", activated: "—", until: "—", signed: 1, logins: 9, operator: "Мегафон" },
-  { name: "Дмитрий Козлов", phone: "+7 999 333-44-55", plan: "Творец", activated: "28.05.2025", until: "28.11.2025", signed: 13, logins: 22, operator: "Теле2" },
-  { name: "Елена Фролова", phone: "+7 912 444-55-66", plan: "—", activated: "—", until: "—", signed: 0, logins: 4, operator: "МТС" },
-];
-
 function FamilyScreen({ onBack }: { onBack: () => void }) {
-  const fam = mockUsers.filter((_, i) => i % 2 === 0);
   return (
     <div className="space-y-4">
-      <ScreenHeader title="Тариф «Для родных»" subtitle="Кодовое слово · заявки · список · активация" onBack={onBack} />
+      <ScreenHeader title="Тариф «Для родных»" subtitle="Кодовое слово · заявки на доступ" onBack={onBack} />
       <FamilyCodeSettings />
       <FamilyRequests />
-      <div className="space-y-2.5">
-        {fam.map((u) => (
-          <div key={u.phone} className="card-warm rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
-                <Icon name="Heart" size={14} className="text-rose-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">{u.name}</p>
-                <p className="text-xs text-muted-foreground">{u.phone}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div><p className="text-sm font-semibold">{u.activated}</p><p className="text-[9px] text-muted-foreground">активирован</p></div>
-              <div><p className="text-sm font-semibold">{u.until}</p><p className="text-[9px] text-muted-foreground">до</p></div>
-              <div><p className="text-sm font-semibold text-green-600">{u.signed}/мес</p><p className="text-[9px] text-muted-foreground">подписей</p></div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -371,6 +343,8 @@ export default function AdminDashboard() {
           <Icon name="Home" size={13} /> На главную
         </a>
       </div>
+
+      <AdminMaintenanceToggle />
 
       <div className="grid grid-cols-2 gap-3">
         {tiles.map((t) => (
