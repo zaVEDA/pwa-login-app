@@ -93,6 +93,8 @@ export const authApi = {
   adminSmsStats: (days: number) => call("admin_sms_stats", { days }),
   adminListUsers: () => call("admin_list_users"),
   adminListTickets: () => call("admin_list_tickets"),
+  adminTemplateBriefs: () => call("admin_template_briefs"),
+  adminPromoSlots: () => call("admin_promo_slots"),
   adminAnswerTicket: (id: number, answer: string) => call("admin_answer_ticket", { id, answer }),
   supportCreate: (message: string, name?: string, phone?: string, email?: string, topic?: string) =>
     call("support_create", { message, name, phone, email, topic }),

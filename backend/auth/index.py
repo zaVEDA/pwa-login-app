@@ -714,6 +714,39 @@ def handler(event: dict, context) -> dict:
             ]
             return resp(200, {"ok": True, "slots": slots, "total": 12, "left": max(0, 12 - len(slots))})
 
+        # Анкеты на разработку шаблонов (акция «12 шаблонов»)
+        if action == "admin_template_briefs":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute(
+                "SELECT b.id, b.answers, b.sample_file_url, b.sample_notes, b.status, b.created_at, "
+                "p.slot_number, u.full_name, u.phone, u.email "
+                "FROM template_briefs b "
+                "LEFT JOIN promo_template_slots p ON p.id = b.slot_id "
+                "JOIN users u ON u.id = b.user_id "
+                "ORDER BY b.created_at DESC LIMIT 100"
+            )
+            briefs = []
+            for r in cur.fetchall():
+                ans = r[1]
+                if isinstance(ans, str):
+                    try:
+                        ans = json.loads(ans)
+                    except (ValueError, TypeError):
+                        ans = {}
+                briefs.append({
+                    "id": r[0], "answers": ans or {}, "file_url": r[2], "notes": r[3],
+                    "status": r[4], "created_at": str(r[5]) if r[5] else None,
+                    "slot": r[6], "full_name": r[7], "phone": r[8], "email": r[9],
+                })
+            return resp(200, {"ok": True, "briefs": briefs})
+
         if action == "admin_list_users":
             token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
             cur.execute(

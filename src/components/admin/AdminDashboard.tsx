@@ -8,14 +8,16 @@ import AdminRealUsers from "@/components/admin/AdminRealUsers";
 import AdminSupport from "@/components/admin/AdminSupport";
 import KnowledgeManager from "@/components/admin/KnowledgeManager";
 import AdminTemplates from "@/components/admin/AdminTemplates";
+import AdminTemplateBriefs from "@/components/admin/AdminTemplateBriefs";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates";
+type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates" | "briefs";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой" },
   { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
   { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Вопросы пользователей" },
   { id: "templates", icon: "FileText", title: "Шаблоны", hint: "Документы для клиентов" },
+  { id: "briefs", icon: "ClipboardList", title: "Заявки на шаблон", hint: "Анкеты участников акции" },
   { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, документы, входы" },
   { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
   { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Кодовое слово и заявки" },
@@ -345,6 +347,19 @@ function SupportScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+function BriefsScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader
+        title="Заявки на шаблон"
+        subtitle="Анкеты участников акции «12 шаблонов»"
+        onBack={onBack}
+      />
+      <AdminTemplateBriefs />
+    </div>
+  );
+}
+
 function KnowledgeScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-4">
@@ -377,6 +392,7 @@ export default function AdminDashboard({ section: outer, onSection }: { section?
     const screens: Record<string, JSX.Element> = {
       users: <UsersScreen onBack={back} />,
       support: <SupportScreen onBack={back} />,
+      briefs: <BriefsScreen onBack={back} />,
       knowledge: <KnowledgeScreen onBack={back} />,
       family: <FamilyScreen onBack={back} />,
       addons: <AddonsScreen onBack={back} />,
