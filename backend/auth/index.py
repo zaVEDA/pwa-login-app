@@ -797,6 +797,7 @@ def handler(event: dict, context) -> dict:
             days = body.get("days")
             days = int(days) if str(days).isdigit() and 0 < int(days) <= 365 else 30
             where = f"created_at > NOW() - INTERVAL '{days} days' AND status = 'sent'"
+            where_l = f"l.created_at > NOW() - INTERVAL '{days} days' AND l.status = 'sent'"
 
             cur.execute(f"SELECT kind, is_repeat, COUNT(*) FROM sms_log WHERE {where} GROUP BY kind, is_repeat")
             by_kind = [{"kind": r[0], "is_repeat": bool(r[1]), "count": r[2]} for r in cur.fetchall()]
@@ -816,7 +817,7 @@ def handler(event: dict, context) -> dict:
                 f"SUM(CASE WHEN l.kind = 'sign' AND NOT l.is_repeat THEN 1 ELSE 0 END), "
                 f"SUM(CASE WHEN l.kind = 'sign' AND l.is_repeat THEN 1 ELSE 0 END), "
                 f"SUM(CASE WHEN l.kind = 'register' THEN 1 ELSE 0 END), MAX(l.created_at) "
-                f"FROM sms_log l LEFT JOIN users u ON u.id = l.user_id WHERE {where} "
+                f"FROM sms_log l LEFT JOIN users u ON u.id = l.user_id WHERE {where_l} "
                 f"GROUP BY l.phone ORDER BY COUNT(*) DESC LIMIT 200"
             )
             by_phone = [
