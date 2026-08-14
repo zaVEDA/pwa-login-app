@@ -23,29 +23,6 @@ const tiles: { id: Section; icon: string; title: string; hint: string; badge?: s
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
 ];
 
-function QuickTiles({ current, onGo }: { current: Section; onGo: (s: Section) => void }) {
-  const rest = tiles.filter((t) => t.id !== current);
-  return (
-    <div className="pt-5 mt-5 border-t border-border/50">
-      <p className="text-[11px] text-muted-foreground mb-2.5">Перейти в другой раздел</p>
-      <div className="grid grid-cols-2 gap-2">
-        {rest.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => onGo(t.id)}
-            className="card-warm rounded-xl px-3 py-2.5 flex items-center gap-2.5 text-left active:scale-[0.97] transition-transform"
-          >
-            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Icon name={t.icon} size={14} className="text-primary" />
-            </div>
-            <span className="text-[11px] font-medium text-foreground leading-tight">{t.title}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function ScreenHeader({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
   return (
     <div className="animate-slide-up">
@@ -397,7 +374,6 @@ export default function AdminDashboard({ section: outer, onSection }: { section?
 
   if (section !== "menu") {
     const back = () => setSection("menu");
-    const go = (s: Section) => { setSection(s); window.scrollTo({ top: 0 }); };
     const screens: Record<string, JSX.Element> = {
       users: <UsersScreen onBack={back} />,
       support: <SupportScreen onBack={back} />,
@@ -409,12 +385,7 @@ export default function AdminDashboard({ section: outer, onSection }: { section?
       tasks: <TasksScreen onBack={back} />,
       templates: <TemplatesScreen onBack={back} />,
     };
-    return (
-      <div>
-        {screens[section]}
-        {section !== "sms" && <QuickTiles current={section} onGo={go} />}
-      </div>
-    );
+    return screens[section];
   }
 
   return (
