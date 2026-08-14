@@ -38,9 +38,10 @@ export function usePromoStatus(pollMs = 60000) {
 
 interface Props {
   compact?: boolean;
+  onWant?: () => void;
 }
 
-export default function PromoTemplateBanner({ compact = false }: Props) {
+export default function PromoTemplateBanner({ compact = false, onWant }: Props) {
   const promo = usePromoStatus();
   if (!promo || !promo.active) return null;
 
@@ -95,16 +96,28 @@ export default function PromoTemplateBanner({ compact = false }: Props) {
             className={`font-bold ${compact ? "text-xs" : "text-sm"}`}
             style={{ color: "hsl(35 72% 38%)" }}
           >
-            до 21 августа
+            до 21 августа 2026
           </span>
         </div>
+
+        <button
+          type="button"
+          onClick={onWant}
+          className={`mt-3.5 inline-flex items-center justify-center gap-2 rounded-xl font-bold text-white shadow-md active:scale-[0.98] transition-transform ${
+            compact ? "px-5 py-2.5 text-sm" : "px-7 py-3 text-base"
+          }`}
+          style={{ background: "linear-gradient(135deg, hsl(35 72% 48%), hsl(32 75% 42%))" }}
+        >
+          <Icon name="Sparkles" size={compact ? 15 : 17} className="flex-shrink-0" />
+          Хочу шаблон
+        </button>
 
         <p
           className={`mt-3 mx-auto max-w-md leading-relaxed ${compact ? "text-[10px]" : "text-[11px]"}`}
           style={{ color: "hsl(24 12% 48%)" }}
         >
           * Если ваша деятельность экологична — не работаем с кальянными,
-          вейп-магазинами, алкоголем и т.п.
+          вейп-магазинами, алкоголем, казино/ставки и т.п.
         </p>
       </div>
     </div>

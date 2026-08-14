@@ -41,7 +41,12 @@ export default function WelcomePricing() {
       )}
 
       <div className="mb-8">
-        <PromoTemplateBanner />
+        <PromoTemplateBanner
+          onWant={() => {
+            reachGoal("promo_template_click");
+            window.location.href = "/app";
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
