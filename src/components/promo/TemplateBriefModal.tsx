@@ -9,6 +9,7 @@ type Answers = Record<string, string | string[]>;
 
 interface Props {
   onClose: () => void;
+  initialStep?: number;
 }
 
 function Capy({ line }: { line: string }) {
@@ -20,8 +21,8 @@ function Capy({ line }: { line: string }) {
   );
 }
 
-export default function TemplateBriefModal({ onClose }: Props) {
-  const [step, setStep] = useState(-1);
+export default function TemplateBriefModal({ onClose, initialStep = -1 }: Props) {
+  const [step, setStep] = useState(initialStep);
   const [answers, setAnswers] = useState<Answers>({});
   const [file, setFile] = useState<{ name: string; base64: string } | null>(null);
   const [sampleNotes, setSampleNotes] = useState("");
