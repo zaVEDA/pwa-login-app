@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import AdminTemplates from "@/components/admin/AdminTemplates";
 import AdminPhrases from "@/components/admin/AdminPhrases";
-import AdminUsers from "@/components/admin/AdminUsers";
+import AdminRealUsers from "@/components/admin/AdminRealUsers";
 import { authApi, getToken } from "@/lib/auth";
 
 type AdminTab = "templates" | "phrases" | "users";
@@ -83,7 +83,7 @@ export default function AdminPanel() {
       <main className="px-5 pb-16 max-w-3xl mx-auto space-y-4">
         {activeTab === "templates" && <AdminTemplates />}
         {activeTab === "phrases" && <AdminPhrases />}
-        {activeTab === "users" && <AdminUsers />}
+        {activeTab === "users" && <AdminRealUsers />}
       </main>
     </div>
   );

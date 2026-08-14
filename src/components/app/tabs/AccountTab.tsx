@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
-import AdminUsers from "@/components/admin/AdminUsers";
+import AdminRealUsers from "@/components/admin/AdminRealUsers";
 import PlanModal from "@/components/app/PlanModal";
 import ChangePasswordModal from "@/components/app/ChangePasswordModal";
 import ClientsModal from "@/components/app/ClientsModal";
@@ -66,7 +66,7 @@ export default function AccountTab({
               <Icon name="LogOut" size={13} /> Выйти
             </button>
           </div>
-          <AdminUsers />
+          <AdminRealUsers />
         </div>
       )}
 

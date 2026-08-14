@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi } from "@/lib/auth";
+import SetUserPassword from "./admin-users/SetUserPassword";
 
 interface Row {
   id: number;
@@ -39,6 +40,7 @@ export default function AdminRealUsers() {
   const [stats, setStats] = useState({ total: 0, paid: 0, docs: 0, signed: 0 });
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     authApi.adminListUsers()
@@ -74,12 +76,31 @@ export default function AdminRealUsers() {
         ))}
       </div>
 
+      <SetUserPassword />
+
+      <div className="relative">
+        <Icon name="Search" size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Поиск по имени или телефону..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+        />
+      </div>
+
       {rows.length === 0 && (
         <p className="text-xs text-muted-foreground text-center py-6">Пока нет зарегистрированных пользователей</p>
       )}
 
       <div className="space-y-2">
-        {rows.map((u) => {
+        {rows
+          .filter((u) => {
+            const q = search.trim().toLowerCase();
+            if (!q) return true;
+            return (u.full_name || "").toLowerCase().includes(q) || (u.phone || "").includes(q.replace(/\D/g, ""));
+          })
+          .map((u) => {
           const isOpen = open === u.id;
           return (
             <div key={u.id} className="card-warm rounded-xl overflow-hidden">
