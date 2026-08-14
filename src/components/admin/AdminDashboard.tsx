@@ -21,6 +21,29 @@ const tiles: { id: Section; icon: string; title: string; hint: string; badge?: s
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой" },
 ];
 
+function QuickTiles({ current, onGo }: { current: Section; onGo: (s: Section) => void }) {
+  const rest = tiles.filter((t) => t.id !== current);
+  return (
+    <div className="pt-5 mt-5 border-t border-border/50">
+      <p className="text-[11px] text-muted-foreground mb-2.5">Перейти в другой раздел</p>
+      <div className="grid grid-cols-2 gap-2">
+        {rest.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => onGo(t.id)}
+            className="card-warm rounded-xl px-3 py-2.5 flex items-center gap-2.5 text-left active:scale-[0.97] transition-transform"
+          >
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Icon name={t.icon} size={14} className="text-primary" />
+            </div>
+            <span className="text-[11px] font-medium text-foreground leading-tight">{t.title}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ScreenHeader({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
   return (
     <div className="animate-slide-up">
@@ -359,14 +382,26 @@ function SmsScreen({ onBack }: { onBack: () => void }) {
 export default function AdminDashboard() {
   const [section, setSection] = useState<Section>("menu");
 
-  if (section === "users") return <UsersScreen onBack={() => setSection("menu")} />;
-  if (section === "support") return <SupportScreen onBack={() => setSection("menu")} />;
-  if (section === "knowledge") return <KnowledgeScreen onBack={() => setSection("menu")} />;
-  if (section === "family") return <FamilyScreen onBack={() => setSection("menu")} />;
-  if (section === "addons") return <AddonsScreen onBack={() => setSection("menu")} />;
-  if (section === "sms") return <SmsScreen onBack={() => setSection("menu")} />;
-  if (section === "calendar") return <CalendarScreen onBack={() => setSection("menu")} />;
-  if (section === "tasks") return <TasksScreen onBack={() => setSection("menu")} />;
+  if (section !== "menu") {
+    const back = () => setSection("menu");
+    const go = (s: Section) => { setSection(s); window.scrollTo({ top: 0 }); };
+    const screens: Record<string, JSX.Element> = {
+      users: <UsersScreen onBack={back} />,
+      support: <SupportScreen onBack={back} />,
+      knowledge: <KnowledgeScreen onBack={back} />,
+      family: <FamilyScreen onBack={back} />,
+      addons: <AddonsScreen onBack={back} />,
+      sms: <SmsScreen onBack={back} />,
+      calendar: <CalendarScreen onBack={back} />,
+      tasks: <TasksScreen onBack={back} />,
+    };
+    return (
+      <div>
+        {screens[section]}
+        <QuickTiles current={section} onGo={go} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 animate-slide-up">
