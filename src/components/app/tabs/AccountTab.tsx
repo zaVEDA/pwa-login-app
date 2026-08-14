@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import RequisitesBlock from "@/components/app/RequisitesBlock";
 import AdminRealUsers from "@/components/admin/AdminRealUsers";
+import TemplateBriefModal from "@/components/promo/TemplateBriefModal";
+import SupportModal from "@/components/app/SupportModal";
+import { useTemplateSlot } from "@/components/promo/useTemplateSlot";
 import PlanModal from "@/components/app/PlanModal";
 import ChangePasswordModal from "@/components/app/ChangePasswordModal";
 import ClientsModal from "@/components/app/ClientsModal";
@@ -56,6 +59,10 @@ export default function AccountTab({
     if (phone) fetchDocLimits(phone).then(setLimits);
   }, [phone]);
 
+  const { slot, reload: reloadSlot } = useTemplateSlot(userRole !== "admin");
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
+
   return (
     <>
       {userRole === "admin" && (
@@ -109,6 +116,31 @@ export default function AccountTab({
             </div>
             <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
           </button>
+
+          {/* Акция «12 шаблонов»: напоминание заполнить анкету */}
+          {slot?.has_slot && !slot.brief_sent && (
+            <button
+              onClick={() => setBriefOpen(true)}
+              className="w-full rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-[0.98] transition-transform border"
+              style={{
+                background: "linear-gradient(150deg, hsl(45 60% 96%), hsl(38 48% 92%))",
+                borderColor: "hsl(35 55% 72%)",
+              }}
+            >
+              <div className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center flex-shrink-0">
+                <Icon name="Gift" size={16} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold" style={{ color: "hsl(24 30% 16%)" }}>
+                  Ваш шаблон в подарок ждёт
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: "hsl(24 18% 34%)" }}>
+                  Заполните анкету — и мы разработаем документ
+                </p>
+              </div>
+              <Icon name="ChevronRight" size={15} className="flex-shrink-0" style={{ color: "hsl(35 72% 42%)" }} />
+            </button>
+          )}
 
           {/* Остаток документов на месяц — скрываем для гостя (демо-режим) */}
           {phone !== "+70000000000" && limits && !limits.unlimited && limits.limit !== null && (
@@ -249,7 +281,15 @@ export default function AccountTab({
             ].map((item) => (
               <button
                 key={item.label}
-                onClick={item.label === "Выйти" ? onLogout : item.label === "Сменить пароль" ? () => setShowPasswordModal(true) : undefined}
+                onClick={
+                  item.label === "Выйти"
+                    ? onLogout
+                    : item.label === "Сменить пароль"
+                    ? () => setShowPasswordModal(true)
+                    : item.label === "Справка и поддержка"
+                    ? () => setSupportOpen(true)
+                    : undefined
+                }
                 className={`w-full card-warm rounded-xl p-3.5 flex items-center gap-3 text-left shadow-sm active:scale-[0.98] transition-transform ${item.danger ? "border border-red-200/50" : ""}`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? "bg-red-50" : "bg-primary/10"}`}>
@@ -263,6 +303,18 @@ export default function AccountTab({
 
           <p className="text-center text-xs text-muted-foreground pb-2">CapyDoc.ru · версия 1.0.0</p>
         </div>
+      )}
+
+      {briefOpen && (
+        <TemplateBriefModal onClose={() => { setBriefOpen(false); reloadSlot(); }} />
+      )}
+
+      {supportOpen && (
+        <SupportModal
+          hasTemplateSlot={!!slot?.has_slot && !slot.brief_sent}
+          onOpenBrief={() => { setSupportOpen(false); setBriefOpen(true); }}
+          onClose={() => setSupportOpen(false)}
+        />
       )}
     </>
   );

@@ -4,6 +4,8 @@ import { authApi } from "@/lib/auth";
 
 interface Props {
   topic?: string;
+  hasTemplateSlot?: boolean;
+  onOpenBrief?: () => void;
   onClose: () => void;
 }
 
@@ -12,13 +14,16 @@ const TOPIC_HINTS: Record<string, string> = {
     "Опишите, какой документ вам нужен: как называется, для какой ситуации и что важно в нём указать. Мы свяжемся и уточним детали.",
 };
 
-export default function SupportModal({ topic, onClose }: Props) {
+export default function SupportModal({ topic, hasTemplateSlot, onOpenBrief, onClose }: Props) {
+  // Тему можно выбрать, если она не задана снаружи
+  const [pickedTopic, setPickedTopic] = useState<string>(topic || "");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
-  const hint = topic ? TOPIC_HINTS[topic] : "";
+  const activeTopic = topic || pickedTopic;
+  const hint = activeTopic ? TOPIC_HINTS[activeTopic] : "";
 
   const send = async () => {
     setError("");
@@ -30,7 +35,7 @@ export default function SupportModal({ topic, onClose }: Props) {
         undefined,
         undefined,
         undefined,
-        topic
+        activeTopic || undefined
       );
       if (status !== 200) { setError(data.error || "Не удалось отправить"); return; }
       setSent(true);
@@ -76,6 +81,53 @@ export default function SupportModal({ topic, onClose }: Props) {
             </div>
           ) : (
             <>
+              {!topic && (
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-1.5">Тема обращения</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Вопрос по работе", "Оплата и тариф", "Шаблон", "Другое"].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setPickedTopic(t)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+                          pickedTopic === t
+                            ? "gold-gradient text-white border-transparent shadow-sm"
+                            : "bg-white/70 border-border text-foreground"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Участник акции выбрал «Шаблон» — ведём в анкету, а не в свободный текст */}
+              {!topic && pickedTopic === "Шаблон" && hasTemplateSlot && onOpenBrief && (
+                <button
+                  onClick={onOpenBrief}
+                  className="w-full rounded-xl p-3.5 flex items-center gap-3 text-left border active:scale-[0.98] transition-transform"
+                  style={{
+                    background: "linear-gradient(150deg, hsl(45 60% 96%), hsl(38 48% 92%))",
+                    borderColor: "hsl(35 55% 72%)",
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-lg gold-gradient flex items-center justify-center flex-shrink-0">
+                    <Icon name="Gift" size={15} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold" style={{ color: "hsl(24 30% 16%)" }}>
+                      У вас есть шаблон в подарок
+                    </p>
+                    <p className="text-[11px] mt-0.5" style={{ color: "hsl(24 18% 34%)" }}>
+                      Заполнить анкету на разработку
+                    </p>
+                  </div>
+                  <Icon name="ChevronRight" size={14} className="flex-shrink-0" style={{ color: "hsl(35 72% 42%)" }} />
+                </button>
+              )}
+
               {hint && (
                 <p className="text-xs text-muted-foreground leading-relaxed bg-primary/5 rounded-xl px-3 py-2.5">
                   {hint}
@@ -93,7 +145,7 @@ export default function SupportModal({ topic, onClose }: Props) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={5}
-                placeholder={topic === "Шаблон" ? "Например: договор на проведение мастер-класса..." : "Опишите ваш вопрос"}
+                placeholder={activeTopic === "Шаблон" ? "Например: договор на проведение мастер-класса..." : "Опишите ваш вопрос"}
                 className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary resize-none"
               />
 
