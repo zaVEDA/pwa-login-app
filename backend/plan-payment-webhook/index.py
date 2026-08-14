@@ -83,15 +83,15 @@ def handler(event: dict, context) -> dict:
         # Акция: первые 12 оплат тарифа «Рост» на 6 месяцев до 21.08.2026
         # получают бесплатную разработку 1 шаблона. Место закрепляется здесь же,
         # чтобы одновременные оплаты не заняли одно и то же место.
-        if plan == "medium" and period == "half_year" and datetime.date.today() <= PROMO_UNTIL:
-            cur.execute("SELECT COUNT(*) FROM promo_template_slots")
+        if plan in ("medium", "test") and period == "half_year" and datetime.date.today() <= PROMO_UNTIL:
+            cur.execute("SELECT COUNT(*) FROM promo_template_slots WHERE is_test = FALSE")
             taken = cur.fetchone()[0] or 0
             if taken < PROMO_TOTAL:
                 cur.execute(
-                    "INSERT INTO promo_template_slots (user_id, order_id, slot_number) "
-                    "SELECT %s, %s, COALESCE(MAX(slot_number), 0) + 1 FROM promo_template_slots "
+                    "INSERT INTO promo_template_slots (user_id, order_id, slot_number, is_test) "
+                    "SELECT %s, %s, COALESCE(MAX(slot_number), 0) + 1, %s FROM promo_template_slots "
                     "ON CONFLICT DO NOTHING",
-                    (uid, row[0])
+                    (uid, row[0], plan == "test")
                 )
 
         conn.commit()

@@ -17,6 +17,7 @@ const planLabels: Record<PlanType, string> = {
   medium: "Рост",
   pro: "Творец",
   family: "Для родных",
+  test: "ТЕСТ",
 };
 
 interface Props {
@@ -185,6 +186,7 @@ export default function AccountTab({
           {showPlanModal && (
             <PlanModal
               currentPlan={userPlan ?? null}
+              isAdmin={userRole === "admin"}
               familyRequestStatus={familyRequestStatus}
               onClose={() => setShowPlanModal(false)}
               onSelected={(u) => onUserUpdated?.(u)}

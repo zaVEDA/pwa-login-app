@@ -1,0 +1,2 @@
+ALTER TABLE t_p57647769_pwa_login_app.promo_template_slots
+ADD COLUMN IF NOT EXISTS is_test BOOLEAN NOT NULL DEFAULT FALSE;

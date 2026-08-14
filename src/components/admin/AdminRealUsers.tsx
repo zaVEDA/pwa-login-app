@@ -19,7 +19,7 @@ interface Row {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  start: "Старт", opora: "Опора", rost: "Рост", tvorets: "Творец", family: "Для родных",
+  start: "Старт", opora: "Опора", medium: "Рост", pro: "Творец", rost: "Рост", tvorets: "Творец", family: "Для родных", test: "ТЕСТ",
 };
 
 function fmtPhone(p: string | null) {

@@ -60,7 +60,7 @@ COLS = ("id, template_key, title, contract_number, contract_date, client_name, f
         "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash, sent_at, client_phone")
 
 
-PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150}
+PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150, "test": 15}
 PRESALE_START = datetime.date(2026, 9, 1)
 
 

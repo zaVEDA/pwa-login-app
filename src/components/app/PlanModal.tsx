@@ -11,7 +11,7 @@ const PRESALE_UNTIL = new Date("2026-08-01T23:59:59");
 const isPresale = new Date() <= PRESALE_UNTIL;
 
 interface PaidPlanOption {
-  id: "start" | "medium" | "pro";
+  id: "start" | "medium" | "pro" | "test";
   label: string;
   desc: string;
   icon: string;
@@ -26,14 +26,25 @@ const paidPlans: PaidPlanOption[] = [
   { id: "pro", label: "Творец", desc: "До 150 документов в месяц, до 88 подписей по СМС, свой шаблон + доп. шаблоны за доплату", icon: "PenTool", month: 7777, halfYear: 38888, presaleHalfYear: 33777 },
 ];
 
+const testPlan: PaidPlanOption = {
+  id: "test",
+  label: "ТЕСТ · 1 ₽",
+  desc: "Служебный тариф для проверки оплаты. Виден только Заведующей",
+  icon: "FlaskConical",
+  month: 1,
+  halfYear: 1,
+  presaleHalfYear: 1,
+};
+
 interface Props {
   currentPlan: PlanType | null;
+  isAdmin?: boolean;
   familyRequestStatus?: "pending" | "approved" | "rejected" | null;
   onClose: () => void;
   onSelected: (user: AuthUser) => void;
 }
 
-export default function PlanModal({ currentPlan, familyRequestStatus, onClose }: Props) {
+export default function PlanModal({ currentPlan, isAdmin, familyRequestStatus, onClose }: Props) {
   const [openPlan, setOpenPlan] = useState<PaidPlanOption["id"] | null>(null);
   const [templateRequest, setTemplateRequest] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false);
@@ -137,7 +148,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
             </div>
           )}
 
-          {paidPlans.map((p) => {
+          {[...paidPlans, ...(isAdmin ? [testPlan] : [])].map((p) => {
             const active = currentPlan === p.id;
             const open = openPlan === p.id;
             const halfYearPrice = isPresale ? p.presaleHalfYear : p.halfYear;

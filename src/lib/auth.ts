@@ -1,6 +1,6 @@
 const AUTH_URL = "https://functions.poehali.dev/014fc1d1-8785-4bdb-8c38-bc1b5126ef4b";
 
-export type PlanType = "start" | "medium" | "pro" | "family";
+export type PlanType = "start" | "medium" | "pro" | "family" | "test";
 
 export interface AuthUser {
   id: number;

@@ -11,6 +11,7 @@ PLANS = {
     "start": {"name": "Опора", "month": 1444.00, "half_year": 6868.00, "presale_half_year": 5955.00},
     "medium": {"name": "Рост", "month": 3333.00, "half_year": 15555.00, "presale_half_year": 12333.00},
     "pro": {"name": "Творец", "month": 7777.00, "half_year": 38888.00, "presale_half_year": 33777.00},
+    "test": {"name": "ТЕСТ", "month": 1.00, "half_year": 1.00, "presale_half_year": 1.00},
 }
 PRESALE_UNTIL = datetime.date(2026, 7, 15)
 PROMO_TOTAL = 12
@@ -50,7 +51,7 @@ def get_amount(plan: str, period: str) -> float:
 
 
 def handler(event: dict, context) -> dict:
-    """Создание заказа на оплату тарифа (Опора/Рост/Творец) и генерация ссылки на оплату Robokassa."""
+    """Создание заказа на оплату тарифа (Опора/Рост/Творец/ТЕСТ) и генерация ссылки на оплату Robokassa."""
     method = event.get("httpMethod", "GET").upper()
     if method == "OPTIONS":
         return {"statusCode": 200, "headers": cors_headers(), "body": "", "isBase64Encoded": False}
@@ -66,7 +67,7 @@ def handler(event: dict, context) -> dict:
         conn = get_conn()
         cur = conn.cursor()
         try:
-            cur.execute("SELECT COUNT(*) FROM promo_template_slots")
+            cur.execute("SELECT COUNT(*) FROM promo_template_slots WHERE is_test = FALSE")
             taken = cur.fetchone()[0] or 0
         finally:
             cur.close()
