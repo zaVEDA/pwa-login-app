@@ -18,7 +18,7 @@ const adminTabs = [
   { id: "sms", icon: "MessageSquare", label: "SMS" },
   { id: "support", icon: "LifeBuoy", label: "Поддержка" },
   { id: "templates", icon: "LayoutTemplate", label: "Шаблоны" },
-  { id: "account", icon: "User", label: "Аккаунт" },
+  { id: "account", icon: "Users", label: "Пользователи" },
 ] as const;
 
 interface Props {
@@ -57,7 +57,7 @@ export default function BottomNav({ activeTab, setActiveTab, userRole, adminSect
                 }`}>
                   <Icon name={tab.icon} size={18} className={active ? "text-white" : "text-amber-700"} />
                 </div>
-                <span className={`text-[9px] leading-none ${
+                <span className={`text-[8px] leading-none text-center ${
                   active ? "text-amber-700 font-bold" : "text-amber-900/70 font-semibold"
                 }`}>{tab.label}</span>
               </button>
