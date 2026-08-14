@@ -46,20 +46,8 @@ export interface RealizationDoc {
 
 export type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
-export const recentDocs = [
-  { title: "Договор об оказании услуг", client: "Анна М.", date: "09.06.2026", status: "signed", statusLabel: "Подписан" },
-  { title: "Акт выполненных работ", client: "Игорь С.", date: "07.06.2026", status: "pending", statusLabel: "Ожидает" },
-  { title: "Счёт на оплату", client: "Мария В.", date: "05.06.2026", status: "draft", statusLabel: "Черновик" },
-];
-
 export const templates = [
   { icon: "FileText", title: "Соглашение на фото и видео съемку", desc: "Для того чтобы разместить у себя на страничке портфолио работ, или рилс/шортс после проведенной сессии, мероприятия — нужно получить официальное согласие того человека, чьи фото или видео материалы вы используете", tag: "Фотограф" },
-  { icon: "FileText", title: "Договор услуг", desc: "Базовый договор с клиентом", tag: "Универсальный" },
-  { icon: "Receipt", title: "Акт выполненных работ", desc: "Закрывающий документ", tag: "Универсальный" },
-  { icon: "CreditCard", title: "Счёт на оплату", desc: "Выставить счёт клиенту", tag: "Финансы" },
-  { icon: "Shield", title: "Соглашение о конфиденциальности", desc: "NDA для сессий", tag: "Психолог" },
-  { icon: "Calendar", title: "Абонемент на занятия", desc: "Пакет сессий или уроков", tag: "Репетитор" },
-  { icon: "Image", title: "Договор фотосъёмки", desc: "Права на фото и сроки", tag: "Фотограф" },
 ];
 
 export const specialties = [

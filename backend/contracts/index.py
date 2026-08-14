@@ -103,7 +103,7 @@ def check_limit(cur, user_id: int) -> dict:
     used = 0
     for table in ("invoices", "documents", "contracts"):
         cur.execute(
-            f"SELECT COUNT(*) FROM {table} WHERE user_id = %s AND status != 'deleted' "
+            f"SELECT COUNT(*) FROM {table} WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
             "AND created_at >= %s AND created_at < %s",
             (user_id, start, end)
         )
@@ -407,7 +407,7 @@ def handler(event: dict, context) -> dict:
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"contract": row_to_dict(row)}, ensure_ascii=False)}
 
         cur.execute(
-            f"SELECT {COLS} FROM contracts WHERE user_id = %s AND status <> 'deleted' ORDER BY created_at DESC",
+            f"SELECT {COLS} FROM contracts WHERE user_id = %s AND status NOT IN ('deleted','archived_test') ORDER BY created_at DESC",
             (user_id,)
         )
         items = [row_to_dict(r) for r in cur.fetchall()]

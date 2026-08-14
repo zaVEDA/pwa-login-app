@@ -157,19 +157,19 @@ def compute_limits(cur, user_id: int, plan, plan_expires_at):
     # Считаем созданные документы за период (счета + документы реализации),
     # исключая удалённые
     cur.execute(
-        "SELECT COUNT(*) FROM invoices WHERE user_id = %s AND status != 'deleted' "
+        "SELECT COUNT(*) FROM invoices WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
         "AND created_at >= %s AND created_at < %s",
         (user_id, period_start, period_end)
     )
     used_invoices = cur.fetchone()[0]
     cur.execute(
-        "SELECT COUNT(*) FROM documents WHERE user_id = %s AND status != 'deleted' "
+        "SELECT COUNT(*) FROM documents WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
         "AND created_at >= %s AND created_at < %s",
         (user_id, period_start, period_end)
     )
     used_docs = cur.fetchone()[0]
     cur.execute(
-        "SELECT COUNT(*) FROM contracts WHERE user_id = %s AND status != 'deleted' "
+        "SELECT COUNT(*) FROM contracts WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
         "AND created_at >= %s AND created_at < %s",
         (user_id, period_start, period_end)
     )
@@ -913,7 +913,8 @@ def handler(event: dict, context) -> dict:
         # Список документов реализации (акты и накладные)
         if qs.get("documents"):
             cur.execute(
-                "SELECT id, doc_type, doc_number, doc_date, invoice_number, client_name, total, status FROM documents WHERE user_id = %s ORDER BY created_at DESC",
+                "SELECT id, doc_type, doc_number, doc_date, invoice_number, client_name, total, status FROM documents "
+                "WHERE user_id = %s AND status <> 'archived_test' ORDER BY created_at DESC",
                 (user_id,)
             )
             rows = cur.fetchall()
@@ -1067,7 +1068,8 @@ def handler(event: dict, context) -> dict:
             return {"statusCode": 200, "headers": cors, "body": json.dumps({"invoice": inv}, ensure_ascii=False)}
 
         cur.execute(
-            "SELECT id, invoice_number, invoice_date, client_name, total, status FROM invoices WHERE user_id = %s ORDER BY created_at DESC",
+            "SELECT id, invoice_number, invoice_date, client_name, total, status FROM invoices "
+            "WHERE user_id = %s AND status <> 'archived_test' ORDER BY created_at DESC",
             (user_id,)
         )
         rows = cur.fetchall()
