@@ -7,18 +7,20 @@ import AdminMaintenanceToggle from "@/components/admin/AdminMaintenanceToggle";
 import AdminRealUsers from "@/components/admin/AdminRealUsers";
 import AdminSupport from "@/components/admin/AdminSupport";
 import KnowledgeManager from "@/components/admin/KnowledgeManager";
+import AdminTemplates from "@/components/admin/AdminTemplates";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms";
+type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
-  { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, документы, входы" },
-  { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Кодовое слово и заявки" },
-  { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
-  { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
-  { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
-  { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Вопросы пользователей" },
-  { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой" },
+  { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
+  { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Вопросы пользователей" },
+  { id: "templates", icon: "FileText", title: "Шаблоны", hint: "Документы для клиентов" },
+  { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, документы, входы" },
+  { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
+  { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Кодовое слово и заявки" },
+  { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
+  { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
 ];
 
 function QuickTiles({ current, onGo }: { current: Section; onGo: (s: Section) => void }) {
@@ -339,6 +341,15 @@ function TasksScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+function TemplatesScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader title="Шаблоны" subtitle="Документы, доступные пользователям" onBack={onBack} />
+      <AdminTemplates />
+    </div>
+  );
+}
+
 function UsersScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-4">
@@ -394,6 +405,7 @@ export default function AdminDashboard() {
       sms: <SmsScreen onBack={back} />,
       calendar: <CalendarScreen onBack={back} />,
       tasks: <TasksScreen onBack={back} />,
+      templates: <TemplatesScreen onBack={back} />,
     };
     return (
       <div>
