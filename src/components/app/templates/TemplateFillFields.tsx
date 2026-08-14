@@ -20,6 +20,22 @@ interface Props {
   onGoToAccount?: () => void;
 }
 
+// Даты храним как ГГГГ-ММ-ДД, а показываем привычно — ДД.ММ.ГГГГ
+function isoToRu(v: string): string {
+  if (!v) return "";
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+  // Незавершённый ввод — расставляем точки на лету: 1205 → 12.05
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  return [d.slice(0, 2), d.slice(2, 4), d.slice(4, 8)].filter(Boolean).join(".");
+}
+
+function ruToIso(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 8);
+  if (d.length < 8) return d.length ? d : "";
+  return `${d.slice(4, 8)}-${d.slice(2, 4)}-${d.slice(0, 2)}`;
+}
+
 export default function TemplateFillFields({
   doc,
   contract,
@@ -169,15 +185,20 @@ export default function TemplateFillFields({
                   )}
                 </label>
                 <input
-                  type={f.type}
-                  inputMode={f.type === "tel" ? "numeric" : undefined}
-                  value={values[f.key] || ""}
+                  type={f.type === "date" ? "text" : f.type}
+                  inputMode={f.type === "tel" || f.type === "date" ? "numeric" : undefined}
+                  value={f.type === "date" ? isoToRu(values[f.key] || "") : values[f.key] || ""}
                   onChange={(e) => {
+                    if (f.type === "date") {
+                      onSet(f.key, ruToIso(e.target.value));
+                      return;
+                    }
                     const v = f.type === "tel" ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value;
                     onSet(f.key, v);
                   }}
                   readOnly={locked}
-                  placeholder={f.placeholder}
+                  maxLength={f.type === "date" ? 10 : undefined}
+                  placeholder={f.type === "date" ? "дд.мм.гггг" : f.placeholder}
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
                 />
                 {f.hint && <p className="text-[11px] text-muted-foreground mt-1">{f.hint}</p>}
