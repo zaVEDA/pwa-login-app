@@ -87,7 +87,7 @@ export default function PromoTemplateBanner({ compact = false, onWant }: Props) 
           style={{ color: "hsl(24 18% 30%)" }}
         >
           Первым 12 клиентам тарифа «Рост» на 6 месяцев —
-          <br className="hidden sm:block" /> разработаем 1 шаблон по вашему запросу
+          <br className="hidden sm:block" /> разработаем 1 шаблон по вашему запросу*
         </p>
 
         <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
@@ -130,8 +130,8 @@ export default function PromoTemplateBanner({ compact = false, onWant }: Props) 
           className={`mt-3 mx-auto max-w-md leading-relaxed ${compact ? "text-[10px]" : "text-[11px]"}`}
           style={{ color: "hsl(24 12% 48%)" }}
         >
-          * Если ваша деятельность экологична — не работаем с кальянными,
-          вейп-магазинами, алкоголем, казино/ставки и т.п.
+          * Мы выбираем экологичное партнёрство и обходим стороной: табачные лавки,
+          магазины электронных сигарет и алкоголя, игорных заведений и т.п.
         </p>
       </div>
     </div>
