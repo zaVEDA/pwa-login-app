@@ -69,7 +69,10 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
   const [identityConfirmMessage, setIdentityConfirmMessage] = useState("");
   const [identityLockedMessage, setIdentityLockedMessage] = useState("");
 
-  const readOnly = saved && !editing;
+  // Форма блокируется, только если реквизиты действительно заполнены и сохранены.
+  // При первом заполнении (данных ещё нет) поля доступны сразу, без кнопки «Изменить».
+  const hasFilledRequisites = Boolean((inn || "").trim() || (ogrnip || "").trim() || (fullName || "").trim());
+  const readOnly = saved && hasFilledRequisites && !editing;
 
   // Загружаем реквизиты из БД при монтировании
   useEffect(() => {
@@ -78,7 +81,11 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
       .then(r => r.json())
       .then(data => {
         const r = data.requisites;
-        if (!r) return;
+        if (!r) {
+          // Реквизитов ещё нет — форма открыта для первого заполнения
+          setSaved(false);
+          return;
+        }
         if (r.entity_type) setEntityType(r.entity_type as EntityType);
         if (r.full_name) { setFullName(r.full_name); }
         if (r.inn) setInn(r.inn);
@@ -92,7 +99,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
         if (r.kpp) setKpp(r.kpp);
         if (r.sign_phone) setSignPhone(r.sign_phone);
         if (r.sign_email) setSignEmail(r.sign_email);
-        setSaved(true);
+        setSaved(Boolean(r.inn || r.ogrnip || r.full_name));
       })
       .catch(() => {});
   }, [phone]);
@@ -170,7 +177,7 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
       const data = await res.json();
       if (!opts?.silent || data.valid) setCheckResult(data);
       if (data.valid) {
-        setSaved(true);
+        // Успешная сверка с ФНС — это ещё не сохранение: поля должны остаться доступными
         if (data.name) setFullName(data.name);
         if (entityType === "ip" && data.ogrnip) setOgrnip(data.ogrnip);
         if (data.inn) setInn(data.inn);
@@ -608,14 +615,15 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                 Сбросить
               </button>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setEditing(true)}
-                  disabled={!readOnly}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-medium shadow-sm hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none disabled:hover:shadow-sm"
-                >
-                  <Icon name="Pencil" size={12} />
-                  Изменить
-                </button>
+                {readOnly && (
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-medium shadow-sm hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all"
+                  >
+                    <Icon name="Pencil" size={12} />
+                    Изменить
+                  </button>
+                )}
                 <button
                   onClick={() => saveToDb()}
                   disabled={saving || readOnly}
