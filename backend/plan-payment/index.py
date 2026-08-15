@@ -73,13 +73,18 @@ def handler(event: dict, context) -> dict:
             cur.close()
             conn.close()
         left = max(0, PROMO_TOTAL - taken)
+        today = datetime.date.today()
+        # Плашка «Лимит участников исчерпан» показывается ровно 24 часа
+        # после даты окончания акции (сутки, следующие за PROMO_UNTIL).
+        sold_out = today == PROMO_UNTIL + datetime.timedelta(days=1)
         return resp(200, {
             "ok": True,
             "total": PROMO_TOTAL,
             "taken": taken,
             "left": left,
             "until": PROMO_UNTIL.isoformat(),
-            "active": left > 0 and datetime.date.today() <= PROMO_UNTIL,
+            "active": left > 0 and today <= PROMO_UNTIL,
+            "sold_out": sold_out,
         })
 
     plan = (body.get("plan") or "").strip()

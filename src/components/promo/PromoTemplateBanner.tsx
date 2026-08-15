@@ -8,6 +8,7 @@ interface PromoStatus {
   left: number;
   until: string;
   active: boolean;
+  sold_out?: boolean;
 }
 
 export function usePromoStatus(pollMs = 60000) {
@@ -51,7 +52,30 @@ function plural(n: number) {
 
 export default function PromoTemplateBanner({ compact = false, onWant }: Props) {
   const promo = usePromoStatus();
-  if (!promo || !promo.active) return null;
+  if (!promo || (!promo.active && !promo.sold_out)) return null;
+
+  if (promo.sold_out) {
+    return (
+      <div
+        className={`relative overflow-hidden rounded-2xl text-center shadow-sm border ${compact ? "px-4 py-4" : "px-6 py-6"}`}
+        style={{
+          background: "linear-gradient(150deg, hsl(45 60% 96%), hsl(38 48% 92%))",
+          borderColor: "hsl(35 55% 72%)",
+        }}
+      >
+        <div
+          className="absolute inset-x-0 top-0 h-1"
+          style={{ background: "linear-gradient(90deg, hsl(35 72% 52%), hsl(42 82% 58%))" }}
+        />
+        <div className="relative z-10 flex items-center justify-center gap-2">
+          <Icon name="Gift" size={compact ? 18 : 22} className="flex-shrink-0" style={{ color: "hsl(35 72% 42%)" }} />
+          <p className={`font-bold tracking-tight ${compact ? "text-base" : "text-xl"}`} style={{ color: "hsl(24 30% 16%)" }}>
+            Лимит участников исчерпан
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
