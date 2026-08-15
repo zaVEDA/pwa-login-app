@@ -9,8 +9,10 @@ import PlanModal from "@/components/app/PlanModal";
 import ChangePasswordModal from "@/components/app/ChangePasswordModal";
 import ProfileActivityModal from "@/components/app/ProfileActivityModal";
 import ClientsModal from "@/components/app/ClientsModal";
+import NotificationsModal from "@/components/app/NotificationsModal";
 import { AuthUser, PlanType } from "@/lib/auth";
 import { fetchDocLimits, DocLimits } from "@/lib/limits";
+import { notifyApi } from "@/lib/notifications";
 import { themes } from "./constants";
 
 const planLabels: Record<PlanType, string> = {
@@ -58,11 +60,19 @@ export default function AccountTab({
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showClientsModal, setShowClientsModal] = useState(false);
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
+  const [unread, setUnread] = useState(0);
   const [limits, setLimits] = useState<DocLimits | null>(null);
 
   useEffect(() => {
     if (phone) fetchDocLimits(phone).then(setLimits);
   }, [phone]);
+
+  useEffect(() => {
+    notifyApi.list().then((r) => {
+      if (r.status === 200) setUnread(r.data.unread || 0);
+    });
+  }, []);
 
   const { slot, reload: reloadSlot } = useTemplateSlot(userRole !== "admin");
   const [briefOpen, setBriefOpen] = useState(false);
@@ -255,6 +265,10 @@ export default function AccountTab({
 
           {showClientsModal && <ClientsModal phone={phone} onClose={() => setShowClientsModal(false)} />}
 
+          {showNotifyModal && (
+            <NotificationsModal onClose={() => setShowNotifyModal(false)} onReadAll={() => setUnread(0)} />
+          )}
+
           {/* Реквизиты */}
           <RequisitesBlock fullName={fullName} setFullName={setFullName} phone={phone} />
 
@@ -303,6 +317,8 @@ export default function AccountTab({
                     ? () => setShowPasswordModal(true)
                     : item.label === "Профиль и деятельность"
                     ? () => setShowProfileModal(true)
+                    : item.label === "Уведомления"
+                    ? () => setShowNotifyModal(true)
                     : item.label === "Справка и поддержка"
                     ? () => setSupportOpen(true)
                     : undefined
@@ -313,6 +329,11 @@ export default function AccountTab({
                   <Icon name={item.icon} size={15} className={item.danger ? "text-red-500" : "text-primary"} />
                 </div>
                 <span className={`flex-1 text-sm ${item.danger ? "text-red-500" : "text-foreground"}`}>{item.label}</span>
+                {item.label === "Уведомления" && unread > 0 && (
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center">
+                    {unread}
+                  </span>
+                )}
                 {!item.danger && <Icon name="ChevronRight" size={15} className="text-muted-foreground" />}
               </button>
             ))}

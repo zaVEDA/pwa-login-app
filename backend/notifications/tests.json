@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Список без входа",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401
+    },
+    {
+      "name": "Сохранение настроек без входа",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "save_settings", "settings": { "sms": true } },
+      "expectedStatus": 401
+    },
+    {
+      "name": "Рассылка без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "admin_send", "title": "Тест", "body": "Проверка" },
+      "expectedStatus": 401
+    }
+  ]
+}

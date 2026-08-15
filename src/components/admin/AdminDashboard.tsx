@@ -9,11 +9,13 @@ import AdminSupport from "@/components/admin/AdminSupport";
 import KnowledgeManager from "@/components/admin/KnowledgeManager";
 import AdminTemplates from "@/components/admin/AdminTemplates";
 import AdminTemplateBriefs from "@/components/admin/AdminTemplateBriefs";
+import AdminNotify from "@/components/admin/AdminNotify";
 
-type Section = "menu" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates" | "briefs";
+type Section = "menu" | "notify" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates" | "briefs";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой" },
+  { id: "notify", icon: "Send", title: "Рассылка", hint: "Сообщения пользователям" },
   { id: "sms", icon: "MessageSquare", title: "Расход SMS", hint: "По видам и по номерам" },
   { id: "support", icon: "LifeBuoy", title: "Поддержка", hint: "Вопросы пользователей" },
   { id: "templates", icon: "FileText", title: "Шаблоны", hint: "Документы для клиентов" },
@@ -382,6 +384,19 @@ function SmsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+function NotifyScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader
+        title="Рассылка"
+        subtitle="Сообщение придёт в раздел «Уведомления»"
+        onBack={onBack}
+      />
+      <AdminNotify />
+    </div>
+  );
+}
+
 export default function AdminDashboard({ section: outer, onSection }: { section?: string; onSection?: (s: string) => void } = {}) {
   const [inner, setInner] = useState<Section>("menu");
   const section = (outer as Section) || inner;
@@ -397,6 +412,7 @@ export default function AdminDashboard({ section: outer, onSection }: { section?
       family: <FamilyScreen onBack={back} />,
       addons: <AddonsScreen onBack={back} />,
       sms: <SmsScreen onBack={back} />,
+      notify: <NotifyScreen onBack={back} />,
       calendar: <CalendarScreen onBack={back} />,
       tasks: <TasksScreen onBack={back} />,
       templates: <TemplatesScreen onBack={back} />,
