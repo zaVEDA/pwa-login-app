@@ -20,7 +20,7 @@ function renderMd(md: string) {
       out.push(<hr key={key++} className="my-5 border-border" />);
     } else if (ln.startsWith("- ")) {
       out.push(
-        <p key={key++} className="text-sm my-1.5 leading-relaxed text-muted-foreground pl-4 relative">
+        <p key={key++} className="text-sm my-2 leading-relaxed text-foreground/80 pl-4 relative">
           <span className="absolute left-0 top-0 text-primary">•</span>
           {inline(ln.slice(2))}
         </p>
