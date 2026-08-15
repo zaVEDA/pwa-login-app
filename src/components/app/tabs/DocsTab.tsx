@@ -1,19 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import Icon from "@/components/ui/icon";
-import InvoiceModal from "@/components/app/InvoiceModal";
-import DocumentModal from "@/components/app/DocumentModal";
 import { formatDate } from "@/lib/date";
-import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract, templates } from "./constants";
-import ContractCard from "./docs/ContractCard";
-import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
-import { templateDocs } from "@/components/app/templates/docs";
+import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract } from "./constants";
 import type { DateRange } from "react-day-picker";
 import { PlanType } from "@/lib/auth";
-import DocsFilters from "./docs/DocsFilters";
-import InvoiceCard from "./docs/InvoiceCard";
-import RealizationDocCard from "./docs/RealizationDocCard";
-import PdfWarnDialog from "@/components/app/PdfWarnDialog";
 import { toast } from "sonner";
+import DocsTabModals from "./docs/DocsTabModals";
+import DocsTabHeader from "./docs/DocsTabHeader";
+import DocsTabList from "./docs/DocsTabList";
 
 interface Props {
   phone: string;
@@ -192,7 +185,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
   }, [invoices, realizationDocs, contracts]);
 
   const isInDateRange = (dateStr: string) => {
-    if (!dateRange?.from || !dateStr) return true;
+    if (!dateRange?.from) return true;
     const d = new Date(dateStr);
     d.setHours(0, 0, 0, 0);
     const from = new Date(dateRange.from);
@@ -429,81 +422,40 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
 
   return (
     <>
-      {showInvoice && (
-        <InvoiceModal
-          onClose={() => { setShowInvoice(false); setOpenInvoiceId(null); }}
-          phone={phone}
-          onSaved={() => { loadInvoices(); onDocCreated?.(); }}
-          invoiceId={openInvoiceId}
-          userPlan={userPlan}
-        />
-      )}
-      {openContract && templateDocs[openContract.template_key] && (
-        <TemplateFillModal
-          doc={templateDocs[openContract.template_key]}
-          phone={phone}
-          userProfile={{ phone, email: userEmail }}
-          contract={openContract}
-          onClose={() => setOpenContract(null)}
-          onSaved={loadContracts}
-          onGoToAccount={() => { setOpenContract(null); onGoToAccount?.(); }}
-        />
-      )}
-      {newAgreementDoc && templateDocs[newAgreementDoc] && (
-        <TemplateFillModal
-          doc={templateDocs[newAgreementDoc]}
-          phone={phone}
-          userProfile={{ phone, email: userEmail }}
-          onClose={() => setNewAgreementDoc(null)}
-          onSaved={loadContracts}
-          onGoToAccount={() => { setNewAgreementDoc(null); onGoToAccount?.(); }}
-        />
-      )}
-      {openDocId && (
-        <DocumentModal
-          docId={openDocId}
-          phone={phone}
-          onClose={() => setOpenDocId(null)}
-          onSaved={loadDocuments}
-          userPlan={userPlan}
-        />
-      )}
+      <DocsTabModals
+        phone={phone}
+        userPlan={userPlan}
+        userEmail={userEmail}
+        onDocCreated={onDocCreated}
+        onGoToAccount={onGoToAccount}
+        showInvoice={showInvoice}
+        setShowInvoice={setShowInvoice}
+        openInvoiceId={openInvoiceId}
+        setOpenInvoiceId={setOpenInvoiceId}
+        loadInvoices={loadInvoices}
+        openContract={openContract}
+        setOpenContract={setOpenContract}
+        loadContracts={loadContracts}
+        newAgreementDoc={newAgreementDoc}
+        setNewAgreementDoc={setNewAgreementDoc}
+        openDocId={openDocId}
+        setOpenDocId={setOpenDocId}
+        loadDocuments={loadDocuments}
+        pdfWarnOpen={pdfWarnOpen}
+        setPdfWarnOpen={setPdfWarnOpen}
+        pendingPdf={pendingPdf}
+        setPendingPdf={setPendingPdf}
+        warnAction={warnAction}
+      />
 
       <div className="space-y-5 animate-slide-up">
-        <div className="flex items-center justify-between relative">
-          <h2 className="font-cormorant text-2xl font-semibold">Мои документы</h2>
-          <button
-            onClick={() => docFilter === "Договоры" ? setShowTemplatePicker((v) => !v) : setShowInvoice(true)}
-            className="w-9 h-9 rounded-xl gold-gradient flex items-center justify-center shadow-sm"
-          >
-            <Icon name="Plus" size={16} className="text-white" />
-          </button>
-
-          {showTemplatePicker && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setShowTemplatePicker(false)} />
-              <div className="absolute right-0 top-11 z-40 w-72 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in max-h-80 overflow-y-auto">
-                <p className="px-3.5 pt-2.5 pb-1 text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                  Новое соглашение из шаблона
-                </p>
-                {templates.filter((t) => templateDocs[t.title]).map((t) => (
-                  <button
-                    key={t.title}
-                    onClick={() => { setShowTemplatePicker(false); setNewAgreementDoc(t.title); }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
-                  >
-                    <Icon name={t.icon} size={15} className="text-primary flex-shrink-0" />
-                    {t.title}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        <DocsFilters
+        <DocsTabHeader
           docFilter={docFilter}
           setDocFilter={setDocFilter}
+          showTemplatePicker={showTemplatePicker}
+          setShowTemplatePicker={setShowTemplatePicker}
+          setShowInvoice={setShowInvoice}
+          setNewAgreementDoc={setNewAgreementDoc}
           dateRange={dateRange}
           setDateRange={setDateRange}
           datePickerOpen={datePickerOpen}
@@ -516,106 +468,52 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
           clientOptions={clientOptions}
         />
 
-        {invoicesLoading && (
-          <div className="flex items-center justify-center py-8">
-            <Icon name="Loader" size={20} className="animate-spin text-muted-foreground" />
-          </div>
-        )}
-
-        {!invoicesLoading && (showInvoicesList ? filteredInvoices.length : 0) === 0 && filteredDocs.length === 0 && (showContracts ? filteredContracts.length : 0) === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-              <Icon name="FileText" size={24} className="text-primary/50" />
-            </div>
-            <p className="text-sm font-medium text-foreground">
-              {dateRange?.from || clientFilter
-                ? "Ничего не найдено по выбранным фильтрам"
-                : docFilter === "Все" ? "Документов пока нет" : `Раздел «${docFilter}» пуст`}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {dateRange?.from || clientFilter ? "Попробуйте изменить дату или клиента" : "Нажмите + чтобы создать первый счёт"}
-            </p>
-          </div>
-        )}
-
-        {!invoicesLoading && showContracts && filteredContracts.length > 0 && (
-          <div className="space-y-3">
-            {filteredContracts.map((c) => (
-              <ContractCard
-                key={c.id}
-                contract={c}
-                menuId={contractMenuId}
-                setMenuId={setContractMenuId}
-                onOpen={setOpenContract}
-                onStatus={changeContractStatus}
-                onPdf={downloadContractPdf}
-                pdfLoadingId={contractPdfId}
-                shareId={contractShareId}
-                setShareId={setContractShareId}
-                onShare={shareContract}
-              />
-            ))}
-          </div>
-        )}
-
-        {!invoicesLoading && showInvoicesList && filteredInvoices.length > 0 && (
-          <div className="space-y-3">
-            {filteredInvoices.map((inv) => (
-              <InvoiceCard
-                key={inv.id}
-                inv={inv}
-                pdfLoadingId={pdfLoadingId}
-                docLoadingId={docLoadingId}
-                basisMenuId={basisMenuId}
-                setBasisMenuId={setBasisMenuId}
-                basisHelp={basisHelp}
-                setBasisHelp={setBasisHelp}
-                docTips={docTips}
-                shareMenuId={shareMenuId}
-                setShareMenuId={setShareMenuId}
-                statusMenuId={statusMenuId}
-                setStatusMenuId={setStatusMenuId}
-                setOpenInvoiceId={setOpenInvoiceId}
-                setShowInvoice={setShowInvoice}
-                downloadPdf={downloadPdf}
-                createDocument={createDocument}
-                shareInvoice={shareInvoice}
-                changeStatus={changeStatus}
-                deleteInvoice={deleteInvoice}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Документы реализации: акты и накладные */}
-        {filteredDocs.length > 0 && (
-          <div className="space-y-3 pt-2">
-            {filteredDocs.map((doc) => (
-              <RealizationDocCard
-                key={`doc-${doc.id}`}
-                doc={doc}
-                docLoadingId={docLoadingId}
-                statusMenuId={statusMenuId}
-                setStatusMenuId={setStatusMenuId}
-                shareDocId={shareDocId}
-                setShareDocId={setShareDocId}
-                setOpenDocId={setOpenDocId}
-                downloadDocPdf={downloadDocPdf}
-                printDocPdf={printDocPdf}
-                changeDocStatus={changeDocStatus}
-                shareDoc={shareDoc}
-              />
-            ))}
-          </div>
-        )}
+        <DocsTabList
+          invoicesLoading={invoicesLoading}
+          dateRange={dateRange}
+          clientFilter={clientFilter}
+          docFilter={docFilter}
+          showInvoicesList={showInvoicesList}
+          filteredInvoices={filteredInvoices}
+          showContracts={showContracts}
+          filteredContracts={filteredContracts}
+          filteredDocs={filteredDocs}
+          pdfLoadingId={pdfLoadingId}
+          docLoadingId={docLoadingId}
+          basisMenuId={basisMenuId}
+          setBasisMenuId={setBasisMenuId}
+          basisHelp={basisHelp}
+          setBasisHelp={setBasisHelp}
+          docTips={docTips}
+          shareMenuId={shareMenuId}
+          setShareMenuId={setShareMenuId}
+          statusMenuId={statusMenuId}
+          setStatusMenuId={setStatusMenuId}
+          setOpenInvoiceId={setOpenInvoiceId}
+          setShowInvoice={setShowInvoice}
+          downloadPdf={downloadPdf}
+          createDocument={createDocument}
+          shareInvoice={shareInvoice}
+          changeStatus={changeStatus}
+          deleteInvoice={deleteInvoice}
+          contractMenuId={contractMenuId}
+          setContractMenuId={setContractMenuId}
+          setOpenContract={setOpenContract}
+          changeContractStatus={changeContractStatus}
+          downloadContractPdf={downloadContractPdf}
+          contractPdfId={contractPdfId}
+          contractShareId={contractShareId}
+          setContractShareId={setContractShareId}
+          shareContract={shareContract}
+          shareDocId={shareDocId}
+          setShareDocId={setShareDocId}
+          setOpenDocId={setOpenDocId}
+          downloadDocPdf={downloadDocPdf}
+          printDocPdf={printDocPdf}
+          changeDocStatus={changeDocStatus}
+          shareDoc={shareDoc}
+        />
       </div>
-
-      <PdfWarnDialog
-        open={pdfWarnOpen}
-        onOpenChange={(o) => { setPdfWarnOpen(o); if (!o) setPendingPdf(null); }}
-        onConfirm={() => { pendingPdf?.(); setPendingPdf(null); }}
-        action={warnAction}
-      />
     </>
   );
 }
