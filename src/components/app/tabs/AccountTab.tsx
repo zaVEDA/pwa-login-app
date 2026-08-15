@@ -7,6 +7,7 @@ import SupportModal from "@/components/app/SupportModal";
 import { useTemplateSlot } from "@/components/promo/useTemplateSlot";
 import PlanModal from "@/components/app/PlanModal";
 import ChangePasswordModal from "@/components/app/ChangePasswordModal";
+import ProfileActivityModal from "@/components/app/ProfileActivityModal";
 import ClientsModal from "@/components/app/ClientsModal";
 import { AuthUser, PlanType } from "@/lib/auth";
 import { fetchDocLimits, DocLimits } from "@/lib/limits";
@@ -29,6 +30,7 @@ interface Props {
   setColorTheme: (t: keyof typeof themes) => void;
   phone: string;
   userName?: string | null;
+  activityDescription?: string | null;
   userRole?: string;
   userPlan?: PlanType | null;
   planExpiresAt?: string | null;
@@ -45,6 +47,7 @@ export default function AccountTab({
   setColorTheme,
   phone,
   userName,
+  activityDescription,
   userRole,
   userPlan,
   planExpiresAt,
@@ -53,6 +56,7 @@ export default function AccountTab({
 }: Props) {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showClientsModal, setShowClientsModal] = useState(false);
   const [limits, setLimits] = useState<DocLimits | null>(null);
 
@@ -200,6 +204,16 @@ export default function AccountTab({
             />
           )}
 
+          {showProfileModal && (
+            <ProfileActivityModal
+              fullName={userName || fullName}
+              phone={phone}
+              user={{ full_name: userName ?? null, activity_description: activityDescription ?? null } as AuthUser}
+              onClose={() => setShowProfileModal(false)}
+              onSaved={(u) => { onUserUpdated?.(u); setFullName(u.full_name || ""); }}
+            />
+          )}
+
           {/* Цветовая тема */}
           <div className="card-warm rounded-2xl p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
@@ -288,6 +302,8 @@ export default function AccountTab({
                     ? onLogout
                     : item.label === "Сменить пароль"
                     ? () => setShowPasswordModal(true)
+                    : item.label === "Профиль и деятельность"
+                    ? () => setShowProfileModal(true)
                     : item.label === "Справка и поддержка"
                     ? () => setSupportOpen(true)
                     : undefined

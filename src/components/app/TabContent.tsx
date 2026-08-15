@@ -18,6 +18,7 @@ interface Props {
   setColorTheme: (t: keyof typeof themes) => void;
   phone: string;
   userName?: string | null;
+  activityDescription?: string | null;
   userEmail?: string | null;
   userRole?: string;
   userPlan?: PlanType | null;
@@ -42,6 +43,7 @@ export default function TabContent({
   setColorTheme,
   phone,
   userName,
+  activityDescription,
   userEmail,
   userRole,
   userPlan,
@@ -67,6 +69,7 @@ export default function TabContent({
           setColorTheme={setColorTheme}
           phone={phone}
           userName={userName}
+          activityDescription={activityDescription}
           userRole={userRole}
           userPlan={userPlan}
           planExpiresAt={planExpiresAt}

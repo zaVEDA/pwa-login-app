@@ -115,8 +115,8 @@ def user_public(row, keys) -> dict:
     return d
 
 
-USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, plan, plan_expires_at"
-USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status", "plan", "plan_expires_at"]
+USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, plan, plan_expires_at, activity_description"
+USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status", "plan", "plan_expires_at", "activity_description"]
 
 
 def cors_headers():
@@ -176,6 +176,7 @@ def handler(event: dict, context) -> dict:
             reg_email = None
             reg_password_hash = None
             reg_display_name = None
+            reg_activity = None
             consent_personal = False
             consent_offer = False
             consent_pep = False
@@ -197,6 +198,7 @@ def handler(event: dict, context) -> dict:
                         return resp(409, {"error": "Аккаунт с таким номером уже существует"})
                     reg_email = (body.get("email") or "").strip().lower()
                     reg_display_name = (body.get("display_name") or "").strip()[:120]
+                    reg_activity = (body.get("activity_description") or "").strip()[:500]
                     password = body.get("password") or ""
                     # Три документа принимаются по отдельности. Старый флаг consent
                     # оставляем для совместимости: если пришёл только он — считаем все три принятыми.
@@ -206,6 +208,8 @@ def handler(event: dict, context) -> dict:
                     consent_pep = bool(body.get("consent_pep", legacy_consent))
                     if not reg_display_name:
                         return resp(400, {"error": "Укажите, как к вам обращаться"})
+                    if not reg_activity:
+                        return resp(400, {"error": "Опишите, чем вы занимаетесь"})
                     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", reg_email):
                         return resp(400, {"error": "Введите корректный email"})
                     if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{6,20}$", password):
@@ -291,10 +295,10 @@ def handler(event: dict, context) -> dict:
             expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
             cur.execute(
                 "INSERT INTO auth_codes (user_id, phone, email, code, purpose, channel, expires_at, reg_email, reg_password_hash, "
-                "reg_display_name, consent_personal, consent_offer, consent_pep) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                "reg_display_name, reg_activity, consent_personal, consent_offer, consent_pep) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (user_id, phone or None, email or None, code, purpose, channel, expires, reg_email, reg_password_hash,
-                 reg_display_name, consent_personal, consent_offer, consent_pep)
+                 reg_display_name, reg_activity, consent_personal, consent_offer, consent_pep)
             )
             conn.commit()
             print(f"[AUTH CODE] purpose={purpose} channel={channel} phone={phone} email={email} CODE={code}")
@@ -346,13 +350,13 @@ def handler(event: dict, context) -> dict:
 
             if channel == "sms":
                 cur.execute(
-                    "SELECT id, code, reg_email, reg_password_hash, consent_personal, consent_offer, consent_pep, reg_display_name "
+                    "SELECT id, code, reg_email, reg_password_hash, consent_personal, consent_offer, consent_pep, reg_display_name, reg_activity "
                     "FROM auth_codes WHERE phone = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
                     (phone, purpose)
                 )
             else:
                 cur.execute(
-                    "SELECT id, code, reg_email, reg_password_hash, consent_personal, consent_offer, consent_pep, reg_display_name "
+                    "SELECT id, code, reg_email, reg_password_hash, consent_personal, consent_offer, consent_pep, reg_display_name, reg_activity "
                     "FROM auth_codes WHERE email = %s AND purpose = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
                     (email, purpose)
                 )
@@ -379,6 +383,7 @@ def handler(event: dict, context) -> dict:
             ok_offer = bool(row[5])
             ok_pep = bool(row[6])
             reg_display_name = row[7] if len(row) > 7 else None
+            reg_activity = row[8] if len(row) > 8 else None
             cur.execute("UPDATE auth_codes SET used = TRUE WHERE id = %s", (row[0],))
 
             # Находим или создаём пользователя
@@ -394,10 +399,10 @@ def handler(event: dict, context) -> dict:
                     if cur.fetchone():
                         return resp(409, {"error": "Аккаунт с таким email уже существует"})
                     cur.execute(
-                        "INSERT INTO users (phone, email, login, password_hash, full_name, consent_pep, consent_at, "
+                        "INSERT INTO users (phone, email, login, password_hash, full_name, activity_description, consent_pep, consent_at, "
                         "consent_personal, consent_personal_at, consent_offer, consent_offer_at, last_login_at, created_at) "
-                        "VALUES (%s, %s, %s, %s, %s, TRUE, NOW(), TRUE, NOW(), TRUE, NOW(), NOW(), NOW()) RETURNING id",
-                        (phone, reg_email, reg_email, reg_password_hash, reg_display_name or None)
+                        "VALUES (%s, %s, %s, %s, %s, %s, TRUE, NOW(), TRUE, NOW(), TRUE, NOW(), NOW(), NOW()) RETURNING id",
+                        (phone, reg_email, reg_email, reg_password_hash, reg_display_name or None, reg_activity or None)
                     )
                     uid = cur.fetchone()[0]
                     ip = (event.get("requestContext") or {}).get("identity", {}).get("sourceIp", "")
@@ -595,6 +600,9 @@ def handler(event: dict, context) -> dict:
             if full_name is not None:
                 sets.append("full_name = %s")
                 params.append(full_name)
+            if "activity_description" in body:
+                sets.append("activity_description = %s")
+                params.append((body.get("activity_description") or "").strip()[:500] or None)
             if "email" in body:
                 sets.append("email = %s")
                 params.append(email)
@@ -763,7 +771,7 @@ def handler(event: dict, context) -> dict:
                 return resp(403, {"error": "Доступ запрещён"})
             cur.execute(
                 "SELECT u.id, u.full_name, u.phone, u.email, u.plan, u.plan_expires_at, u.role, "
-                "u.created_at, u.last_login_at, "
+                "u.created_at, u.last_login_at, u.activity_description, "
                 "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id "
                 "  AND c.status NOT IN ('deleted','archived_test')), "
                 "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id AND c.signed_at IS NOT NULL "
@@ -778,7 +786,8 @@ def handler(event: dict, context) -> dict:
                     "plan": r[4], "plan_expires_at": str(r[5]) if r[5] else None, "role": r[6],
                     "created_at": str(r[7]) if r[7] else None,
                     "last_login_at": str(r[8]) if r[8] else None,
-                    "docs_total": r[9] or 0, "docs_signed": r[10] or 0, "invoices": r[11] or 0,
+                    "activity_description": r[9],
+                    "docs_total": r[10] or 0, "docs_signed": r[11] or 0, "invoices": r[12] or 0,
                 }
                 for r in cur.fetchall()
             ]

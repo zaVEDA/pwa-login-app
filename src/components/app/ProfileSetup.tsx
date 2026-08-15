@@ -16,6 +16,7 @@ const formatPhone = (raw: string) => {
 
 export default function ProfileSetup({ user, onDone, onSkip }: Props) {
   const [fullName, setFullName] = useState(user.full_name || "");
+  const [activity, setActivity] = useState(user.activity_description || "");
   const [email, setEmail] = useState(user.email || user.login || "");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -28,12 +29,13 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
     setError("");
     const mail = email.trim().toLowerCase();
     if (!fullName.trim()) return setError("Напишите, как к вам обращаться");
+    if (activity.trim().length < 5) return setError("Опишите, чем вы занимаетесь");
     if (!mail) return setError("Укажите электронную почту");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) return setError("Проверьте адрес почты");
     if (!passOk) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
     setLoading(true);
     try {
-      const r = await authApi.updateProfile({ full_name: fullName.trim(), email: mail, login: mail, password });
+      const r = await authApi.updateProfile({ full_name: fullName.trim(), activity_description: activity.trim(), email: mail, login: mail, password });
       if (r.status !== 200) { setError(r.data.error || "Не удалось сохранить"); return; }
       onDone(r.data.user);
     } catch {
@@ -87,6 +89,18 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
             <p className="text-[11px] text-muted-foreground mt-1">
               Обязательно. Может не совпадать с официальными данными
             </p>
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Чем вы занимаетесь</label>
+            <textarea
+              rows={3}
+              value={activity}
+              onChange={(e) => setActivity(e.target.value.slice(0, 500))}
+              placeholder="Например: психолог, консультирую онлайн"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary resize-none"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">Своими словами — так мы подберём нужные документы</p>
           </div>
 
           <div>

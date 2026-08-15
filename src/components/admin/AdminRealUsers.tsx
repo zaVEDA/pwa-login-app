@@ -6,6 +6,7 @@ import SetUserPassword from "./admin-users/SetUserPassword";
 interface Row {
   id: number;
   full_name: string | null;
+  activity_description: string | null;
   phone: string | null;
   email: string | null;
   plan: string | null;
@@ -101,6 +102,7 @@ export default function AdminRealUsers() {
             const digits = q.replace(/\D/g, "");
             return (
               (u.full_name || "").toLowerCase().includes(q) ||
+              (u.activity_description || "").toLowerCase().includes(q) ||
               (u.email || "").toLowerCase().includes(q) ||
               (!!digits && (u.phone || "").includes(digits))
             );
@@ -145,6 +147,14 @@ export default function AdminRealUsers() {
                       <span className="text-xs font-medium text-foreground truncate">{v}</span>
                     </div>
                   ))}
+                  {u.activity_description && (
+                    <div className="pt-1.5 mt-1 border-t border-border/40">
+                      <p className="text-[11px] text-muted-foreground mb-0.5">Чем занимается</p>
+                      <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                        {u.activity_description}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

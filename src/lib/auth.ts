@@ -6,6 +6,7 @@ export interface AuthUser {
   id: number;
   phone: string;
   full_name: string | null;
+  activity_description: string | null;
   email: string | null;
   email_verified: boolean;
   login: string | null;
@@ -65,14 +66,14 @@ async function call(action: string, payload: Record<string, unknown> = {}) {
 }
 
 export const authApi = {
-  requestCode: (p: { purpose: string; channel: string; phone?: string; email?: string; password?: string; display_name?: string; consent?: boolean; consent_personal?: boolean; consent_offer?: boolean; consent_pep?: boolean; captcha_pass_token?: string }) =>
+  requestCode: (p: { purpose: string; channel: string; phone?: string; email?: string; password?: string; display_name?: string; activity_description?: string; consent?: boolean; consent_personal?: boolean; consent_offer?: boolean; consent_pep?: boolean; captcha_pass_token?: string }) =>
     call("request_code", p),
   verifyCode: (p: { purpose: string; channel: string; phone?: string; email?: string; code: string }) =>
     call("verify_code", p),
   loginPassword: (p: { login: string; password: string }) => call("login_password", p),
   checkDevice: (phone: string) => call("check_device", { phone }),
   me: () => call("me"),
-  updateProfile: (p: { full_name?: string; email?: string; login?: string; password?: string }) =>
+  updateProfile: (p: { full_name?: string; activity_description?: string; email?: string; login?: string; password?: string }) =>
     call("update_profile", p),
   resetPassword: (password: string) => call("reset_password", { password }),
   requestFamilyPlan: (code_word: string) => call("request_family_plan", { code_word }),

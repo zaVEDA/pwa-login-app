@@ -279,6 +279,7 @@ export default function Index() {
           setColorTheme={setColorTheme}
           phone={phone}
           userName={user?.full_name}
+          activityDescription={user?.activity_description ?? null}
           userEmail={user?.email}
           userRole={user?.role}
           userPlan={user?.plan ?? null}
