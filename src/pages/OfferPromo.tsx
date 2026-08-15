@@ -7,7 +7,6 @@ export default function OfferPromo() {
       downloadUrl="/dopolnenie-1-akciya-shablon.docx"
       downloadName="Дополнение-1-акция-шаблон.docx"
       downloadLabel="Скачать DOCX"
-      notice="Черновик на согласовании. Страница доступна только по прямой ссылке и пока не опубликована на сайте."
     />
   );
 }

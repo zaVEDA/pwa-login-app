@@ -157,6 +157,16 @@ export default function PromoTemplateBanner({ compact = false, onWant }: Props) 
           * Мы выбираем экологичное партнёрство и обходим стороной: табачные лавки,
           магазины электронных сигарет и алкоголя, игорные заведения и т.п.
         </p>
+
+        <a
+          href="/offer-promo"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`inline-block mt-1.5 underline underline-offset-2 ${compact ? "text-[10px]" : "text-[11px]"}`}
+          style={{ color: "hsl(24 12% 48%)" }}
+        >
+          Условия акции — Дополнение № 1 к оферте
+        </a>
       </div>
     </div>
   );
