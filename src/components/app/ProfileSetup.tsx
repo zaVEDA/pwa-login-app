@@ -15,6 +15,7 @@ const formatPhone = (raw: string) => {
 };
 
 export default function ProfileSetup({ user, onDone, onSkip }: Props) {
+  const [fullName, setFullName] = useState(user.full_name || "");
   const [email, setEmail] = useState(user.email || user.login || "");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -26,13 +27,14 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
   const handleSave = async () => {
     setError("");
     const mail = email.trim().toLowerCase();
+    if (!fullName.trim()) return setError("Напишите, как к вам обращаться");
     if (!mail) return setError("Укажите электронную почту");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) return setError("Проверьте адрес почты");
     if (password.length < 6) return setError("Пароль не короче 6 символов");
     if (!/^[\x20-\x7E]+$/.test(password)) return setError("Пароль — только латинские буквы, цифры и знаки");
     setLoading(true);
     try {
-      const r = await authApi.updateProfile({ email: mail, login: mail, password });
+      const r = await authApi.updateProfile({ full_name: fullName.trim(), email: mail, login: mail, password });
       if (r.status !== 200) { setError(r.data.error || "Не удалось сохранить"); return; }
       onDone(r.data.user);
     } catch {
@@ -71,6 +73,19 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
               <span className="flex-1">{formatPhone(user.phone)}</span>
               <span className="text-[11px] text-muted-foreground">подтверждён</span>
             </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Как к вам обращаться</label>
+            <input
+              type="text"
+              autoCapitalize="words"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value.slice(0, 40))}
+              placeholder="Например, Анна Петровна"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">Так сервис будет обращаться к вам</p>
           </div>
 
           <div>
