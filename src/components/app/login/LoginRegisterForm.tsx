@@ -117,7 +117,7 @@ export default function LoginRegisterForm({ m }: Props) {
           </button>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
-          Латинские буквы, цифры и знаки, до 6 символов
+          Латинские буквы, цифры и знаки, от 6 до 20 символов
         </p>
       </div>
       <div className="relative">
