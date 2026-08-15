@@ -13,10 +13,13 @@ export default function ChangePasswordModal({ onClose, onSaved }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+
+  const passOk = /^[A-Za-z0-9!-/:-@[-`{-~]{6,20}$/.test(password);
 
   const handleSave = async () => {
     setError("");
-    if (password.length < 6) return setError("Пароль не короче 6 символов");
+    if (!passOk) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
     if (password !== confirm) return setError("Пароли не совпадают");
     setLoading(true);
     try {
@@ -59,21 +62,38 @@ export default function ChangePasswordModal({ onClose, onSaved }: Props) {
 
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Новый пароль</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Минимум 6 символов"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
-                />
+                <div className="relative">
+                  <input
+                    type={showPass ? "text" : "password"}
+                    autoCapitalize="none"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 20))}
+                    placeholder="От 6 до 20 символов"
+                    className="w-full pl-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((v) => !v)}
+                    aria-label={showPass ? "Скрыть пароль" : "Показать пароль"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground p-1"
+                  >
+                    <Icon name={showPass ? "EyeOff" : "Eye"} size={17} />
+                  </button>
+                </div>
+                <p className={`text-[11px] mt-1 ${password && !passOk ? "text-amber-700" : "text-muted-foreground"}`}>
+                  Латинские буквы, цифры и знаки, от 6 до 20 символов
+                </p>
               </div>
 
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Повторите пароль</label>
                 <input
-                  type="password"
+                  type={showPass ? "text" : "password"}
+                  autoCapitalize="none"
+                  autoComplete="new-password"
                   value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
+                  onChange={(e) => setConfirm(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 20))}
                   placeholder="Ещё раз новый пароль"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
                   onKeyDown={(e) => e.key === "Enter" && handleSave()}
@@ -82,7 +102,7 @@ export default function ChangePasswordModal({ onClose, onSaved }: Props) {
 
               <button
                 onClick={handleSave}
-                disabled={loading}
+                disabled={loading || !passOk || password !== confirm}
                 className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {loading && <Icon name="Loader" size={15} className="animate-spin" />}

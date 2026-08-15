@@ -40,7 +40,7 @@ export default function LoginRegisterForm({ m }: Props) {
   } else if (!emailValid) {
     captchaHint = "Введите электронный адрес";
   } else if (!passwordValid) {
-    captchaHint = "Придумайте пароль";
+    captchaHint = "Придумайте пароль от 6 символов";
   } else if (password !== passwordConfirm) {
     captchaHint = "Пароли не совпадают — повторите пароль";
   } else if (!consent) {
@@ -88,9 +88,9 @@ export default function LoginRegisterForm({ m }: Props) {
           <input
             type={showPassword ? "text" : "password"}
             autoCapitalize="none"
-            placeholder="Пароль (до 6 символов)"
+            placeholder="Пароль (от 6 до 20 символов)"
             value={password}
-            onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
+            onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 20))}
             className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
           />
           <button
@@ -111,7 +111,7 @@ export default function LoginRegisterForm({ m }: Props) {
           autoCapitalize="none"
           placeholder="Повторите пароль"
           value={passwordConfirm}
-          onChange={(e) => setPasswordConfirm(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 6))}
+          onChange={(e) => setPasswordConfirm(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 20))}
           className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
         />
         <button

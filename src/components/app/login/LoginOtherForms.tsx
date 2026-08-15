@@ -151,7 +151,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
       {mode === "recover_new" && (
         <>
           <div className="relative">
-            <input type={showNewPassword ? "text" : "password"} autoCapitalize="none" placeholder="Новый пароль (от 6 символов)" value={password}
+            <input type={showNewPassword ? "text" : "password"} autoCapitalize="none" placeholder="Новый пароль (от 6 до 20 символов)" value={password}
               onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 20))} autoFocus
               className="w-full px-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
             <button type="button" onClick={() => setShowNewPassword((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -167,7 +167,7 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
             </button>
           </div>
           <p className="text-[11px] text-muted-foreground px-1 -mt-1">
-            Латинские буквы, цифры и знаки, от 6 символов
+            Латинские буквы, цифры и знаки, от 6 до 20 символов
           </p>
           <button onClick={handleRecoverNew} disabled={loading || !password || password !== newPasswordConfirm}
             className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">

@@ -208,8 +208,8 @@ def handler(event: dict, context) -> dict:
                         return resp(400, {"error": "Укажите, как к вам обращаться"})
                     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", reg_email):
                         return resp(400, {"error": "Введите корректный email"})
-                    if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{1,6}$", password):
-                        return resp(400, {"error": "Пароль: латиница, цифры и знаки, до 6 символов"})
+                    if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{6,20}$", password):
+                        return resp(400, {"error": "Пароль: латиница, цифры и знаки, от 6 до 20 символов"})
                     if not consent_personal:
                         return resp(400, {"error": "Нужно согласие на обработку персональных данных"})
                     if not consent_offer:
@@ -602,8 +602,8 @@ def handler(event: dict, context) -> dict:
                 sets.append("login = %s")
                 params.append(login)
             if password:
-                if len(password) < 6:
-                    return resp(400, {"error": "Пароль должен быть не короче 6 символов"})
+                if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{6,20}$", password):
+                    return resp(400, {"error": "Пароль: латиница, цифры и знаки, от 6 до 20 символов"})
                 sets.append("password_hash = %s")
                 params.append(hash_password(password))
             params.append(uid)

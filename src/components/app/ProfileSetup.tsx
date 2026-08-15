@@ -22,7 +22,7 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const passOk = password.length >= 6 && /^[\x20-\x7E]+$/.test(password);
+  const passOk = /^[A-Za-z0-9!-/:-@[-`{-~]{6,20}$/.test(password);
 
   const handleSave = async () => {
     setError("");
@@ -30,8 +30,7 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
     if (!fullName.trim()) return setError("Напишите, как к вам обращаться");
     if (!mail) return setError("Укажите электронную почту");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) return setError("Проверьте адрес почты");
-    if (password.length < 6) return setError("Пароль не короче 6 символов");
-    if (!/^[\x20-\x7E]+$/.test(password)) return setError("Пароль — только латинские буквы, цифры и знаки");
+    if (!passOk) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
     setLoading(true);
     try {
       const r = await authApi.updateProfile({ full_name: fullName.trim(), email: mail, login: mail, password });
@@ -110,8 +109,8 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
               <input
                 type={showPass ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Минимум 6 символов"
+                onChange={(e) => setPassword(e.target.value.replace(/[^\x21-\x7E]/g, "").slice(0, 20))}
+                placeholder="От 6 до 20 символов"
                 autoComplete="new-password"
                 className="w-full pl-4 pr-11 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
               />
@@ -125,7 +124,7 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
               </button>
             </div>
             <p className={`text-[11px] mt-1 ${password && !passOk ? "text-amber-700" : "text-muted-foreground"}`}>
-              От 6 символов: латинские буквы, цифры и знаки
+              Латинские буквы, цифры и знаки, от 6 до 20 символов
             </p>
           </div>
 

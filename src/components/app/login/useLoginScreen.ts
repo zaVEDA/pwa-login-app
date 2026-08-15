@@ -56,13 +56,13 @@ export function useLoginScreen({ onAuth }: Args) {
   };
 
   const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
-  const passwordValid = /^[A-Za-z0-9!-/:-@[-`{-~]{1,6}$/.test(password);
+  const passwordValid = /^[A-Za-z0-9!-/:-@[-`{-~]{6,20}$/.test(password);
 
   const handleRegister = busy(async () => {
     if (phone.replace(/\D/g, "").length < 10) return setError("Введите корректный номер телефона");
     if (!displayName.trim()) return setError("Напишите, как к вам обращаться");
     if (!emailValid) return setError("Введите корректный email");
-    if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, до 6 символов");
+    if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
     if (password !== passwordConfirm) return setError("Пароли не совпадают");
     if (!consentPersonal) return setError("Примите согласие на обработку персональных данных");
     if (!consentOffer) return setError("Примите публичную оферту");
