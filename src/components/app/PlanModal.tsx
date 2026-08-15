@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import PromoTemplateBanner from "@/components/promo/PromoTemplateBanner";
-import SupportModal from "@/components/app/SupportModal";
 import TemplateBriefModal from "@/components/promo/TemplateBriefModal";
 import { authApi, AuthUser, PlanType, getToken } from "@/lib/auth";
 import { reachGoal } from "@/lib/metrika";
@@ -29,7 +28,7 @@ const paidPlans: PaidPlanOption[] = [
 const testPlan: PaidPlanOption = {
   id: "test",
   label: "ТЕСТ · 1 ₽",
-  desc: "Служебный тариф для проверки оплаты. Виден только Заведующей",
+  desc: "Служебный тариф для проверки оплаты",
   icon: "FlaskConical",
   month: 1,
   halfYear: 1,
@@ -44,13 +43,13 @@ interface Props {
   onSelected: (user: AuthUser) => void;
 }
 
-export default function PlanModal({ currentPlan, isAdmin, familyRequestStatus, onClose }: Props) {
+export default function PlanModal({ currentPlan, familyRequestStatus, onClose }: Props) {
   const [openPlan, setOpenPlan] = useState<PaidPlanOption["id"] | null>(null);
-  const [templateRequest, setTemplateRequest] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false);
 
-  // Если место по акции уже занято этим человеком — открываем анкету,
-  // иначе обычное обращение в поддержку с темой «Шаблон».
+  // Если место по акции уже занято этим человеком (тариф «Рост» на 6 месяцев уже оплачен) —
+  // открываем анкету на разработку шаблона. Если ещё не оплачен — раскрываем карточку тарифа
+  // «Рост» с кнопкой оплаты 6 месяцев, чтобы человек сразу мог оформить подписку и получить шаблон.
   const openTemplateFlow = async () => {
     try {
       const res = await fetch("https://functions.poehali.dev/b9cceef8-d56c-4b6d-9fbb-85f2732e8839", {
@@ -59,9 +58,9 @@ export default function PlanModal({ currentPlan, isAdmin, familyRequestStatus, o
       const d = await res.json();
       if (d?.has_slot && !d?.brief_sent) { setBriefOpen(true); return; }
     } catch {
-      /* нет связи — покажем обычную форму */
+      /* нет связи — всё равно откроем карточку тарифа */
     }
-    setTemplateRequest(true);
+    setOpenPlan("medium");
   };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -119,7 +118,6 @@ export default function PlanModal({ currentPlan, isAdmin, familyRequestStatus, o
 
   return (
     <>
-    {templateRequest && <SupportModal topic="Шаблон" onClose={() => setTemplateRequest(false)} />}
     {briefOpen && <TemplateBriefModal onClose={() => setBriefOpen(false)} />}
     <div className="fixed inset-0 z-[60] flex flex-col max-w-md mx-auto" style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}>
       <div className="absolute inset-0 bg-background" />
@@ -148,7 +146,7 @@ export default function PlanModal({ currentPlan, isAdmin, familyRequestStatus, o
             </div>
           )}
 
-          {[...paidPlans, ...(isAdmin ? [testPlan] : [])].map((p) => {
+          {[...paidPlans, testPlan].map((p) => {
             const active = currentPlan === p.id;
             const open = openPlan === p.id;
             const halfYearPrice = isPresale ? p.presaleHalfYear : p.halfYear;
