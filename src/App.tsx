@@ -12,6 +12,7 @@ import Legal from "./pages/Legal";
 import Offer from "./pages/Offer";
 import Privacy from "./pages/Privacy";
 import OfferPromo from "./pages/OfferPromo";
+import SmsOperators from "./pages/SmsOperators";
 import SharedDoc from "./pages/SharedDoc";
 import NotFound from "./pages/NotFound";
 import DevSwitcher from "./components/app/DevSwitcher";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/offer" element={<Offer />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/offer-promo" element={<OfferPromo />} />
+          <Route path="/sms-operators" element={<SmsOperators />} />
           <Route path="/doc/:token" element={<SharedDoc />} />
           <Route path="/legal-flow" element={<Navigate to="/legal" replace />} />
           {/* Личные ссылки Заведующей: вход в кабинет и режим «Гость» */}
