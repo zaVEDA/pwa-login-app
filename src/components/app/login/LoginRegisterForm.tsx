@@ -64,13 +64,14 @@ export default function LoginRegisterForm({ m }: Props) {
         <input
           type="text"
           autoCapitalize="words"
-          placeholder="Как к вам обращаться"
+          placeholder="Как к вам обращаться (обязательно)"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value.slice(0, 40))}
           className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
         />
         <p className="text-[11px] text-muted-foreground mt-1.5 px-1 leading-snug">
-          Так мы будем обращаться к вам в сервисе. Можно просто имя — например, «Анна» или «Анна Петровна».
+          Ваше имя в сервисе — только для обращения к вам. Может не совпадать с официальными данными:
+          «Анна», «Анна Петровна» или любой псевдоним.
         </p>
       </div>
       <input

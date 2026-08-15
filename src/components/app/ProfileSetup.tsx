@@ -85,7 +85,9 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
               placeholder="Например, Анна Петровна"
               className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
             />
-            <p className="text-[11px] text-muted-foreground mt-1">Так сервис будет обращаться к вам</p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Обязательно. Может не совпадать с официальными данными
+            </p>
           </div>
 
           <div>
