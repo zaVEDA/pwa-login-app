@@ -39,6 +39,9 @@ export const notifyApi = {
   markRead(id?: number) {
     return call({ action: "mark_read", id });
   },
+  runPlanReminders(with_sms: boolean) {
+    return call({ action: "run_plan_reminders", with_sms });
+  },
   adminSend(payload: {
     title: string;
     body: string;

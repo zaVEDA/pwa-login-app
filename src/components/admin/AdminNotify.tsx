@@ -25,6 +25,9 @@ export default function AdminNotify() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ sent: number; sms_sent: number; total: number } | null>(null);
   const [error, setError] = useState("");
+  const [runSms, setRunSms] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<{ created: number; checked: number; sms_sent: number } | null>(null);
 
   const ready = title.trim().length >= 3 && body.trim().length >= 5;
 
@@ -48,6 +51,19 @@ export default function AdminNotify() {
     setResult(r.data);
     setTitle("");
     setBody("");
+  };
+
+  const runReminders = async () => {
+    setError("");
+    setRunResult(null);
+    setRunning(true);
+    const r = await notifyApi.runPlanReminders(runSms);
+    setRunning(false);
+    if (r.status !== 200) {
+      setError(r.data.error || "Не удалось запустить");
+      return;
+    }
+    setRunResult(r.data);
   };
 
   return (
@@ -170,6 +186,53 @@ export default function AdminNotify() {
         >
           {sending && <Icon name="Loader" size={15} className="animate-spin" />}
           Отправить
+        </button>
+      </div>
+
+      <div className="card-warm rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Icon name="CalendarClock" size={16} className="text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">Напоминания об окончании тарифа</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+              За 7, 5, 3 дня, затем каждый день до конца и ещё 7 дней после — с просьбой сохранить документы
+              до удаления данных.
+            </p>
+          </div>
+        </div>
+
+        {runResult && (
+          <div className="px-3 py-2.5 rounded-lg bg-green-50 border border-green-200">
+            <p className="text-xs text-green-700 font-medium">Напоминания разосланы</p>
+            <p className="text-[11px] text-green-700/80 mt-0.5">
+              Новых напоминаний: {runResult.created} · проверено пользователей: {runResult.checked}
+              {runResult.sms_sent > 0 && ` · СМС: ${runResult.sms_sent}`}
+            </p>
+          </div>
+        )}
+
+        <button
+          onClick={() => setRunSms((v) => !v)}
+          className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-white/60 text-left"
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Продублировать в СМС</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Тратит баланс SMS.ru</p>
+          </div>
+          <div className={`w-11 h-6 rounded-full flex-shrink-0 relative transition-colors ${runSms ? "bg-primary" : "bg-border"}`}>
+            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${runSms ? "left-[22px]" : "left-0.5"}`} />
+          </div>
+        </button>
+
+        <button
+          onClick={runReminders}
+          disabled={running}
+          className="w-full py-3 rounded-xl border border-primary/40 bg-primary/5 text-primary text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+        >
+          {running && <Icon name="Loader" size={15} className="animate-spin" />}
+          Разослать напоминания сейчас
         </button>
       </div>
     </div>
