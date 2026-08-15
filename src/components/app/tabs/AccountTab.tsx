@@ -304,7 +304,6 @@ export default function AccountTab({
               { icon: "User", label: "Профиль и деятельность", danger: false },
               { icon: "KeyRound", label: "Сменить пароль", danger: false },
               { icon: "Bell", label: "Уведомления", danger: false },
-              { icon: "BarChart3", label: "Учёт и налоги", danger: false },
               { icon: "HelpCircle", label: "Справка и поддержка", danger: false },
               { icon: "LogOut", label: "Выйти", danger: true },
             ].map((item) => (
