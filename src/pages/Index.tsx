@@ -201,7 +201,7 @@ export default function Index() {
 
   // Дозаполнение профиля после первого входа по телефону
   if (user && !user.profile_completed && !demoMode) {
-    return <ProfileSetup user={user} onDone={(u) => setUser(u)} onSkip={() => setUser({ ...user, profile_completed: true })} />;
+    return <ProfileSetup user={user} onDone={(u) => setUser(u)} />;
   }
 
   return (

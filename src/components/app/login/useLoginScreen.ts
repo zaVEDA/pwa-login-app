@@ -13,8 +13,6 @@ export function useLoginScreen({ onAuth }: Args) {
     () => (new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "phone")
   );
   const [phone, setPhone] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [activity, setActivity] = useState("");
   const [code, setCode] = useState("");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -61,8 +59,6 @@ export function useLoginScreen({ onAuth }: Args) {
 
   const handleRegister = busy(async () => {
     if (phone.replace(/\D/g, "").length < 10) return setError("Введите корректный номер телефона");
-    if (!displayName.trim()) return setError("Напишите, как к вам обращаться");
-    if (activity.trim().length < 5) return setError("Опишите, чем вы занимаетесь");
     if (!emailValid) return setError("Введите корректный email");
     if (!passwordValid) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
     if (password !== passwordConfirm) return setError("Пароли не совпадают");
@@ -94,8 +90,6 @@ export function useLoginScreen({ onAuth }: Args) {
       phone,
       email: email.trim().toLowerCase(),
       password,
-      display_name: displayName.trim(),
-      activity_description: activity.trim(),
       consent,
       consent_personal: consentPersonal,
       consent_offer: consentOffer,
@@ -188,8 +182,6 @@ export function useLoginScreen({ onAuth }: Args) {
   // Капчу можно двигать, только когда заполнены все поля и приняты условия
   const registerFieldsReady =
     phone.replace(/\D/g, "").length === 10 &&
-    displayName.trim().length > 0 &&
-    activity.trim().length >= 5 &&
     emailValid &&
     passwordValid &&
     password === passwordConfirm;
@@ -200,8 +192,6 @@ export function useLoginScreen({ onAuth }: Args) {
     registerFieldsReady,
     mode, setMode,
     phone, setPhone,
-    displayName, setDisplayName,
-    activity, setActivity,
     code, setCode,
     login, setLogin,
     password, setPassword,

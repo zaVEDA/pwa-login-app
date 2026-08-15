@@ -5,7 +5,6 @@ import { authApi, AuthUser } from "@/lib/auth";
 interface Props {
   user: AuthUser;
   onDone: (u: AuthUser) => void;
-  onSkip: () => void;
 }
 
 const formatPhone = (raw: string) => {
@@ -14,26 +13,35 @@ const formatPhone = (raw: string) => {
   return `+7 ${d.slice(1, 4)} ${d.slice(4, 7)}-${d.slice(7, 9)}-${d.slice(9, 11)}`;
 };
 
-export default function ProfileSetup({ user, onDone, onSkip }: Props) {
+export default function ProfileSetup({ user, onDone }: Props) {
   const [fullName, setFullName] = useState(user.full_name || "");
+  const [activity, setActivity] = useState(user.activity_description || "");
   const [email, setEmail] = useState(user.email || user.login || "");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const needCreds = !user.email && !user.login;
   const passOk = /^[A-Za-z0-9!-/:-@[-`{-~]{6,20}$/.test(password);
 
   const handleSave = async () => {
     setError("");
     const mail = email.trim().toLowerCase();
     if (!fullName.trim()) return setError("Напишите, как к вам обращаться");
-    if (!mail) return setError("Укажите электронную почту");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) return setError("Проверьте адрес почты");
-    if (!passOk) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
+    if (activity.trim().length < 5) return setError("Опишите, чем вы занимаетесь");
+    if (needCreds) {
+      if (!mail) return setError("Укажите электронную почту");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) return setError("Проверьте адрес почты");
+      if (!passOk) return setError("Пароль: латиница, цифры и знаки, от 6 до 20 символов");
+    }
     setLoading(true);
     try {
-      const r = await authApi.updateProfile({ full_name: fullName.trim(), email: mail, login: mail, password });
+      const r = await authApi.updateProfile(
+        needCreds
+          ? { full_name: fullName.trim(), activity_description: activity.trim(), email: mail, login: mail, password }
+          : { full_name: fullName.trim(), activity_description: activity.trim() }
+      );
       if (r.status !== 200) { setError(r.data.error || "Не удалось сохранить"); return; }
       onDone(r.data.user);
     } catch {
@@ -54,7 +62,9 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
             <Icon name="UserCheck" size={24} className="text-white" />
           </div>
           <h1 className="font-cormorant text-3xl font-semibold">Заполните профиль</h1>
-          <p className="text-sm text-muted-foreground mt-1">Эти данные понадобятся для входа</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {needCreds ? "Эти данные понадобятся для входа" : "Пара штрихов — и подберём документы под вас"}
+          </p>
         </div>
 
         <div className="card-warm rounded-2xl p-6 shadow-lg shadow-amber-900/10 space-y-3">
@@ -90,6 +100,23 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
           </div>
 
           <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Чем вы занимаетесь</label>
+            <textarea
+              rows={3}
+              value={activity}
+              onChange={(e) => setActivity(e.target.value.slice(0, 500))}
+              placeholder="Например: психолог, консультирую онлайн, работаю со взрослыми"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary resize-none"
+            />
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-[11px] text-muted-foreground">
+                Своими словами — так мы подберём нужные документы
+              </p>
+              <span className="text-[11px] text-muted-foreground flex-shrink-0 ml-2">{activity.length}/500</span>
+            </div>
+          </div>
+
+          {needCreds && <div>
             <label className="text-xs text-muted-foreground mb-1 block">Электронная почта (она же логин)</label>
             <input
               type="email"
@@ -101,9 +128,9 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
               className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
             />
             <p className="text-[11px] text-muted-foreground mt-1">По ней входите и восстанавливаете доступ</p>
-          </div>
+          </div>}
 
-          <div>
+          {needCreds && <div>
             <label className="text-xs text-muted-foreground mb-1 block">Пароль</label>
             <div className="relative">
               <input
@@ -126,14 +153,13 @@ export default function ProfileSetup({ user, onDone, onSkip }: Props) {
             <p className={`text-[11px] mt-1 ${password && !passOk ? "text-amber-700" : "text-muted-foreground"}`}>
               Латинские буквы, цифры и знаки, от 6 до 20 символов
             </p>
-          </div>
+          </div>}
 
-          <button onClick={handleSave} disabled={loading}
+          <button onClick={handleSave} disabled={loading || !fullName.trim() || activity.trim().length < 5}
             className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
             {loading && <Icon name="Loader" size={15} className="animate-spin" />}
             Сохранить и продолжить
           </button>
-          <button onClick={onSkip} className="w-full py-1 text-xs text-muted-foreground">Пропустить пока</button>
         </div>
       </div>
     </div>

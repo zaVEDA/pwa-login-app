@@ -11,8 +11,6 @@ interface Props {
 export default function LoginRegisterForm({ m }: Props) {
   const {
     phone, setPhone,
-    displayName, setDisplayName,
-    activity, setActivity,
     email, setEmail,
     password, setPassword,
     passwordConfirm, setPasswordConfirm,
@@ -36,10 +34,6 @@ export default function LoginRegisterForm({ m }: Props) {
   let captchaHint = "";
   if (phone.replace(/\D/g, "").length !== 10) {
     captchaHint = "Введите номер телефона";
-  } else if (!displayName.trim()) {
-    captchaHint = "Напишите, как к вам обращаться";
-  } else if (activity.trim().length < 5) {
-    captchaHint = "Опишите, чем вы занимаетесь";
   } else if (!emailValid) {
     captchaHint = "Введите электронный адрес";
   } else if (!passwordValid) {
@@ -62,32 +56,6 @@ export default function LoginRegisterForm({ m }: Props) {
           onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
           className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
         />
-      </div>
-      <div>
-        <input
-          type="text"
-          autoCapitalize="words"
-          placeholder="Как к вам обращаться (обязательно)"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value.slice(0, 40))}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
-        />
-        <p className="text-[11px] text-muted-foreground mt-1.5 px-1 leading-snug">
-          Ваше имя в сервисе — только для обращения к вам. Может не совпадать с официальными данными:
-          «Анна», «Анна Петровна» или любой псевдоним.
-        </p>
-      </div>
-      <div>
-        <textarea
-          rows={3}
-          placeholder="Чем вы занимаетесь? Например: психолог, консультирую онлайн"
-          value={activity}
-          onChange={(e) => setActivity(e.target.value.slice(0, 500))}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60 resize-none"
-        />
-        <p className="text-[11px] text-muted-foreground mt-1.5 px-1 leading-snug">
-          Своими словами — так мы подберём для вас нужные документы. Изменить можно в разделе «Профиль и деятельность».
-        </p>
       </div>
       <input
         type="email"

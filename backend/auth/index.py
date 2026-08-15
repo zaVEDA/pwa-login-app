@@ -206,10 +206,6 @@ def handler(event: dict, context) -> dict:
                     consent_personal = bool(body.get("consent_personal", legacy_consent))
                     consent_offer = bool(body.get("consent_offer", legacy_consent))
                     consent_pep = bool(body.get("consent_pep", legacy_consent))
-                    if not reg_display_name:
-                        return resp(400, {"error": "Укажите, как к вам обращаться"})
-                    if not reg_activity:
-                        return resp(400, {"error": "Опишите, чем вы занимаетесь"})
                     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", reg_email):
                         return resp(400, {"error": "Введите корректный email"})
                     if not re.match(r"^[A-Za-z0-9!-/:-@\[-`{-~]{6,20}$", password):
