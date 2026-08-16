@@ -89,8 +89,6 @@ def handler(event: dict, context) -> dict:
 
     plan = (body.get("plan") or "").strip()
     period = (body.get("period") or "").strip()
-    success_url = str(body.get("success_url") or "")
-    fail_url = str(body.get("fail_url") or "")
 
     if plan not in PLANS:
         return resp(400, {"error": "Неизвестный тариф"})
@@ -136,10 +134,10 @@ def handler(event: dict, context) -> dict:
         )
         order_id = cur.fetchone()[0]
 
-        if success_url or fail_url:
-            signature = calc_signature(merchant_login, amount_str, inv_id, success_url, "GET", fail_url, "GET", password_1)
-        else:
-            signature = calc_signature(merchant_login, amount_str, inv_id, password_1)
+        # Подпись строго по формуле Robokassa: MerchantLogin:OutSum:InvId:Пароль#1.
+        # Адреса возврата (Success/Fail URL) задаются в личном кабинете Robokassa
+        # и в подпись НЕ входят — иначе подпись не сходится (ошибка 29).
+        signature = calc_signature(merchant_login, amount_str, inv_id, password_1)
 
         plan_name = PLANS[plan]["name"]
         period_label = "1 месяц" if period == "month" else "6 месяцев"
@@ -152,12 +150,6 @@ def handler(event: dict, context) -> dict:
             "Culture": "ru",
             "Description": f"Тариф «{plan_name}» ({period_label})",
         }
-        if success_url:
-            query_params["SuccessUrl2"] = success_url
-            query_params["SuccessUrl2Method"] = "GET"
-        if fail_url:
-            query_params["FailUrl2"] = fail_url
-            query_params["FailUrl2Method"] = "GET"
         # Модерация Robokassa пройдена — платежи боевые.
         # Чтобы вернуть тестовый режим, добавь IsTest = 1 в query_params.
 
