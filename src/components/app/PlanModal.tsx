@@ -75,12 +75,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
       const res = await fetch(PLAN_PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() },
-        body: JSON.stringify({
-          plan,
-          period,
-          success_url: `${window.location.origin}/?payment=success`,
-          fail_url: `${window.location.origin}/?payment=fail`,
-        }),
+        body: JSON.stringify({ plan, period }),
       });
       const data = await res.json();
       if (res.ok && data.payment_url) {

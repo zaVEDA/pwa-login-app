@@ -14,6 +14,8 @@ import Privacy from "./pages/Privacy";
 import OfferPromo from "./pages/OfferPromo";
 import SmsOperators from "./pages/SmsOperators";
 import SharedDoc from "./pages/SharedDoc";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFail from "./pages/PaymentFail";
 import NotFound from "./pages/NotFound";
 import DevSwitcher from "./components/app/DevSwitcher";
 import MetrikaTracker from "./components/MetrikaTracker";
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/offer-promo" element={<OfferPromo />} />
           <Route path="/sms-operators" element={<SmsOperators />} />
           <Route path="/doc/:token" element={<SharedDoc />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-fail" element={<PaymentFail />} />
           <Route path="/legal-flow" element={<Navigate to="/legal" replace />} />
           {/* Личные ссылки Заведующей: вход в кабинет и режим «Гость» */}
           <Route path="/zaved" element={<Navigate to="/app?enter=1&admin=1" replace />} />
