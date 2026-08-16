@@ -158,6 +158,8 @@ def handler(event: dict, context) -> dict:
         if fail_url:
             query_params["FailUrl2"] = fail_url
             query_params["FailUrl2Method"] = "GET"
+        if os.environ.get("ROBOKASSA_TEST_MODE") == "1":
+            query_params["IsTest"] = 1
 
         payment_url = f"{ROBOKASSA_URL}?{urlencode(query_params)}"
         conn.commit()
