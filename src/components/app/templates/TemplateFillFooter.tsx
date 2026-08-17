@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
   onBackToFill: () => void;
   onDownload: () => void;
   onOpenShare: () => void;
+  onOpenSign: () => void;
   onCopy: () => void;
   onCloseShare: () => void;
   onShare: (channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => void;
@@ -34,6 +35,7 @@ export default function TemplateFillFooter({
   onBackToFill,
   onDownload,
   onOpenShare,
+  onOpenSign,
   onCopy,
   onCloseShare,
   onShare,
@@ -43,6 +45,11 @@ export default function TemplateFillFooter({
 }: Props) {
   const [smsMode, setSmsMode] = useState(false);
   const [smsPhone, setSmsPhone] = useState("");
+
+  useEffect(() => {
+    if (!shareOpen) setSmsMode(false);
+  }, [shareOpen]);
+
   return (
     <>
       <div
@@ -59,11 +66,23 @@ export default function TemplateFillFooter({
           </button>
         ) : (
           <div className="space-y-2">
+            {!locked && savedId && (
+              <button
+                onClick={() => { onOpenSign(); setSmsMode(true); }}
+                disabled={pdfLoading}
+                className="w-full py-3.5 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
+              >
+                <Icon name="FileSignature" size={16} />
+                Отправить на подпись
+              </button>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={onDownload}
                 disabled={pdfLoading}
-                className={`flex-1 py-3 rounded-xl text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 ${locked ? "bg-blue-700" : "gold-gradient"}`}
+                className={`flex-1 py-3 rounded-xl text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 ${
+                  locked ? "bg-blue-700 text-white" : !savedId ? "gold-gradient text-white" : "border border-border bg-white/70 text-foreground"
+                }`}
               >
                 <Icon name={pdfLoading ? "Loader" : locked ? "Stamp" : "Download"} size={15} className={pdfLoading ? "animate-spin" : ""} />
                 {locked ? "PDF с печатью" : "Скачать Word"}
@@ -74,7 +93,7 @@ export default function TemplateFillFooter({
                 className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
               >
                 <Icon name={savedId ? "Share2" : copied ? "Check" : "Copy"} size={15} className={copied && !savedId ? "text-green-600" : ""} />
-                {savedId ? "Отправить" : copied ? "Скопировано" : "Копировать"}
+                {savedId ? (locked ? "Отправить" : "Другой способ") : copied ? "Скопировано" : "Копировать"}
               </button>
             </div>
             {!locked && (

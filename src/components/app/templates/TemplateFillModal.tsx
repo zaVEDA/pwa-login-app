@@ -329,6 +329,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           onBackToFill={() => setPreview(false)}
           onDownload={locked ? downloadPdf : downloadDoc}
           onOpenShare={() => setShareOpen(true)}
+          onOpenSign={() => setShareOpen(true)}
           onCopy={copy}
           onCloseShare={() => setShareOpen(false)}
           onShare={share}
