@@ -76,11 +76,18 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const [confirmClose, setConfirmClose] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [smsSentNotice, setSmsSentNotice] = useState(false);
 
   const locked = status === "signed";
   const draftStorageKey = draftKey(doc.title, contract?.id ?? newInstanceIdRef.current);
 
   useEffect(() => { setError(""); }, [values]);
+
+  useEffect(() => {
+    if (!smsSentNotice) return;
+    const t = setTimeout(() => setSmsSentNotice(false), 4000);
+    return () => clearTimeout(t);
+  }, [smsSentNotice]);
 
   // Автосохранение черновика в браузере — данные не теряются, если закрыть без кнопки «Сохранить»
   useEffect(() => {
@@ -140,6 +147,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
 
   const handleSave = async () => {
     if (saving || locked) return;
+    const wasNew = !savedId;
     setSaving(true);
     setError("");
     try {
@@ -171,6 +179,11 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         localStorage.removeItem(draftKey(doc.title, parsed.contract.id));
       } catch { /* ignore */ }
       onSaved?.();
+      // Сразу после первого сохранения предлагаем отправить документ клиенту по SMS
+      if (wasNew) {
+        setPreview(true);
+        setShareOpen(true);
+      }
     } catch {
       setError("Нет связи с сервером");
     } finally {
@@ -229,18 +242,26 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!parsed.url) { setError("Не удалось подготовить ссылку"); return; }
+
+      // SMS клиенту отправляется реально сервером (SMS.ru) — не нужно открывать
+      // программу SMS на телефоне пользователя, сообщение уже ушло клиенту.
+      if (channel === "sms") {
+        if (!parsed.sms_sent) { setError("Не удалось отправить SMS клиенту. Проверьте номер и попробуйте ещё раз"); return; }
+        if (status === "draft") setStatus("sent");
+        setSmsSentNotice(true);
+        onSaved?.();
+        return;
+      }
+
       const note = locked ? " (подписан электронной подписью)" : "";
       const subject = `${doc.title} № ${savedNumber}${note}`;
       const msg = encodeURIComponent(`${subject}\nСсылка действует 1 час:\n${parsed.url}`);
-      const smsTarget = clientPhone ? `+7${clientPhone}` : "";
       const urls: Record<string, string> = {
         telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(subject)}`,
         whatsapp: `https://wa.me/?text=${msg}`,
-        sms: `sms:${smsTarget}?body=${msg}`,
         email: `mailto:?subject=${encodeURIComponent(subject)}&body=${msg}`,
       };
       window.open(urls[channel], "_blank");
-      if (status === "draft" && channel === "sms") setStatus("sent");
       onSaved?.();
     } catch { setError("Нет связи с сервером"); }
     finally { setPdfLoading(false); }
@@ -285,6 +306,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           preview={preview}
           locked={locked}
           restoredNotice={restoredNotice}
+          smsSentNotice={smsSentNotice}
           error={error}
           performerAutofill={performerAutofill}
           userProfile={{ phone: signContact.phone || userProfile?.phone, email: signContact.email || userProfile?.email }}

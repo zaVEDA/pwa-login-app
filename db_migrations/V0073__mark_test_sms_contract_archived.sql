@@ -1,0 +1,1 @@
+UPDATE contracts SET status = 'archived_test' WHERE id = 20;

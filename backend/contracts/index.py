@@ -1,10 +1,41 @@
 import json
 import os
+import re
 import datetime
 import hashlib
 import secrets
 import base64
+import urllib.request
+import urllib.parse
 import psycopg2
+
+
+def send_sms(phone: str, text: str) -> dict:
+    api_id = os.environ.get("SMSRU_API_ID", "")
+    to = re.sub(r"\D", "", phone or "")
+    params = urllib.parse.urlencode({
+        "api_id": api_id,
+        "to": to,
+        "msg": text,
+        "from": "capydoc.ru",
+        "json": 1,
+    })
+    url = f"https://sms.ru/sms/send?{params}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as r:
+            data = json.loads(r.read().decode())
+        print(f"[SMS.RU] to={to} status={data.get('status')} resp={data}")
+        return data
+    except Exception as e:
+        print(f"[SMS.RU ERROR] to={to} err={e}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def log_sms(cur, phone: str, user_id, kind: str, ok: bool) -> None:
+    cur.execute(
+        "INSERT INTO sms_log (phone, user_id, kind, is_repeat, status) VALUES (%s,%s,%s,%s,%s)",
+        (phone, user_id, kind, False, "sent" if ok else "error")
+    )
 
 
 def get_conn():
@@ -495,12 +526,23 @@ def handler(event: dict, context) -> dict:
             cur2.close()
             conn2.close()
 
+            base = (body.get("origin") or "").rstrip("/")
+            url = f"{base}/doc/{token}" if base else f"/doc/{token}"
+            expires_at = (datetime.datetime.now() + datetime.timedelta(hours=1)).isoformat(timespec="seconds")
+
             # Статус «Отправлен» ставится только при фактической отправке по SMS —
             # это единственный канал, которым клиент реально получает ссылку на подпись.
             # Заодно фиксируем номер телефона клиента (вводится прямо перед отправкой)
             # и добавляем/обновляем клиента в общем справочнике «Мои клиенты».
+            sms_sent = False
             if body.get("channel") == "sms":
                 client_phone = "".join(ch for ch in (body.get("client_phone") or "") if ch.isdigit())[-10:]
+
+                if client_phone:
+                    text = f"{c.get('title','Документ')} № {c.get('contract_number','')}. Ssylka na dokument (deystvuet 1 chas): {url}"
+                    sms_res = send_sms(client_phone, text)
+                    sms_sent = sms_res.get("status") == "OK"
+
                 conn3 = get_conn()
                 cur3 = conn3.cursor()
                 cur3.execute(
@@ -508,6 +550,8 @@ def handler(event: dict, context) -> dict:
                     "updated_at = NOW() WHERE id = %s AND user_id = %s AND status = 'draft'",
                     (client_phone, cid, user_id)
                 )
+                if client_phone:
+                    log_sms(cur3, client_phone, user_id, "contract_send", sms_sent)
                 if client_phone and c.get("client_name"):
                     cur3.execute(
                         "SELECT id FROM clients WHERE user_id = %s AND (inn IS NULL OR inn = '') AND name = %s LIMIT 1",
@@ -529,10 +573,11 @@ def handler(event: dict, context) -> dict:
                 cur3.close()
                 conn3.close()
 
-            base = (body.get("origin") or "").rstrip("/")
-            url = f"{base}/doc/{token}" if base else f"/doc/{token}"
-            expires_at = (datetime.datetime.now() + datetime.timedelta(hours=1)).isoformat(timespec="seconds")
-            return {"statusCode": 200, "headers": cors, "body": json.dumps({"url": url, "expires_at": expires_at})}
+            return {
+                "statusCode": 200,
+                "headers": cors,
+                "body": json.dumps({"url": url, "expires_at": expires_at, "sms_sent": sms_sent}, ensure_ascii=False),
+            }
 
         return {
             "statusCode": 200,

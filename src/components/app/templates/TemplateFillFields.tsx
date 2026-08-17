@@ -11,6 +11,7 @@ interface Props {
   preview: boolean;
   locked: boolean;
   restoredNotice: boolean;
+  smsSentNotice?: boolean;
   error: string;
   performerAutofill: string | null;
   userProfile?: { phone?: string | null; email?: string | null };
@@ -45,6 +46,7 @@ export default function TemplateFillFields({
   preview,
   locked,
   restoredNotice,
+  smsSentNotice,
   error,
   performerAutofill,
   userProfile,
@@ -63,6 +65,13 @@ export default function TemplateFillFields({
           </p>
         </div>
       )}
+      {smsSentNotice && (
+        <div className="mb-3 px-3 py-2.5 rounded-xl bg-green-50 border border-green-200 flex items-center gap-2">
+          <Icon name="CheckCircle2" size={15} className="text-green-600 flex-shrink-0" />
+          <p className="text-[11px] text-green-700">SMS клиенту отправлено, документ сохранён со статусом «Отправлен»</p>
+        </div>
+      )}
+
       {error && (
         <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
           <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
