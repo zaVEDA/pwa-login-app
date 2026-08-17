@@ -113,6 +113,9 @@ export default function AccountTab({
             </div>
           </div>
 
+          {/* Реквизиты */}
+          <RequisitesBlock fullName={fullName} setFullName={setFullName} phone={phone} />
+
           {/* Тариф */}
           <button
             onClick={() => setShowPlanModal(true)}
@@ -269,9 +272,6 @@ export default function AccountTab({
           {showNotifyModal && (
             <NotificationsModal onClose={() => setShowNotifyModal(false)} onReadAll={() => setUnread(0)} />
           )}
-
-          {/* Реквизиты */}
-          <RequisitesBlock fullName={fullName} setFullName={setFullName} phone={phone} />
 
           {/* Мой налог — только для самозанятых */}
           {isSelfEmployed && <div

@@ -504,8 +504,16 @@ export default function RequisitesBlock({ fullName, setFullName, phone }: Props)
                     <label className="text-xs text-muted-foreground mb-1 block">Телефон для подписания</label>
                     <input
                       type="tel"
+                      inputMode="numeric"
                       value={signPhone}
-                      onChange={(e) => { setSignPhone(e.target.value); setSaved(false); }}
+                      onFocus={() => { if (!signPhone) { setSignPhone("+7 "); setSaved(false); } }}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Позволяем полностью стереть номер — не навязываем +7, если поле очищено
+                        if (!val || val === "+7" || val === "+7 ") { setSignPhone(""); setSaved(false); return; }
+                        setSignPhone(val.startsWith("+7") ? val : `+7 ${val.replace(/\D/g, "")}`);
+                        setSaved(false);
+                      }}
                       readOnly={readOnly}
                       placeholder="+7 900 000-00-00"
                       className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
