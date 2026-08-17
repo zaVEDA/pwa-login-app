@@ -45,6 +45,7 @@ interface Props {
 
 export default function PlanModal({ currentPlan, familyRequestStatus, onClose }: Props) {
   const [openPlan, setOpenPlan] = useState<PaidPlanOption["id"] | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<Record<string, "month" | "half_year">>({});
   const [briefOpen, setBriefOpen] = useState(false);
 
   // Если место по акции уже занято этим человеком (тариф «Рост» на 6 месяцев уже оплачен) —
@@ -166,29 +167,57 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
                   )}
                 </button>
 
-                {open && (
-                  <div className="px-4 pb-4 space-y-2">
-                    <button
-                      onClick={() => payPlan(p.id, "month")}
-                      disabled={loading}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white border border-border text-left disabled:opacity-60"
-                    >
-                      <span className="text-xs font-medium">1 месяц</span>
-                      <span className="text-sm font-semibold">{p.month.toLocaleString("ru-RU")} ₽</span>
-                    </button>
-                    <button
-                      onClick={() => payPlan(p.id, "half_year")}
-                      disabled={loading}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl gold-gradient text-white text-left disabled:opacity-60"
-                    >
-                      <span className="text-xs font-medium">6 месяцев {isPresale && "· предпродажа"}</span>
-                      <span className="flex items-center gap-1.5">
-                        {isPresale && <span className="text-[10px] line-through opacity-70">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
-                        <span className="text-sm font-semibold">{halfYearPrice.toLocaleString("ru-RU")} ₽</span>
-                      </span>
-                    </button>
-                  </div>
-                )}
+                {open && (() => {
+                  const period = selectedPeriod[p.id] || "month";
+                  return (
+                    <div className="px-4 pb-4 space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPeriod((s) => ({ ...s, [p.id]: "month" }))}
+                          disabled={loading}
+                          className={`flex flex-col items-center justify-center px-3 py-2.5 rounded-xl border text-center transition-all disabled:opacity-60 ${
+                            period === "month" ? "border-primary bg-primary/10" : "border-border bg-white"
+                          }`}
+                        >
+                          <span className="text-xs font-medium">1 месяц</span>
+                          <span className="text-sm font-semibold mt-0.5">{p.month.toLocaleString("ru-RU")} ₽</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPeriod((s) => ({ ...s, [p.id]: "half_year" }))}
+                          disabled={loading}
+                          className={`relative flex flex-col items-center justify-center px-3 py-2.5 rounded-xl border text-center transition-all disabled:opacity-60 ${
+                            period === "half_year" ? "border-primary bg-primary/10" : "border-border bg-white"
+                          }`}
+                        >
+                          <span className="text-xs font-medium">6 месяцев</span>
+                          <span className="flex items-center gap-1.5 mt-0.5">
+                            {isPresale && <span className="text-[10px] line-through opacity-60">{p.halfYear.toLocaleString("ru-RU")} ₽</span>}
+                            <span className="text-sm font-semibold">{halfYearPrice.toLocaleString("ru-RU")} ₽</span>
+                          </span>
+                          {isPresale && (
+                            <span className="absolute -top-2 right-1.5 px-1.5 py-0.5 rounded-full bg-primary text-white text-[9px] font-semibold">
+                              выгодно
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => payPlan(p.id, period)}
+                        disabled={loading}
+                        className="w-full flex items-center justify-center gap-2 px-3.5 py-3 rounded-xl gold-gradient text-white font-semibold text-sm disabled:opacity-60"
+                      >
+                        {loading ? (
+                          <Icon name="Loader2" size={16} className="animate-spin" />
+                        ) : (
+                          <Icon name="CreditCard" size={16} />
+                        )}
+                        Оплатить {period === "month" ? p.month.toLocaleString("ru-RU") : halfYearPrice.toLocaleString("ru-RU")} ₽
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}

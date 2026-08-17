@@ -116,20 +116,21 @@ export default function AccountTab({
           {/* Тариф */}
           <button
             onClick={() => setShowPlanModal(true)}
-            className="w-full card-warm rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-[0.98] transition-transform"
+            className="w-full gold-gradient rounded-2xl p-4 shadow-md flex items-center gap-3 text-left active:scale-[0.98] transition-transform relative overflow-hidden"
           >
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Icon name="Crown" size={16} className="text-primary" />
+            <div className="absolute inset-0 opacity-20 shimmer" />
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 relative z-10">
+              <Icon name="Crown" size={18} className="text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">Тариф</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+            <div className="flex-1 min-w-0 relative z-10">
+              <p className="text-sm font-semibold text-white">Тариф</p>
+              <p className="text-xs text-white/85 mt-0.5">
                 {userPlan
                   ? `${planLabels[userPlan]}${userPlan !== "family" && planExpiresAt ? ` · до ${new Date(planExpiresAt).toLocaleDateString("ru-RU")}` : ""}`
                   : "Не выбран — нажмите, чтобы выбрать"}
               </p>
             </div>
-            <Icon name="ChevronRight" size={15} className="text-muted-foreground flex-shrink-0" />
+            <Icon name="ChevronRight" size={16} className="text-white/90 flex-shrink-0 relative z-10" />
           </button>
 
           {/* Акция «12 шаблонов»: напоминание заполнить анкету */}
