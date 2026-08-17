@@ -88,10 +88,10 @@ export default function ContractCard({
             <>
               <div className="fixed inset-0 z-30" onClick={() => { setShareId(null); setSmsMode(false); }} />
               <div className="absolute right-3 top-12 z-40 w-56 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in">
-                {!smsMode ? (
+                {!smsMode && signed ? (
                   <>
                     <p className="px-3.5 pt-2.5 pb-1 text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                      Отправить {signed ? "подписанный" : "документ"}
+                      Отправить подписанный
                     </p>
                     {CHANNELS.map((c) => (
                       <button

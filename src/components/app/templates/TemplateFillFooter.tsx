@@ -87,14 +87,26 @@ export default function TemplateFillFooter({
                 <Icon name={pdfLoading ? "Loader" : locked ? "Stamp" : "Download"} size={15} className={pdfLoading ? "animate-spin" : ""} />
                 {locked ? "PDF с печатью" : "Скачать Word"}
               </button>
-              <button
-                onClick={() => savedId ? onOpenShare() : onCopy()}
-                disabled={pdfLoading}
-                className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
-              >
-                <Icon name={savedId ? "Share2" : copied ? "Check" : "Copy"} size={15} className={copied && !savedId ? "text-green-600" : ""} />
-                {savedId ? (locked ? "Отправить" : "Другой способ") : copied ? "Скопировано" : "Копировать"}
-              </button>
+              {!savedId && (
+                <button
+                  onClick={onCopy}
+                  disabled={pdfLoading}
+                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
+                >
+                  <Icon name={copied ? "Check" : "Copy"} size={15} className={copied ? "text-green-600" : ""} />
+                  {copied ? "Скопировано" : "Копировать"}
+                </button>
+              )}
+              {savedId && locked && (
+                <button
+                  onClick={onOpenShare}
+                  disabled={pdfLoading}
+                  className="flex-1 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
+                >
+                  <Icon name="Share2" size={15} />
+                  Отправить
+                </button>
+              )}
             </div>
             {!locked && (
               <button
