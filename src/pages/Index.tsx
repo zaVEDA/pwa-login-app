@@ -211,23 +211,25 @@ export default function Index() {
     >
       {/* Header */}
       <header className="px-5 pt-12 pb-4">
-        <div className="flex items-center gap-2 mb-5">
-          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="28" height="28" className="rounded-lg flex-shrink-0" />
-          <span className="font-cormorant text-lg font-semibold leading-none">
-            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>
-            <span className="text-foreground">Doc.ru</span>
-          </span>
-        </div>
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">
-              {user?.role === "admin" ? "Кабинет Заведующей" : "Добро пожаловать"}
-            </p>
-            <h1 className="font-cormorant text-2xl font-semibold text-foreground">
-              {user?.role === "admin" && activeTab === "account"
-                ? "Пользователи"
-                : user?.full_name || (demoMode ? "Гость" : "Пользователь")}
-            </h1>
+          <div className="flex items-center gap-3 min-w-0">
+            <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="40" height="40" className="rounded-xl flex-shrink-0 shadow-sm" />
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground mb-0.5 truncate">
+                {user?.role === "admin" ? "Кабинет Заведующей" : (
+                  <>
+                    Добро пожаловать в{" "}
+                    <span className="font-semibold" style={{ color: "hsl(35 72% 42%)" }}>Capy</span>
+                    <span className="font-semibold text-foreground">Doc.ru</span>
+                  </>
+                )}
+              </p>
+              <h1 className="font-cormorant text-2xl font-semibold text-foreground truncate">
+                {user?.role === "admin" && activeTab === "account"
+                  ? "Пользователи"
+                  : user?.full_name || (demoMode ? "Гость" : "Пользователь")}
+              </h1>
+            </div>
           </div>
           <button className="relative" onClick={() => setActiveTab("account")}>
             <div className="w-10 h-10 rounded-2xl gold-gradient flex items-center justify-center shadow-sm">
