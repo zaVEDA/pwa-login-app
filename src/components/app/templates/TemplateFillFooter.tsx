@@ -61,13 +61,25 @@ export default function TemplateFillFooter({
         style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
       >
         {!preview ? (
-          <button
-            onClick={onShowPreview}
-            className="w-full py-3.5 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          >
-            <Icon name="FileText" size={16} />
-            Показать документ
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={onShowPreview}
+              className="w-full py-3.5 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            >
+              <Icon name="FileText" size={16} />
+              Показать документ
+            </button>
+            {!locked && (
+              <button
+                onClick={onOpenSign}
+                disabled={pdfLoading || saving}
+                className="w-full py-3.5 rounded-xl border border-primary text-primary text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
+              >
+                <Icon name={saving ? "Loader" : "FileSignature"} size={16} className={saving ? "animate-spin" : ""} />
+                {saving ? "Сохраняю..." : "Отправить документ на подпись по SMS"}
+              </button>
+            )}
+          </div>
         ) : (
           <div className="space-y-2">
             {!locked && (
