@@ -120,6 +120,17 @@ export default function Templates() {
           </div>
         </div>
 
+        <div className="bg-card border border-amber-200 rounded-2xl p-5 sm:p-6 shadow-sm mb-5 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <Icon name="Info" size={17} className="text-amber-700" />
+          </div>
+          <p className="text-sm text-foreground/85 leading-relaxed">
+            Пользуйтесь приложением уже сейчас — доступ полный и без ограничений. Все документы, которые вы создадите
+            и подпишете до {LAUNCH_DATE}, будут учтены в лимите вашего тарифа после запуска: если их окажется
+            больше, чем предусмотрено тарифом, документы сверх лимита нужно будет докупить.
+          </p>
+        </div>
+
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-1">
           Хотите шаблон под себя раньше всех?
         </p>

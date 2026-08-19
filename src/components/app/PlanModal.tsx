@@ -135,6 +135,13 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
             </div>
           )}
 
+          <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2">
+            <Icon name="Info" size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 leading-relaxed">
+              Документы, созданные и подписанные до 11 сентября 2026 (запуск полной версии), будут учтены в лимите вашего тарифа после запуска.
+            </p>
+          </div>
+
           {error && (
             <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
               <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
