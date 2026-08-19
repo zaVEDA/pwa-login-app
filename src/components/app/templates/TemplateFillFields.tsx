@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import PhoneInput from "@/components/ui/phone-input";
 import { TemplateDoc, TemplateField } from "./docs";
 import { Contract } from "@/components/app/tabs/constants";
 
@@ -193,23 +194,31 @@ export default function TemplateFillFields({
                     </span>
                   )}
                 </label>
-                <input
-                  type={f.type === "date" ? "text" : f.type}
-                  inputMode={f.type === "tel" || f.type === "date" ? "numeric" : undefined}
-                  value={f.type === "date" ? isoToRu(values[f.key] || "") : values[f.key] || ""}
-                  onChange={(e) => {
-                    if (f.type === "date") {
-                      onSet(f.key, ruToIso(e.target.value));
-                      return;
-                    }
-                    const v = f.type === "tel" ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value;
-                    onSet(f.key, v);
-                  }}
-                  readOnly={locked}
-                  maxLength={f.type === "date" ? 10 : undefined}
-                  placeholder={f.type === "date" ? "дд.мм.гггг" : f.placeholder}
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
-                />
+                {f.type === "tel" ? (
+                  <PhoneInput
+                    value={values[f.key] || ""}
+                    onChange={(v) => onSet(f.key, v)}
+                    readOnly={locked}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary transition-colors read-only:opacity-70"
+                  />
+                ) : (
+                  <input
+                    type={f.type === "date" ? "text" : f.type}
+                    inputMode={f.type === "date" ? "numeric" : undefined}
+                    value={f.type === "date" ? isoToRu(values[f.key] || "") : values[f.key] || ""}
+                    onChange={(e) => {
+                      if (f.type === "date") {
+                        onSet(f.key, ruToIso(e.target.value));
+                        return;
+                      }
+                      onSet(f.key, e.target.value);
+                    }}
+                    readOnly={locked}
+                    maxLength={f.type === "date" ? 10 : undefined}
+                    placeholder={f.type === "date" ? "дд.мм.гггг" : f.placeholder}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors read-only:opacity-70"
+                  />
+                )}
                 {f.hint && <p className="text-[11px] text-muted-foreground mt-1">{f.hint}</p>}
               </div>
             );
