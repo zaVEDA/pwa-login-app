@@ -2,7 +2,7 @@ import Icon from "@/components/ui/icon";
 import PromoTemplateBanner from "@/components/promo/PromoTemplateBanner";
 import { reachGoal } from "@/lib/metrika";
 
-const PRESALE_UNTIL = new Date("2026-08-01T23:59:59");
+const PRESALE_UNTIL = new Date("2026-09-11T23:59:59");
 const isPresale = new Date() <= PRESALE_UNTIL;
 
 const paidPlans = [
@@ -32,7 +32,7 @@ export default function WelcomePricing() {
             style={{ background: "radial-gradient(circle, white, transparent)", transform: "translate(25%, -25%)" }} />
           <div className="relative z-10 flex items-center justify-center gap-2 mb-1">
             <Icon name="Sparkles" size={20} className="text-white flex-shrink-0" />
-            <p className="text-lg font-bold text-white">Предпродажа — только до 1 августа!</p>
+            <p className="text-lg font-bold text-white">Предпродажа — только до 11 сентября!</p>
           </div>
           <p className="relative z-10 text-sm text-white/90 font-medium">
             Успейте оформить подписку на 6 месяцев по сниженной цене
