@@ -24,13 +24,13 @@ export default function LoginHeader({ showSpecialties, selectedSpecialty, setSel
   return (
     <>
       {/* Logo */}
-      <div className="flex items-end gap-2 mb-8" style={{ alignItems: "flex-end" }}>
-        <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="72" height="72" className="flex-shrink-0 rounded-2xl" style={{ marginTop: "12px" }} />
-        <div>
-          <h1 className="font-cormorant font-semibold text-foreground leading-tight" style={{ fontSize: "2.7rem" }}>
-            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc<span style={{ fontSize: "1.6rem" }}>.ru</span>
+      <div className="flex items-end gap-2 mb-8 max-w-full" style={{ alignItems: "flex-end" }}>
+        <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="72" height="72" className="flex-shrink-0 rounded-2xl w-14 h-14 sm:w-[72px] sm:h-[72px]" style={{ marginTop: "12px" }} />
+        <div className="min-w-0">
+          <h1 className="font-cormorant font-semibold text-foreground leading-tight text-3xl sm:text-[2.7rem] whitespace-nowrap">
+            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>Doc<span className="text-lg sm:text-2xl">.ru</span>
           </h1>
-          <p className="font-cormorant italic font-semibold text-foreground/90 leading-tight text-center whitespace-nowrap" style={{ fontSize: "1.7rem", letterSpacing: "0.12em" }}>
+          <p className="font-cormorant italic font-semibold text-foreground/90 leading-tight text-center text-lg sm:text-[1.7rem] whitespace-nowrap" style={{ letterSpacing: "0.08em" }}>
             Вашими документами
           </p>
         </div>
