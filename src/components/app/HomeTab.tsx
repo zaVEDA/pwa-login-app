@@ -180,6 +180,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
             </div>
             <p className="text-sm font-medium text-foreground">База знаний</p>
             <p className="text-xs text-muted-foreground mt-0.5">Законы и инструкции</p>
+            <p className="text-[10px] font-semibold text-amber-700 mt-1">В активной разработке</p>
           </button>
           <button className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border">
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
@@ -187,6 +188,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
             </div>
             <p className="text-sm font-medium text-foreground">Учёт доходов</p>
             <p className="text-xs text-muted-foreground mt-0.5">Доходы и налоги</p>
+            <p className="text-[10px] font-semibold text-amber-700 mt-1">В активной разработке</p>
           </button>
         </div>
       </div>}
