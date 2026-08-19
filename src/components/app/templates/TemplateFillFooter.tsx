@@ -32,6 +32,7 @@ export default function TemplateFillFooter({
   copied,
   shareOpen,
   confirmClose,
+  saving,
   onShowPreview,
   onBackToFill,
   onDownload,
