@@ -519,7 +519,7 @@ def handler(event: dict, context) -> dict:
             cur2.execute("DELETE FROM contract_links WHERE contract_id = %s AND user_id = %s", (cid, user_id))
             cur2.execute(
                 "INSERT INTO contract_links (token, contract_id, user_id, file_key, expires_at) "
-                "VALUES (%s, %s, %s, %s, NOW() + INTERVAL '1 hour')",
+                "VALUES (%s, %s, %s, %s, NOW() + INTERVAL '24 hours')",
                 (token, cid, user_id, key)
             )
             conn2.commit()
@@ -528,7 +528,7 @@ def handler(event: dict, context) -> dict:
 
             base = (body.get("origin") or "").rstrip("/")
             url = f"{base}/doc/{token}" if base else f"/doc/{token}"
-            expires_at = (datetime.datetime.now() + datetime.timedelta(hours=1)).isoformat(timespec="seconds")
+            expires_at = (datetime.datetime.now() + datetime.timedelta(hours=24)).isoformat(timespec="seconds")
 
             # Статус «Отправлен» ставится только при фактической отправке по SMS —
             # это единственный канал, которым клиент реально получает ссылку на подпись.
@@ -539,7 +539,7 @@ def handler(event: dict, context) -> dict:
                 client_phone = "".join(ch for ch in (body.get("client_phone") or "") if ch.isdigit())[-10:]
 
                 if client_phone:
-                    text = f"{c.get('title','Документ')} № {c.get('contract_number','')}. Ssylka na dokument (deystvuet 1 chas): {url}"
+                    text = f"{c.get('title','Документ')} № {c.get('contract_number','')}. Ssylka na dokument (deystvuet 24 chasa): {url}"
                     sms_res = send_sms(client_phone, text)
                     sms_sent = sms_res.get("status") == "OK"
 

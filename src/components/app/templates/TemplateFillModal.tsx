@@ -255,7 +255,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
 
       const note = locked ? " (подписан электронной подписью)" : "";
       const subject = `${doc.title} № ${savedNumber}${note}`;
-      const msg = encodeURIComponent(`${subject}\nСсылка действует 1 час:\n${parsed.url}`);
+      const msg = encodeURIComponent(`${subject}\nСсылка действует 24 часа:\n${parsed.url}`);
       const urls: Record<string, string> = {
         telegram: `https://t.me/share/url?url=${encodeURIComponent(parsed.url)}&text=${encodeURIComponent(subject)}`,
         whatsapp: `https://wa.me/?text=${msg}`,

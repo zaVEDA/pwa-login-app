@@ -86,9 +86,14 @@ export default function SharedDoc() {
       const end = new Date(data.expires_at.replace(" ", "T")).getTime();
       const diff = end - Date.now();
       if (diff <= 0) { setState("expired"); setLeft(""); return; }
-      const m = Math.floor(diff / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setLeft(`${m} мин ${String(s).padStart(2, "0")} сек`);
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      if (h > 0) {
+        setLeft(`${h} ч ${String(m).padStart(2, "0")} мин`);
+      } else {
+        const s = Math.floor((diff % 60000) / 1000);
+        setLeft(`${m} мин ${String(s).padStart(2, "0")} сек`);
+      }
     };
     tick();
     const t = setInterval(tick, 1000);
@@ -117,7 +122,7 @@ export default function SharedDoc() {
             </p>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
               {state === "expired"
-                ? "Ссылка на документ действует 1 час. Попросите отправителя прислать новую."
+                ? "Ссылка на документ действует 24 часа. Попросите отправителя прислать новую."
                 : "Возможно, ссылка указана неверно или документ был удалён."}
             </p>
           </div>

@@ -360,7 +360,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       if (!parsed.url) { toast("Не удалось подготовить ссылку"); return; }
 
       const signedNote = c.status === "signed" ? " (подписан электронной подписью)" : "";
-      const text = `${c.title} № ${c.contract_number}${signedNote}\nСсылка действует 1 час:\n${parsed.url}`;
+      const text = `${c.title} № ${c.contract_number}${signedNote}\nСсылка действует 24 часа:\n${parsed.url}`;
       const msg = encodeURIComponent(text);
       const smsTarget = clientPhone ? `+7${clientPhone}` : "";
       const urls: Record<string, string> = {
@@ -371,7 +371,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
       };
       window.open(urls[channel], "_blank");
       loadContracts();
-      toast(channel === "sms" ? "SMS со ссылкой отправлено. Она действует 1 час." : "Ссылка отправлена. Она действует 1 час.", { icon: "⏱" });
+      toast(channel === "sms" ? "SMS со ссылкой отправлено. Она действует 24 часа." : "Ссылка отправлена. Она действует 24 часа.", { icon: "⏱" });
     } catch { toast("Нет связи с сервером"); }
     finally { setContractPdfId(null); }
   };
