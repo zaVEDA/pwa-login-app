@@ -149,7 +149,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
             </div>
           )}
 
-          {[...paidPlans, testPlan].map((p) => {
+          {paidPlans.map((p) => {
             const active = currentPlan === p.id;
             const open = openPlan === p.id;
             const halfYearPrice = isPresale ? p.presaleHalfYear : p.halfYear;
