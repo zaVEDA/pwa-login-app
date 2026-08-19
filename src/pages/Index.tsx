@@ -211,6 +211,13 @@ export default function Index() {
     >
       {/* Header */}
       <header className="px-5 pt-12 pb-4">
+        <div className="flex items-center gap-2 mb-5">
+          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="28" height="28" className="rounded-lg flex-shrink-0" />
+          <span className="font-cormorant text-lg font-semibold leading-none">
+            <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span>
+            <span className="text-foreground">Doc.ru</span>
+          </span>
+        </div>
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">
