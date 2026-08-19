@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import PhoneInput from "@/components/ui/phone-input";
 import { formatDate } from "@/lib/date";
 import { Contract } from "../constants";
 
@@ -109,14 +110,11 @@ export default function ContractCard({
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
                       Телефон клиента
                     </p>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
+                    <PhoneInput
                       autoFocus
                       value={smsPhone}
-                      onChange={(e) => setSmsPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                      placeholder="9001234567"
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm outline-none focus:border-primary"
+                      onChange={setSmsPhone}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm font-medium outline-none focus:border-primary"
                     />
                     <button
                       onClick={() => { onShare(contract, "sms", smsPhone); setShareId(null); setSmsMode(false); }}

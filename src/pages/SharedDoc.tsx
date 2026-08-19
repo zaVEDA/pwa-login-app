@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import PhoneInput from "@/components/ui/phone-input";
 import { CONTRACTS_URL } from "@/components/app/tabs/constants";
 
 interface SharedDocData {
@@ -265,13 +266,10 @@ export default function SharedDoc() {
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваш телефон</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
+                    <PhoneInput
                       value={signPhone}
-                      onChange={(e) => setSignPhone(e.target.value)}
-                      placeholder="+7 900 000-00-00"
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                      onChange={setSignPhone}
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary"
                     />
                   </div>
 

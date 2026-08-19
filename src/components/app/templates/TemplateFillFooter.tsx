@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import PhoneInput from "@/components/ui/phone-input";
 
 interface Props {
   preview: boolean;
@@ -157,14 +158,11 @@ export default function TemplateFillFooter({
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                   Телефон клиента
                 </p>
-                <input
-                  type="tel"
-                  inputMode="numeric"
+                <PhoneInput
                   autoFocus
                   value={smsPhone}
-                  onChange={(e) => setSmsPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  placeholder="9001234567"
-                  className="w-full px-3.5 py-3 rounded-xl border border-border bg-white text-sm outline-none focus:border-primary"
+                  onChange={setSmsPhone}
+                  className="w-full px-3.5 py-3 rounded-xl border border-border bg-white text-sm font-medium outline-none focus:border-primary"
                 />
                 <button
                   onClick={() => { onShare("sms", smsPhone); setSmsMode(false); }}

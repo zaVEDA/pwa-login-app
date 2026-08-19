@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import PuzzleCaptcha from "@/components/auth/PuzzleCaptcha";
+import PhoneInput from "@/components/ui/phone-input";
 import { useLoginScreen } from "./useLoginScreen";
 
 type State = ReturnType<typeof useLoginScreen>;
@@ -127,11 +128,8 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
           </div>
           {recoverChannel === "sms" ? (
             <>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
-                <input type="tel" inputMode="numeric" placeholder="900 000-00-00" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary" />
-              </div>
+              <PhoneInput value={phone} onChange={setPhone}
+                className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary" />
               <PuzzleCaptcha key={captchaKey} onVerified={setCaptchaPassToken} />
             </>
           ) : (
@@ -182,19 +180,12 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
         <>
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5 px-1">Телефон Заведующей</label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                autoComplete="username"
-                placeholder="901 662-57-52"
-                value={login}
-                onChange={(e) => setLogin(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                autoFocus
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
-              />
-            </div>
+            <PhoneInput
+              value={login}
+              onChange={setLogin}
+              autoFocus
+              className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary"
+            />
           </div>
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5 px-1">Пароль</label>

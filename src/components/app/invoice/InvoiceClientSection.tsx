@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import Icon from "@/components/ui/icon";
+import PhoneInput from "@/components/ui/phone-input";
 import { ClientInfo, ClientType } from "./types";
 
 interface Props {
@@ -179,13 +180,10 @@ export default function InvoiceClientSection({
       {/* Телефон и e-mail клиента — для справочника, необязательно */}
       {clientInfo && (
         <div className="grid grid-cols-2 gap-2">
-          <input
-            type="tel"
-            inputMode="numeric"
+          <PhoneInput
             value={clientInfo.phone || ""}
-            onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-            placeholder="Телефон (900...)"
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors"
+            onChange={(v) => setClientInfo({ ...clientInfo, phone: v })}
+            className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary transition-colors"
           />
           <input
             type="email"

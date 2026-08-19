@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import PuzzleCaptcha from "@/components/auth/PuzzleCaptcha";
+import PhoneInput from "@/components/ui/phone-input";
 import { useLoginScreen } from "./useLoginScreen";
 
 type State = ReturnType<typeof useLoginScreen>;
@@ -46,17 +47,11 @@ export default function LoginRegisterForm({ m }: Props) {
 
   return (
     <>
-      <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+7</span>
-        <input
-          type="tel"
-          inputMode="numeric"
-          placeholder="900 000-00-00"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/60"
-        />
-      </div>
+      <PhoneInput
+        value={phone}
+        onChange={setPhone}
+        className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary transition-colors"
+      />
       <input
         type="email"
         inputMode="email"
