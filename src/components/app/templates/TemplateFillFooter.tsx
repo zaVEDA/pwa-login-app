@@ -70,14 +70,14 @@ export default function TemplateFillFooter({
           </button>
         ) : (
           <div className="space-y-2">
-            {!locked && savedId && (
+            {!locked && (
               <button
-                onClick={() => { onOpenSign(); setSmsMode(true); }}
-                disabled={pdfLoading}
+                onClick={onOpenSign}
+                disabled={pdfLoading || saving}
                 className="w-full py-3.5 rounded-xl gold-gradient text-white text-sm font-medium shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
               >
-                <Icon name="FileSignature" size={16} />
-                Отправить на подпись
+                <Icon name={saving ? "Loader" : "FileSignature"} size={16} className={saving ? "animate-spin" : ""} />
+                {saving ? "Сохраняю..." : "Отправить документ на подпись по SMS"}
               </button>
             )}
             <div className="flex gap-2">

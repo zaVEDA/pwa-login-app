@@ -145,9 +145,10 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const text = doc.build(values);
   const fullText = `${doc.heading}\n\n${text}`;
 
-  const handleSave = async () => {
-    if (saving || locked) return;
-    const wasNew = !savedId;
+  // Сохраняет документ (создаёт или обновляет) и возвращает его id, либо null при ошибке.
+  // Не трогает preview/shareOpen — этим управляют вызывающие функции.
+  const saveContract = async (): Promise<number | null> => {
+    if (saving || locked) return savedId;
     setSaving(true);
     setError("");
     try {
@@ -166,9 +167,9 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       });
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-      if (res.status === 409) { setError("Документ уже подписан клиентом — изменить нельзя"); setStatus("signed"); return; }
-      if (res.status === 403) { setError("Лимит документов на этом месяце исчерпан. Докупите пакет или смените тариф в Аккаунте."); return; }
-      if (!parsed.contract) { setError("Не удалось сохранить, попробуйте ещё раз"); return; }
+      if (res.status === 409) { setError("Документ уже подписан клиентом — изменить нельзя"); setStatus("signed"); return null; }
+      if (res.status === 403) { setError("Лимит документов на этом месяце исчерпан. Докупите пакет или смените тариф в Аккаунте."); return null; }
+      if (!parsed.contract) { setError("Не удалось сохранить, попробуйте ещё раз"); return null; }
       setSavedId(parsed.contract.id);
       setSavedNumber(parsed.contract.contract_number || "");
       setStatus(parsed.contract.status || "draft");
@@ -179,16 +180,24 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         localStorage.removeItem(draftKey(doc.title, parsed.contract.id));
       } catch { /* ignore */ }
       onSaved?.();
-      // Сразу после первого сохранения предлагаем отправить документ клиенту по SMS
-      if (wasNew) {
-        setPreview(true);
-        setShareOpen(true);
-      }
+      return parsed.contract.id;
     } catch {
       setError("Нет связи с сервером");
+      return null;
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSave = async () => { await saveContract(); };
+
+  // Главный сценарий: кнопка «Отправить на подпись по SMS» доступна сразу, без предварительного
+  // нажатия «Сохранить» — сама сохраняет документ (если нужно) и открывает форму ввода телефона.
+  const openSignFlow = async () => {
+    setPreview(true);
+    const id = savedId ?? (await saveContract());
+    if (!id) return;
+    setShareOpen(true);
   };
 
   const tryClose = () => {
@@ -329,7 +338,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           onBackToFill={() => setPreview(false)}
           onDownload={locked ? downloadPdf : downloadDoc}
           onOpenShare={() => setShareOpen(true)}
-          onOpenSign={() => setShareOpen(true)}
+          onOpenSign={openSignFlow}
           onCopy={copy}
           onCloseShare={() => setShareOpen(false)}
           onShare={share}
