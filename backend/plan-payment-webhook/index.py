@@ -15,7 +15,7 @@ def calc_signature(*args) -> str:
 
 
 PROMO_TOTAL = 12
-PROMO_UNTIL = datetime.date(2026, 8, 21)
+PROMO_UNTIL = datetime.date(2026, 8, 23)
 
 HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -80,7 +80,7 @@ def handler(event: dict, context) -> dict:
             "WHERE id = %s",
             (plan, days, uid)
         )
-        # Акция: первые 12 оплат тарифа «Рост» на 6 месяцев до 21.08.2026
+        # Акция: первые 12 оплат тарифа «Рост» на 6 месяцев до 23.08.2026
         # получают бесплатную разработку 1 шаблона. Место закрепляется здесь же,
         # чтобы одновременные оплаты не заняли одно и то же место.
         if plan in ("medium", "test") and period == "half_year" and datetime.date.today() <= PROMO_UNTIL:

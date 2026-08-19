@@ -134,7 +134,7 @@ export default function PromoTemplateBanner({ compact = false, onWant }: Props) 
             className={`font-semibold ${compact ? "text-[11px]" : "text-xs"}`}
             style={{ color: "hsl(24 15% 45%)" }}
           >
-            · до 21 августа 2026
+            · до 23 августа 2026
           </span>
         </div>
 

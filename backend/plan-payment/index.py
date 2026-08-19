@@ -15,7 +15,7 @@ PLANS = {
 }
 PRESALE_UNTIL = datetime.date(2026, 7, 15)
 PROMO_TOTAL = 12
-PROMO_UNTIL = datetime.date(2026, 8, 21)
+PROMO_UNTIL = datetime.date(2026, 8, 23)
 ROBOKASSA_URL = "https://auth.robokassa.ru/Merchant/Index.aspx"
 
 
