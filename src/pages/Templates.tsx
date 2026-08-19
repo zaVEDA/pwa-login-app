@@ -159,8 +159,10 @@ export default function Templates() {
                 Или приобретите тариф «Творец»
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                На этом тарифе можно добавить свой собственный шаблон договора в сервис — без ожидания очереди
-                и без ограничений по виду деятельности.
+                На этом тарифе можно добавить свой собственный шаблон договора в сервис — без ожидания очереди*.
+              </p>
+              <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-1.5">
+                * В течение 24 часов с момента выгрузки, с даты официального запуска сервиса — 11 сентября 2026.
               </p>
             </div>
             <Icon name="ChevronRight" size={18} className="text-muted-foreground flex-shrink-0 mt-1" />
