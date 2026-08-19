@@ -97,7 +97,8 @@ PLAN_DOC_LIMITS = {
 }
 
 # Дата старта тарификации для тех, кто оплатил по предпродаже (полугодовой период).
-PRESALE_START = datetime.date(2026, 9, 1)
+# Совпадает с официальным запуском полной версии сервиса.
+PRESALE_START = datetime.date(2026, 9, 11)
 
 
 def _add_months(d: datetime.date, months: int) -> datetime.date:
@@ -112,8 +113,8 @@ def compute_limits(cur, user_id: int, plan, plan_expires_at):
     """Считает лимит документов за текущий расчётный период.
 
     Правила периода:
-    - Предпродажа (полугодовой период): отсчёт стартует с 1 сентября 2026,
-      далее сброс каждое 1-е число месяца.
+    - Предпродажа (полугодовой период): отсчёт стартует с 11 сентября 2026,
+      далее сброс каждые 30 дней от этой даты.
     - Обычная оплата (месяц): каждые 30 дней от даты оплаты.
     - Без оплаты / бесплатный тариф: календарный месяц.
 
@@ -135,14 +136,15 @@ def compute_limits(cur, user_id: int, plan, plan_expires_at):
     period_end = None
 
     if order and order[0] == "half_year":
-        # Предпродажа: помесячные окна начиная с 1 сентября 2026
+        # Предпродажа: 30-дневные окна начиная с 11 сентября 2026 (запуск сервиса)
         if today < PRESALE_START:
             period_start = PRESALE_START
-            period_end = _add_months(PRESALE_START, 1)
+            period_end = PRESALE_START + datetime.timedelta(days=30)
         else:
-            months_passed = (today.year - PRESALE_START.year) * 12 + (today.month - PRESALE_START.month)
-            period_start = _add_months(PRESALE_START, months_passed)
-            period_end = _add_months(PRESALE_START, months_passed + 1)
+            days_passed = (today - PRESALE_START).days
+            cycles = days_passed // 30
+            period_start = PRESALE_START + datetime.timedelta(days=cycles * 30)
+            period_end = period_start + datetime.timedelta(days=30)
     elif order and order[1]:
         # Обычная оплата: 30-дневные окна от даты оплаты
         paid_date = order[1].date() if hasattr(order[1], "date") else order[1]

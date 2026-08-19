@@ -97,7 +97,9 @@ COLS = ("id, template_key, title, contract_number, contract_date, client_name, f
 
 
 PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150, "test": 15}
-PRESALE_START = datetime.date(2026, 9, 1)
+# Дата старта тарификации для тех, кто оплатил по предпродаже — совпадает
+# с официальным запуском полной версии сервиса.
+PRESALE_START = datetime.date(2026, 9, 11)
 
 
 def _add_months(d: datetime.date, months: int) -> datetime.date:
@@ -122,11 +124,13 @@ def check_limit(cur, user_id: int) -> dict:
     order = cur.fetchone()
 
     if order and order[0] == "half_year":
+        # Предпродажа: 30-дневные окна начиная с 11 сентября 2026 (запуск сервиса)
         if today < PRESALE_START:
-            start, end = PRESALE_START, _add_months(PRESALE_START, 1)
+            start, end = PRESALE_START, PRESALE_START + datetime.timedelta(days=30)
         else:
-            n = (today.year - PRESALE_START.year) * 12 + (today.month - PRESALE_START.month)
-            start, end = _add_months(PRESALE_START, n), _add_months(PRESALE_START, n + 1)
+            cycles = (today - PRESALE_START).days // 30
+            start = PRESALE_START + datetime.timedelta(days=cycles * 30)
+            end = start + datetime.timedelta(days=30)
     elif order and order[1]:
         paid = order[1].date() if hasattr(order[1], "date") else order[1]
         cycles = (today - paid).days // 30
