@@ -22,7 +22,7 @@ export default function WelcomePricing() {
         Зайдите и ознакомьтесь с приложением уже сейчас, а оплачивать подписку начнёте, когда работа пойдёт активно.
       </p>
       <p className="text-xs font-semibold text-center mb-8" style={{ color: "hsl(35 72% 38%)" }}>
-        Запуск первой версии приложения — с 1 августа
+        Запуск первой версии приложения — с 11 сентября
       </p>
 
       {isPresale && (
@@ -95,7 +95,7 @@ export default function WelcomePricing() {
 
       <div className="mt-6 px-5 py-3.5 rounded-xl bg-primary/10 border border-primary/20 text-center">
         <p className="text-sm font-bold" style={{ color: "hsl(35 72% 38%)" }}>
-          При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 1 сентября
+          При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 11 сентября
         </p>
       </div>
     </section>
