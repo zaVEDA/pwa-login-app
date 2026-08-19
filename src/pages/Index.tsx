@@ -211,25 +211,27 @@ export default function Index() {
     >
       {/* Header */}
       <header className="px-5 pt-12 pb-4">
+        <div className="flex items-end gap-1.5 mb-4">
+          <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="34" height="34" className="flex-shrink-0 rounded-lg" />
+          <div className="flex flex-col items-stretch leading-none">
+            <span className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "hsl(24 20% 13%)" }}>
+              Сервис
+            </span>
+            <span className="font-cormorant font-semibold text-lg leading-tight whitespace-nowrap">
+              <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span><span style={{ color: "hsl(24 20% 13%)" }}>Doc.ru</span>
+            </span>
+          </div>
+        </div>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="40" height="40" className="rounded-xl flex-shrink-0 shadow-sm" />
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground mb-0.5 truncate">
-                {user?.role === "admin" ? "Кабинет Заведующей" : (
-                  <>
-                    Добро пожаловать в{" "}
-                    <span className="font-semibold" style={{ color: "hsl(35 72% 42%)" }}>Capy</span>
-                    <span className="font-semibold text-foreground">Doc.ru</span>
-                  </>
-                )}
-              </p>
-              <h1 className="font-cormorant text-2xl font-semibold text-foreground truncate">
-                {user?.role === "admin" && activeTab === "account"
-                  ? "Пользователи"
-                  : user?.full_name || (demoMode ? "Гость" : "Пользователь")}
-              </h1>
-            </div>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground mb-0.5 truncate">
+              {user?.role === "admin" ? "Кабинет Заведующей" : "Добро пожаловать"}
+            </p>
+            <h1 className="font-cormorant text-2xl font-semibold text-foreground truncate">
+              {user?.role === "admin" && activeTab === "account"
+                ? "Пользователи"
+                : user?.full_name || (demoMode ? "Гость" : "Пользователь")}
+            </h1>
           </div>
           <button className="relative" onClick={() => setActiveTab("account")}>
             <div className="w-10 h-10 rounded-2xl gold-gradient flex items-center justify-center shadow-sm">
