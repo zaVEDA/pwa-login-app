@@ -17,9 +17,10 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   const m = useLoginScreen({ onAuth });
   const { mode, phone, error, devCode, showConsent, setShowConsent, acceptAllConsents } = m;
 
-  // Гостевой вход виден только по моим личным ссылкам (?demo=1 / ?enter=1)
-  const p = new URLSearchParams(window.location.search);
-  const showGuestEntry = p.get("demo") === "1" || p.get("enter") === "1";
+  // Гостевой демо-режим отключён от публичного доступа (не нужен сейчас).
+  // Чтобы вернуть — раскомментировать строку ниже.
+  // const p = new URLSearchParams(window.location.search);
+  const showGuestEntry = false;
 
   const errBlock = error && (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200">

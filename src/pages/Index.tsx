@@ -64,7 +64,10 @@ export default function Index() {
   const [showBrief, setShowBrief] = useState(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [adminSection, setAdminSection] = useState("menu");
-  const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
+  // Публичный гостевой демо-режим отключён (не нужен сейчас).
+  // Чтобы вернуть — раскомментировать строку ниже.
+  // const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
+  const isDemo = false;
 
   const [user, setUser] = useState<AuthUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);

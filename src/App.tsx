@@ -34,7 +34,8 @@ const App = () => (
           <Route path="/" element={<Welcome />} />
           <Route path="/app" element={<Index />} />
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/investor" element={<Investor />} />
+          {/* Страница для инвесторов отключена от публичного доступа. Чтобы вернуть — раскомментировать. */}
+          {/* <Route path="/investor" element={<Investor />} /> */}
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/offer" element={<Offer />} />
@@ -46,9 +47,10 @@ const App = () => (
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-fail" element={<PaymentFail />} />
           <Route path="/legal-flow" element={<Navigate to="/legal" replace />} />
-          {/* Личные ссылки Заведующей: вход в кабинет и режим «Гость» */}
+          {/* Личная ссылка Заведующей — вход в кабинет */}
           <Route path="/zaved" element={<Navigate to="/app?enter=1&admin=1" replace />} />
-          <Route path="/guest" element={<Navigate to="/app?enter=1&demo=1" replace />} />
+          {/* Публичный гостевой демо-режим отключён (не нужен). Чтобы вернуть — раскомментировать. */}
+          {/* <Route path="/guest" element={<Navigate to="/app?enter=1&demo=1" replace />} /> */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
