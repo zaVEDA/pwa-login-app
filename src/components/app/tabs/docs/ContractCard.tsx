@@ -108,7 +108,7 @@ export default function ContractCard({
                 ) : (
                   <div className="p-3 space-y-2">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                      Телефон клиента
+                      {signed ? "Телефон клиента" : "Отправить на подпись по SMS"}
                     </p>
                     <PhoneInput
                       autoFocus
@@ -121,7 +121,7 @@ export default function ContractCard({
                       disabled={smsPhone.length < 10}
                       className="w-full py-2 rounded-lg gold-gradient text-white text-xs font-medium disabled:opacity-40"
                     >
-                      Отправить SMS
+                      {signed ? "Отправить SMS" : "Отправить на подпись"}
                     </button>
                   </div>
                 )}

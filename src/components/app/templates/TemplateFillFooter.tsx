@@ -48,8 +48,11 @@ export default function TemplateFillFooter({
   const [smsPhone, setSmsPhone] = useState("");
 
   useEffect(() => {
-    if (!shareOpen) setSmsMode(false);
-  }, [shareOpen]);
+    // Пока документ не подписан, единственный смысл отправки — запросить подпись по SMS-коду,
+    // поэтому сразу открываем ввод телефона, без выбора канала.
+    if (shareOpen) setSmsMode(!locked);
+    else setSmsMode(false);
+  }, [shareOpen, locked]);
 
   return (
     <>
@@ -132,7 +135,7 @@ export default function TemplateFillFooter({
             {!smsMode ? (
               <>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Отправить {locked ? "подписанный документ" : "документ"}
+                  Отправить подписанный документ
                 </p>
                 {[
                   { id: "telegram" as const, icon: "Send", label: "Telegram", color: "text-sky-500" },
@@ -156,7 +159,12 @@ export default function TemplateFillFooter({
             ) : (
               <>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Телефон клиента
+                  {locked ? "Отправить документ по SMS" : "Отправить на подпись по SMS"}
+                </p>
+                <p className="text-[11px] text-muted-foreground -mt-1 mb-1">
+                  {locked
+                    ? "Клиенту придёт ссылка на подписанный документ."
+                    : "Клиенту придёт ссылка на документ и код для подписания."}
                 </p>
                 <PhoneInput
                   autoFocus
@@ -167,13 +175,21 @@ export default function TemplateFillFooter({
                 <button
                   onClick={() => { onShare("sms", smsPhone); setSmsMode(false); }}
                   disabled={smsPhone.length < 10}
-                  className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium disabled:opacity-40"
+                  className="w-full py-3 rounded-xl gold-gradient text-white text-sm font-medium disabled:opacity-40 flex items-center justify-center gap-2"
                 >
-                  Отправить SMS
+                  <Icon name={locked ? "Send" : "FileSignature"} size={15} />
+                  {locked ? "Отправить SMS" : "Отправить на подпись по SMS"}
                 </button>
-                <button onClick={() => setSmsMode(false)} className="w-full py-2.5 text-sm text-muted-foreground">
-                  Назад
-                </button>
+                {locked && (
+                  <button onClick={() => setSmsMode(false)} className="w-full py-2.5 text-sm text-muted-foreground">
+                    Назад
+                  </button>
+                )}
+                {!locked && (
+                  <button onClick={onCloseShare} className="w-full py-2.5 text-sm text-muted-foreground">
+                    Отмена
+                  </button>
+                )}
               </>
             )}
           </div>
