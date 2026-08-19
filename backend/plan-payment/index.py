@@ -13,7 +13,7 @@ PLANS = {
     "pro": {"name": "Творец", "month": 7777.00, "half_year": 38888.00, "presale_half_year": 33777.00},
     "test": {"name": "ТЕСТ", "month": 1.00, "half_year": 1.00, "presale_half_year": 1.00},
 }
-PRESALE_UNTIL = datetime.date(2026, 9, 11)
+PRESALE_UNTIL = datetime.date(2026, 8, 24)
 PROMO_TOTAL = 12
 PROMO_UNTIL = datetime.date(2026, 8, 23)
 ROBOKASSA_URL = "https://auth.robokassa.ru/Merchant/Index.aspx"
