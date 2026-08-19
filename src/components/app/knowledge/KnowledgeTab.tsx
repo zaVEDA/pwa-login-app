@@ -29,6 +29,11 @@ export default function KnowledgeTab() {
         <p className="text-xs text-muted-foreground">Законодательство и практика для самозанятых</p>
       </div>
 
+      <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-center gap-2">
+        <Icon name="Construction" size={14} className="text-amber-600 flex-shrink-0" />
+        <p className="text-xs font-semibold text-amber-800">Данный раздел находится в активной разработке</p>
+      </div>
+
       {loading && (
         <div className="card-warm rounded-2xl p-5 shadow-sm text-center">
           <p className="text-sm text-muted-foreground">Загружаем материалы…</p>
