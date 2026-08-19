@@ -201,6 +201,7 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
         <div className="flex gap-3 items-start mb-3">
           <Icon name="Bell" size={18} className="text-primary flex-shrink-0 mt-0.5" />
           <div>
+            <p className="text-xs font-bold text-amber-700 leading-snug mb-1">В активной разработке</p>
             <p className="text-sm font-medium text-foreground">Налог за май</p>
             <p className="text-xs text-muted-foreground mt-0.5">До 25 июня нужно оплатить ₽1 872 в приложении «Мой налог»</p>
           </div>
