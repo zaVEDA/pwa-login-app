@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import random
 import datetime
 import hashlib
 import secrets
@@ -8,6 +9,10 @@ import base64
 import urllib.request
 import urllib.parse
 import psycopg2
+
+
+def gen_sign_code() -> str:
+    return f"{random.randint(0, 9999):04d}"
 
 
 def send_sms(phone: str, text: str) -> dict:
@@ -339,9 +344,46 @@ def handler(event: dict, context) -> dict:
         cid = link[0]
 
         # Клиент подписывает документ сам по ссылке, полученной по SMS.
+        # Подтверждение — код из SMS (простая электронная подпись по 63-ФЗ).
         # Это единственный способ перевести договор в статус «Подписан».
         if event.get("httpMethod") == "POST":
             body = json.loads(event.get("body") or "{}")
+
+            if body.get("action") == "request_sign_code":
+                signer_phone = "".join(ch for ch in (body.get("signer_phone") or "") if ch.isdigit())[-10:]
+                if not signer_phone or len(signer_phone) != 10:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "phone_required"})}
+
+                cur.execute(
+                    "SELECT COUNT(*) FROM contract_sign_codes WHERE token = %s AND created_at > NOW() - INTERVAL '10 minutes'",
+                    (token,)
+                )
+                sent_count = cur.fetchone()[0]
+                if sent_count >= 5:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 429, "headers": cors, "body": json.dumps({"error": "too_many_requests"})}
+
+                code = gen_sign_code()
+                expires = datetime.datetime.now() + datetime.timedelta(minutes=10)
+                cur.execute(
+                    "INSERT INTO contract_sign_codes (token, contract_id, phone, code, expires_at) VALUES (%s,%s,%s,%s,%s)",
+                    (token, cid, signer_phone, code, expires)
+                )
+                conn.commit()
+
+                sms_res = send_sms(signer_phone, f"Kod podtverzhdeniya podpisaniya dokumenta: {code}. Nikomu ne soobshchayte.")
+                sms_sent = sms_res.get("status") == "OK"
+                log_sms(cur, signer_phone, None, "contract_sign_code", sms_sent)
+                conn.commit()
+                cur.close()
+                conn.close()
+                if not sms_sent:
+                    return {"statusCode": 502, "headers": cors, "body": json.dumps({"error": "sms_failed"})}
+                return {"statusCode": 200, "headers": cors, "body": json.dumps({"ok": True})}
+
             if body.get("action") == "client_sign":
                 cur.execute(
                     "SELECT status, body, client_name, contract_number, user_id FROM contracts WHERE id = %s",
@@ -360,11 +402,39 @@ def handler(event: dict, context) -> dict:
                     return {"statusCode": 409, "headers": cors, "body": json.dumps({"error": "already_signed"})}
 
                 signer_name = (body.get("signer_name") or cname or "").strip()
-                signer_phone = (body.get("signer_phone") or "").strip()
+                signer_phone = "".join(ch for ch in (body.get("signer_phone") or "") if ch.isdigit())[-10:]
+                sign_code = (body.get("sign_code") or "").strip()
                 if not signer_name:
                     cur.close()
                     conn.close()
                     return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "signer_name required"})}
+                if not signer_phone or len(signer_phone) != 10:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "phone_required"})}
+                if not sign_code:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "code_required"})}
+
+                cur.execute(
+                    "SELECT id, code, attempts FROM contract_sign_codes WHERE token = %s AND phone = %s "
+                    "AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+                    (token, signer_phone)
+                )
+                code_row = cur.fetchone()
+                if not code_row or code_row[2] >= 5:
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "code_expired"})}
+                if code_row[1] != sign_code:
+                    cur.execute("UPDATE contract_sign_codes SET attempts = attempts + 1 WHERE id = %s", (code_row[0],))
+                    conn.commit()
+                    cur.close()
+                    conn.close()
+                    return {"statusCode": 400, "headers": cors, "body": json.dumps({"error": "code_invalid"})}
+
+                cur.execute("UPDATE contract_sign_codes SET used = TRUE WHERE id = %s", (code_row[0],))
 
                 ip = ((event.get("requestContext") or {}).get("identity") or {}).get("sourceIp") or ""
                 now = datetime.datetime.now()

@@ -29,11 +29,14 @@ export default function SharedDoc() {
   const [state, setState] = useState<"loading" | "ok" | "expired" | "missing">("loading");
   const [left, setLeft] = useState("");
   const [signOpen, setSignOpen] = useState(false);
+  const [signStep, setSignStep] = useState<"form" | "code">("form");
   const [signName, setSignName] = useState("");
   const [signPhone, setSignPhone] = useState("");
   const [signAgree, setSignAgree] = useState(false);
   const [signLoading, setSignLoading] = useState(false);
   const [signError, setSignError] = useState("");
+  const [signCode, setSignCode] = useState("");
+  const [codeSentNotice, setCodeSentNotice] = useState(false);
 
   const loadDoc = () => {
     if (!token) { setState("missing"); return; }
@@ -52,10 +55,37 @@ export default function SharedDoc() {
 
   useEffect(loadDoc, [token]);
 
-  const submitSign = async () => {
+  const requestSignCode = async () => {
     if (!token || signLoading) return;
     if (signName.trim().length < 3) { setSignError("Введите ФИО полностью"); return; }
+    if (digitsOnly(signPhone).length !== 10) { setSignError("Введите корректный номер телефона"); return; }
     if (!signAgree) { setSignError("Подтвердите согласие на подписание"); return; }
+    setSignLoading(true);
+    setSignError("");
+    try {
+      const res = await fetch(CONTRACTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          action: "request_sign_code",
+          signer_phone: digitsOnly(signPhone),
+        }),
+      });
+      if (!res.ok) { setSignError("Не удалось отправить код. Попробуйте ещё раз"); return; }
+      setSignStep("code");
+      setCodeSentNotice(true);
+      setTimeout(() => setCodeSentNotice(false), 4000);
+    } catch {
+      setSignError("Нет связи с сервером");
+    } finally {
+      setSignLoading(false);
+    }
+  };
+
+  const submitSign = async () => {
+    if (!token || signLoading) return;
+    if (signCode.trim().length !== 4) { setSignError("Введите код из SMS полностью"); return; }
     setSignLoading(true);
     setSignError("");
     try {
@@ -67,11 +97,22 @@ export default function SharedDoc() {
           action: "client_sign",
           signer_name: signName.trim(),
           signer_phone: digitsOnly(signPhone),
+          sign_code: signCode.trim(),
         }),
       });
       if (res.status === 409) { setSignError("Документ уже подписан"); loadDoc(); return; }
+      if (res.status === 400) {
+        const raw = await res.json().catch(() => ({}));
+        const err = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (err.error === "code_invalid") { setSignError("Неверный код. Проверьте SMS и попробуйте ещё раз"); return; }
+        if (err.error === "code_expired") { setSignError("Код истёк или попыток слишком много. Запросите новый код"); setSignStep("form"); return; }
+        setSignError("Не удалось подписать, попробуйте ещё раз");
+        return;
+      }
       if (!res.ok) { setSignError("Не удалось подписать, попробуйте ещё раз"); return; }
       setSignOpen(false);
+      setSignStep("form");
+      setSignCode("");
       loadDoc();
     } catch {
       setSignError("Нет связи с сервером");
@@ -197,73 +238,129 @@ export default function SharedDoc() {
             <div className="px-5 pt-5 pb-3 border-b border-border/50">
               <div className="flex items-center gap-2.5 mb-1">
                 <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0">
-                  <Icon name="ShieldCheck" size={17} className="text-blue-700" />
+                  <Icon name={signStep === "code" ? "MessageSquare" : "ShieldCheck"} size={17} className="text-blue-700" />
                 </div>
-                <p className="text-sm font-semibold">Подписание документа</p>
+                <p className="text-sm font-semibold">
+                  {signStep === "code" ? "Введите код из SMS" : "Подписание документа"}
+                </p>
               </div>
               <p className="text-xs text-muted-foreground">
-                Простая электронная подпись по 63-ФЗ. После подписания документ изменить нельзя.
+                {signStep === "code"
+                  ? `Код отправлен на номер +7 ${signPhone.replace(/\D/g, "")}. Введите его, чтобы подтвердить подписание.`
+                  : "Простая электронная подпись по 63-ФЗ. После подписания документ изменить нельзя."}
               </p>
             </div>
 
-            <div className="px-5 py-4 space-y-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваше ФИО</label>
-                <input
-                  value={signName}
-                  onChange={(e) => setSignName(e.target.value)}
-                  placeholder="Иванова Анна Петровна"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваш телефон</label>
-                <input
-                  type="tel"
-                  value={signPhone}
-                  onChange={(e) => setSignPhone(e.target.value)}
-                  placeholder="+7 900 000-00-00"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
-                />
-              </div>
+            {signStep === "form" ? (
+              <>
+                <div className="px-5 py-4 space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваше ФИО</label>
+                    <input
+                      value={signName}
+                      onChange={(e) => setSignName(e.target.value)}
+                      placeholder="Иванова Анна Петровна"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваш телефон</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      value={signPhone}
+                      onChange={(e) => setSignPhone(e.target.value)}
+                      placeholder="+7 900 000-00-00"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
+                    />
+                  </div>
 
-              <button
-                onClick={() => setSignAgree(!signAgree)}
-                className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-xl border border-border bg-white/70 text-left"
-              >
-                <div className={`w-5 h-5 mt-0.5 rounded-md flex items-center justify-center flex-shrink-0 border ${signAgree ? "bg-blue-600 border-transparent" : "border-border bg-white"}`}>
-                  {signAgree && <Icon name="Check" size={13} className="text-white" />}
+                  <button
+                    onClick={() => setSignAgree(!signAgree)}
+                    className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-xl border border-border bg-white/70 text-left"
+                  >
+                    <div className={`w-5 h-5 mt-0.5 rounded-md flex items-center justify-center flex-shrink-0 border ${signAgree ? "bg-blue-600 border-transparent" : "border-border bg-white"}`}>
+                      {signAgree && <Icon name="Check" size={13} className="text-white" />}
+                    </div>
+                    <span className="text-xs leading-snug">
+                      Подтверждаю согласие подписать документ простой электронной подписью
+                    </span>
+                  </button>
+
+                  <div className="text-[11px] text-muted-foreground bg-muted/50 border border-border rounded-xl px-3 py-2.5 leading-relaxed">
+                    Мы пришлём код по SMS на указанный телефон. Ввод кода — ваше подтверждение подписания. В документ будут внесены: ФИО, телефон, дата и время, IP-адрес и отпечаток документа.
+                  </div>
+
+                  {signError && (
+                    <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+                      <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
+                      <p className="text-[11px] text-red-600">{signError}</p>
+                    </div>
+                  )}
                 </div>
-                <span className="text-xs leading-snug">
-                  Подтверждаю согласие подписать документ простой электронной подписью
-                </span>
-              </button>
 
-              <div className="text-[11px] text-muted-foreground bg-muted/50 border border-border rounded-xl px-3 py-2.5 leading-relaxed">
-                В документ будут внесены: ФИО, телефон, дата и время, IP-адрес и отпечаток документа.
-              </div>
-
-              {signError && (
-                <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
-                  <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
-                  <p className="text-[11px] text-red-600">{signError}</p>
+                <div className="px-5 pb-5 space-y-2">
+                  <button
+                    onClick={requestSignCode}
+                    disabled={signLoading}
+                    className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-40"
+                  >
+                    <Icon name={signLoading ? "Loader" : "MessageSquare"} size={15} className={signLoading ? "animate-spin" : ""} />
+                    {signLoading ? "Отправляем код..." : "Получить код по SMS"}
+                  </button>
+                  <button onClick={() => setSignOpen(false)} className="w-full py-2.5 text-sm text-muted-foreground">
+                    Отмена
+                  </button>
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="px-5 py-4 space-y-3">
+                  {codeSentNotice && (
+                    <div className="px-3 py-2 rounded-lg bg-green-50 border border-green-200 flex items-center gap-2">
+                      <Icon name="CheckCircle" size={14} className="text-green-600 flex-shrink-0" />
+                      <p className="text-[11px] text-green-700">Код отправлен по SMS</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Код из SMS</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoFocus
+                      value={signCode}
+                      onChange={(e) => setSignCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      placeholder="0000"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-white/70 text-lg tracking-[0.4em] text-center outline-none focus:border-primary"
+                    />
+                  </div>
 
-            <div className="px-5 pb-5 space-y-2">
-              <button
-                onClick={submitSign}
-                disabled={signLoading}
-                className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-40"
-              >
-                <Icon name={signLoading ? "Loader" : "PenLine"} size={15} className={signLoading ? "animate-spin" : ""} />
-                {signLoading ? "Подписываю..." : "Подписать документ"}
-              </button>
-              <button onClick={() => setSignOpen(false)} className="w-full py-2.5 text-sm text-muted-foreground">
-                Отмена
-              </button>
-            </div>
+                  {signError && (
+                    <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+                      <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
+                      <p className="text-[11px] text-red-600">{signError}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-5 pb-5 space-y-2">
+                  <button
+                    onClick={submitSign}
+                    disabled={signLoading || signCode.length !== 4}
+                    className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-40"
+                  >
+                    <Icon name={signLoading ? "Loader" : "PenLine"} size={15} className={signLoading ? "animate-spin" : ""} />
+                    {signLoading ? "Подписываю..." : "Подтвердить и подписать"}
+                  </button>
+                  <button
+                    onClick={() => { setSignStep("form"); setSignCode(""); setSignError(""); }}
+                    className="w-full py-2.5 text-sm text-muted-foreground"
+                  >
+                    Изменить данные
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
