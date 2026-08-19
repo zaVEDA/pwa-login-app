@@ -53,9 +53,17 @@ export default function WelcomeHero() {
           Работайте легально<br />
           <span style={{ color: "hsl(35 72% 48%)" }}>без бумажной волокиты</span>
         </h1>
-        <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
+        <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-2 leading-relaxed font-medium">
           Договоры, счета, акты, согласие на фото/видео съемку, перс.данные и другие документы за пару минут с телефона. Клиент подписывает документ электронной подписью по СМС — без встреч и распечаток.
         </p>
+        <a
+          href="/sms-operators"
+          className="inline-flex items-center gap-1 text-sm font-medium mb-8 hover:underline underline-offset-2"
+          style={{ color: "hsl(35 72% 42%)" }}
+        >
+          <Icon name="Signal" size={14} />
+          Поддерживаемые операторы связи
+        </a>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
             href="/app"
