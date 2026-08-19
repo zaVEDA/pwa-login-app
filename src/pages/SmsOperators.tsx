@@ -26,12 +26,12 @@ export default function SmsOperators() {
 
         <div className="text-center mb-7">
           <div className="flex items-end justify-center gap-2 mb-6">
-            <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="56" height="56" className="flex-shrink-0 rounded-xl" />
+            <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="78" height="78" className="flex-shrink-0 rounded-xl" />
             <div className="flex flex-col items-stretch text-left">
-              <span className="flex justify-between mx-auto text-[15px] font-black uppercase leading-none" style={{ color: "hsl(24 20% 13%)", width: "90%" }}>
+              <span className="flex justify-between mx-auto text-[22px] font-black uppercase leading-none" style={{ color: "hsl(24 20% 13%)", width: "90%" }}>
                 {"Сервис".split("").map((ch, i) => <span key={i}>{ch}</span>)}
               </span>
-              <span className="font-cormorant font-semibold text-[26px] leading-tight whitespace-nowrap">
+              <span className="font-cormorant font-semibold text-[36px] leading-tight whitespace-nowrap">
                 <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span><span style={{ color: "hsl(24 20% 13%)" }}>Doc.ru</span>
               </span>
             </div>
