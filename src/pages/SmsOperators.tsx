@@ -10,7 +10,7 @@ const OPERATORS: Operator[] = [
   { name: "МегаФон" },
   { name: "МОТИВ" },
   { name: "МТС" },
-  { name: "Т2", note: "сообщения временно приходят от прежнего имени отправителя" },
+  { name: "Т2", note: "сообщения приходят от имени ZavDoc" },
 ];
 
 export default function SmsOperators() {
@@ -25,11 +25,16 @@ export default function SmsOperators() {
         </a>
 
         <div className="text-center mb-7">
-          <div
-            className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-sm"
-            style={{ background: "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)), hsl(var(--ring)))" }}
-          >
-            <Icon name="MessageSquareText" size={26} className="text-white" />
+          <div className="flex items-end justify-center gap-2 mb-6">
+            <img src="/logo-capydoc.png" alt="CapyDoc.ru" width="56" height="56" className="flex-shrink-0 rounded-xl" />
+            <div className="flex flex-col items-stretch text-left">
+              <span className="flex justify-between mx-auto text-[15px] font-black uppercase leading-none" style={{ color: "hsl(24 20% 13%)", width: "90%" }}>
+                {"Сервис".split("").map((ch, i) => <span key={i}>{ch}</span>)}
+              </span>
+              <span className="font-cormorant font-semibold text-[26px] leading-tight whitespace-nowrap">
+                <span style={{ color: "hsl(35 72% 42%)" }}>Capy</span><span style={{ color: "hsl(24 20% 13%)" }}>Doc.ru</span>
+              </span>
+            </div>
           </div>
           <h1 className="font-cormorant text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Операторы связи для подписания документов по СМС
@@ -92,10 +97,8 @@ export default function SmsOperators() {
           <div>
             <h2 className="font-cormorant text-lg font-bold text-primary mb-1.5">Почему имя отправителя может отличаться</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-              Имя отправителя, которое видит получатель СМС (например, «capydoc.ru»), устанавливается и
-              утверждается каждым оператором связи самостоятельно и отдельно друг от друга. Пока оператор не
-              подтвердит новое имя отправителя, сообщения через него могут приходить от прежнего наименования
-              Исполнителя.
+              Имя отправителя, которое видит получатель СМС, устанавливается и утверждается каждым оператором
+              связи самостоятельно и отдельно друг от друга.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed mb-2">На сегодняшний день:</p>
             <ul className="space-y-1.5 mb-2">
@@ -106,15 +109,13 @@ export default function SmsOperators() {
               </li>
               <li className="text-sm text-foreground/80 leading-relaxed pl-4 relative">
                 <span className="absolute left-0 top-0 text-primary">•</span>
-                Т2 (Tele2) — сообщения временно приходят от прежнего наименования Исполнителя, до момента
-                утверждения оператором имени отправителя <span className="font-medium text-foreground">capydoc.ru</span>.
+                Т2 (Tele2) — сообщения приходят от имени <span className="font-medium text-foreground">ZavDoc</span>.
               </li>
             </ul>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Это техническая особенность работы операторов связи и сервиса рассылки, она не влияет на
               юридическую силу подписания документа простой электронной подписью и не означает, что сообщение
-              отправлено сторонним лицом. Обновление имени отправителя у Т2 (Tele2) выполняется в рабочем
-              порядке; после подтверждения оператором раздел будет обновлён.
+              отправлено сторонним лицом.
             </p>
           </div>
 
