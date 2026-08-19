@@ -448,8 +448,30 @@ def handler(event: dict, context) -> dict:
                     (signer_name, signer_phone, ip, sign_id, sign_hash, cid)
                 )
                 conn.commit()
+
+                # Перегенерируем PDF с печатью ПЭП и перекладываем в S3 по тому же ключу,
+                # чтобы ссылка на документ сразу показывала подписанную версию.
+                cur.execute(f"SELECT {COLS} FROM contracts WHERE id = %s", (cid,))
+                signed_row = cur.fetchone()
+                cur.execute("SELECT full_name FROM users WHERE id = %s", (_owner_id,))
+                urow = cur.fetchone()
+                performer = (urow[0] if urow else "") or ""
                 cur.close()
                 conn.close()
+
+                try:
+                    import boto3
+                    pdf = build_pdf(row_to_dict(signed_row), performer)
+                    s3 = boto3.client(
+                        "s3",
+                        endpoint_url="https://bucket.poehali.dev",
+                        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+                        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+                    )
+                    s3.put_object(Bucket="files", Key=link[1], Body=pdf, ContentType="application/pdf")
+                except Exception as e:
+                    print(f"[PDF REBUILD ERROR] {e}")
+
                 return {
                     "statusCode": 200,
                     "headers": cors,
