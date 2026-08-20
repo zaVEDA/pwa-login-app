@@ -17,9 +17,8 @@ export default function LoginScreen({ selectedSpecialty, setSelectedSpecialty, o
   const m = useLoginScreen({ onAuth });
   const { mode, phone, error, devCode, showConsent, setShowConsent, acceptAllConsents } = m;
 
-  // Гостевой демо-режим отключён от публичного доступа (не нужен сейчас).
-  // Чтобы вернуть — раскомментировать строку ниже.
-  // const p = new URLSearchParams(window.location.search);
+  // Кнопка гостевого входа скрыта из публичного UI — вход в демо-режим
+  // возможен только по личной ссылке /guest.
   const showGuestEntry = false;
 
   const errBlock = error && (

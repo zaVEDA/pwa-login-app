@@ -49,8 +49,8 @@ const App = () => (
           <Route path="/legal-flow" element={<Navigate to="/legal" replace />} />
           {/* Личная ссылка Заведующей — вход в кабинет */}
           <Route path="/zaved" element={<Navigate to="/app?enter=1&admin=1" replace />} />
-          {/* Публичный гостевой демо-режим отключён (не нужен). Чтобы вернуть — раскомментировать. */}
-          {/* <Route path="/guest" element={<Navigate to="/app?enter=1&demo=1" replace />} /> */}
+          {/* Личная ссылка для просмотра демо-режима (гость) — доступна только по прямому URL */}
+          <Route path="/guest" element={<Navigate to="/app?enter=1&demo=1" replace />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
