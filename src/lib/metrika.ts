@@ -1,4 +1,4 @@
-export const COUNTER_ID = 111226635;
+export const COUNTER_ID = 111819609;
 
 export function reachGoal(goal: string, params?: Record<string, unknown>) {
   try {
