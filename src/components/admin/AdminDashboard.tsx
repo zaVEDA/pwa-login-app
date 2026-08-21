@@ -10,8 +10,9 @@ import KnowledgeManager from "@/components/admin/KnowledgeManager";
 import AdminTemplates from "@/components/admin/AdminTemplates";
 import AdminTemplateBriefs from "@/components/admin/AdminTemplateBriefs";
 import AdminNotify from "@/components/admin/AdminNotify";
+import TrialCodeManagement from "@/components/admin/admin-users/TrialCodeManagement";
 
-type Section = "menu" | "notify" | "users" | "family" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates" | "briefs";
+type Section = "menu" | "notify" | "users" | "family" | "trial" | "addons" | "calendar" | "support" | "tasks" | "knowledge" | "sms" | "templates" | "briefs";
 
 const tiles: { id: Section; icon: string; title: string; hint: string; badge?: string }[] = [
   { id: "tasks", icon: "ListChecks", title: "Задачи", hint: "Что делаем с Юрой" },
@@ -23,6 +24,7 @@ const tiles: { id: Section; icon: string; title: string; hint: string; badge?: s
   { id: "users", icon: "Users", title: "Пользователи", hint: "Тарифы, документы, входы" },
   { id: "knowledge", icon: "BookOpen", title: "База знаний", hint: "Видео и текст материалов" },
   { id: "family", icon: "HeartHandshake", title: "Тариф «Для родных»", hint: "Кодовое слово и заявки" },
+  { id: "trial", icon: "Ticket", title: "Тариф «Тест-драйв»", hint: "Кодовые слова на 3 дня" },
   { id: "calendar", icon: "CalendarDays", title: "Календарь фраз", hint: "Мысли дня на месяц" },
   { id: "addons", icon: "Wallet", title: "Допфункции", hint: "SMS.ru, домен · сроки оплат" },
 ];
@@ -45,6 +47,15 @@ function FamilyScreen({ onBack }: { onBack: () => void }) {
       <ScreenHeader title="Тариф «Для родных»" subtitle="Кодовое слово · заявки на доступ" onBack={onBack} />
       <FamilyCodeSettings />
       <FamilyRequests />
+    </div>
+  );
+}
+
+function TrialScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <ScreenHeader title="Тариф «Тест-драйв»" subtitle="Кодовые слова для разового тестового доступа" onBack={onBack} />
+      <TrialCodeManagement />
     </div>
   );
 }
@@ -410,6 +421,7 @@ export default function AdminDashboard({ section: outer, onSection }: { section?
       briefs: <BriefsScreen onBack={back} />,
       knowledge: <KnowledgeScreen onBack={back} />,
       family: <FamilyScreen onBack={back} />,
+      trial: <TrialScreen onBack={back} />,
       addons: <AddonsScreen onBack={back} />,
       sms: <SmsScreen onBack={back} />,
       notify: <NotifyScreen onBack={back} />,

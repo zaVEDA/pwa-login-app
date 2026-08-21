@@ -39,11 +39,12 @@ interface Props {
   currentPlan: PlanType | null;
   isAdmin?: boolean;
   familyRequestStatus?: "pending" | "approved" | "rejected" | null;
+  trialStartedAt?: string | null;
   onClose: () => void;
   onSelected: (user: AuthUser) => void;
 }
 
-export default function PlanModal({ currentPlan, familyRequestStatus, onClose }: Props) {
+export default function PlanModal({ currentPlan, familyRequestStatus, trialStartedAt, onClose, onSelected }: Props) {
   const [openPlan, setOpenPlan] = useState<PaidPlanOption["id"] | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<Record<string, "month" | "half_year">>({});
   const [briefOpen, setBriefOpen] = useState(false);
@@ -67,6 +68,49 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
   const [error, setError] = useState("");
   const [codeWord, setCodeWord] = useState("");
   const [familySent, setFamilySent] = useState(false);
+  const [trialCodeWord, setTrialCodeWord] = useState("");
+  const [trialLoading, setTrialLoading] = useState(false);
+
+  const payTrial = async () => {
+    setError("");
+    setLoading(true);
+    reachGoal("payment_started", { plan: "trial", period: "once" });
+    try {
+      const res = await fetch(PLAN_PAYMENT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() },
+        body: JSON.stringify({ plan: "trial", period: "once" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.payment_url) {
+        window.location.href = data.payment_url;
+      } else {
+        setError(data.error || "Не удалось начать оплату");
+      }
+    } catch {
+      setError("Ошибка соединения");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const activateTrialCode = async () => {
+    setError("");
+    if (!trialCodeWord.trim()) return setError("Введите кодовое слово");
+    setTrialLoading(true);
+    try {
+      const { status, data } = await authApi.redeemTrialCode(trialCodeWord.trim());
+      if (status === 200 && data.user) {
+        onSelected(data.user);
+      } else {
+        setError(data.error || "Не удалось активировать код");
+      }
+    } catch {
+      setError("Ошибка соединения");
+    } finally {
+      setTrialLoading(false);
+    }
+  };
 
   const payPlan = async (plan: PaidPlanOption["id"], period: "month" | "half_year") => {
     setError("");
@@ -228,6 +272,56 @@ export default function PlanModal({ currentPlan, familyRequestStatus, onClose }:
               </div>
             );
           })}
+
+          {/* Тест-драйв — разовый тестовый тариф */}
+          <div className={`rounded-2xl border p-4 ${currentPlan === "trial" ? "border-primary/50 bg-primary/10" : "border-border bg-white/60"}`}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${currentPlan === "trial" ? "gold-gradient" : "bg-primary/10"}`}>
+                <Icon name="Sparkle" size={18} className={currentPlan === "trial" ? "text-white" : "text-primary"} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Тест-драйв · 355 ₽</p>
+                <p className="text-xs text-muted-foreground mt-0.5">3 дня, до 5 документов и 2 отправки клиенту. Можно купить только один раз</p>
+              </div>
+              {currentPlan === "trial" && <Icon name="CheckCircle" size={18} className="text-primary flex-shrink-0" />}
+            </div>
+
+            {currentPlan !== "trial" && !trialStartedAt && (
+              <div className="space-y-2 mt-2">
+                <button
+                  onClick={payTrial}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl gold-gradient text-white font-semibold text-sm disabled:opacity-60"
+                >
+                  <Icon name="CreditCard" size={15} />
+                  Оплатить 355 ₽
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[10px] text-muted-foreground">или по кодовому слову</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={trialCodeWord}
+                    onChange={(e) => setTrialCodeWord(e.target.value)}
+                    placeholder="Кодовое слово"
+                    className="flex-1 px-3 py-2 rounded-xl border border-border bg-white text-sm outline-none focus:border-primary/60"
+                  />
+                  <button
+                    onClick={activateTrialCode}
+                    disabled={trialLoading}
+                    className="px-3.5 py-2 rounded-xl border border-primary/40 bg-white text-primary text-xs font-medium flex-shrink-0 disabled:opacity-60"
+                  >
+                    Активировать
+                  </button>
+                </div>
+              </div>
+            )}
+            {currentPlan !== "trial" && trialStartedAt && (
+              <p className="text-xs text-muted-foreground mt-2">Тестовый тариф уже был использован на этом аккаунте</p>
+            )}
+          </div>
 
           {/* Для родных */}
           <div className={`rounded-2xl border p-4 ${currentPlan === "family" ? "border-primary/50 bg-primary/10" : "border-border bg-white/60"}`}>

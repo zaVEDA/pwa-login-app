@@ -248,6 +248,10 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
         headers: { "Content-Type": "application/json", "X-Phone": phone },
         body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin, channel, client_phone: clientPhone }),
       });
+      if (res.status === 403) {
+        setError("Лимит отправок на тестовом тарифе исчерпан (2 из 2). Выберите платный тариф.");
+        return;
+      }
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!parsed.url) { setError("Не удалось подготовить ссылку"); return; }

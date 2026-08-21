@@ -355,6 +355,10 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
         headers: { "Content-Type": "application/json", "X-Phone": phone },
         body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin, channel, client_phone: clientPhone }),
       });
+      if (res.status === 403) {
+        toast("Лимит отправок на тестовом тарифе исчерпан (2 из 2). Выберите платный тариф.", { icon: "🎟" });
+        return;
+      }
       const raw = await res.json();
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!parsed.url) { toast("Не удалось подготовить ссылку"); return; }

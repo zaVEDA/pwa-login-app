@@ -1,6 +1,6 @@
 const AUTH_URL = "https://functions.poehali.dev/014fc1d1-8785-4bdb-8c38-bc1b5126ef4b";
 
-export type PlanType = "start" | "medium" | "pro" | "family" | "test";
+export type PlanType = "start" | "medium" | "pro" | "family" | "test" | "trial";
 
 export interface AuthUser {
   id: number;
@@ -17,6 +17,18 @@ export interface AuthUser {
   plan: PlanType | null;
   plan_expires_at: string | null;
   family_request_status: "pending" | "approved" | "rejected" | null;
+  trial_started_at?: string | null;
+  trial_purchased?: boolean;
+  trial_sends_used?: number;
+  trial_code_word?: string | null;
+}
+
+export interface TrialCodeItem {
+  id: number;
+  code_word: string;
+  expires_at: string | null;
+  created_at: string | null;
+  used_count: number;
 }
 
 export interface FamilyRequestItem {
@@ -102,4 +114,9 @@ export const authApi = {
   getMaintenance: () => call("get_maintenance"),
   adminSetMaintenance: (enabled: boolean) => call("admin_set_maintenance", { enabled }),
   logout: () => call("logout"),
+  redeemTrialCode: (code_word: string) => call("redeem_trial_code", { code_word }),
+  adminListTrialCodes: () => call("admin_list_trial_codes"),
+  adminCreateTrialCode: (code_word: string, expires_at: string | null) =>
+    call("admin_create_trial_code", { code_word, expires_at }),
+  adminDeleteTrialCode: (id: number) => call("admin_delete_trial_code", { id }),
 };

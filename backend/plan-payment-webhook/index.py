@@ -74,6 +74,16 @@ def handler(event: dict, context) -> dict:
             return {"statusCode": 404, "headers": HEADERS, "body": "Order not found", "isBase64Encoded": False}
 
         _, uid, plan, period = row
+        if plan == "trial":
+            # Тестовый тариф: разовая покупка на 3 дня, без продления и без повторной покупки
+            cur.execute(
+                "UPDATE users SET plan = 'trial', plan_expires_at = NOW() + INTERVAL '3 days', "
+                "trial_started_at = NOW(), trial_purchased = TRUE WHERE id = %s",
+                (uid,)
+            )
+            conn.commit()
+            return {"statusCode": 200, "headers": HEADERS, "body": f"OK{inv_id}", "isBase64Encoded": False}
+
         days = 30 if period == "month" else 183
         cur.execute(
             "UPDATE users SET plan = %s, plan_expires_at = GREATEST(COALESCE(plan_expires_at, NOW()), NOW()) + %s * INTERVAL '1 day' "

@@ -24,6 +24,7 @@ interface Props {
   userPlan?: PlanType | null;
   planExpiresAt?: string | null;
   familyRequestStatus?: "pending" | "approved" | "rejected" | null;
+  trialStartedAt?: string | null;
   onUserUpdated?: (user: AuthUser) => void;
   onDocCreated?: () => void;
   onGoToAccount?: () => void;
@@ -49,6 +50,7 @@ export default function TabContent({
   userPlan,
   planExpiresAt,
   familyRequestStatus,
+  trialStartedAt,
   onUserUpdated,
   onDocCreated,
   onGoToAccount,
@@ -74,6 +76,7 @@ export default function TabContent({
           userPlan={userPlan}
           planExpiresAt={planExpiresAt}
           familyRequestStatus={familyRequestStatus}
+          trialStartedAt={trialStartedAt}
           onUserUpdated={onUserUpdated}
         />
       )}

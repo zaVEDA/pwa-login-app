@@ -109,14 +109,16 @@ def is_repeat_sms(cur, phone: str, kind: str) -> bool:
 def user_public(row, keys) -> dict:
     d = dict(zip(keys, row))
     d.pop("password_hash", None)
-    for k in ("consent_at", "created_at", "last_login_at", "plan_expires_at"):
+    for k in ("consent_at", "created_at", "last_login_at", "plan_expires_at", "trial_started_at"):
         if d.get(k):
             d[k] = str(d[k])
     return d
 
 
-USER_COLS = "id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, plan, plan_expires_at, activity_description"
-USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status", "plan", "plan_expires_at", "activity_description"]
+USER_COLS = ("id, phone, full_name, email, email_verified, login, role, consent_pep, profile_completed, status, "
+             "plan, plan_expires_at, activity_description, trial_started_at, trial_purchased, trial_sends_used, trial_code_word")
+USER_KEYS = ["id", "phone", "full_name", "email", "email_verified", "login", "role", "consent_pep", "profile_completed", "status",
+             "plan", "plan_expires_at", "activity_description", "trial_started_at", "trial_purchased", "trial_sends_used", "trial_code_word"]
 
 
 def cors_headers():
@@ -657,6 +659,98 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return resp(200, {"ok": True})
 
+        # 8.1 Активация тестового тарифа по кодовому слову (разовое применение на пользователя)
+        if action == "redeem_trial_code":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            code_word = (body.get("code_word") or "").strip()
+            if not code_word:
+                return resp(400, {"error": "Введите кодовое слово"})
+            cur.execute("SELECT user_id FROM user_sessions WHERE token = %s AND (expires_at IS NULL OR expires_at > NOW())", (token,))
+            s = cur.fetchone()
+            if not s:
+                return resp(401, {"error": "Сессия истекла"})
+            uid = s[0]
+            cur.execute("SELECT trial_started_at FROM users WHERE id = %s", (uid,))
+            urow = cur.fetchone()
+            if urow and urow[0]:
+                return resp(409, {"error": "Тестовый тариф уже был использован на этом аккаунте"})
+            cur.execute("SELECT code_word, expires_at FROM trial_codes WHERE lower(code_word) = lower(%s)", (code_word,))
+            tc = cur.fetchone()
+            if not tc:
+                return resp(400, {"error": "Неверное кодовое слово"})
+            if tc[1] and tc[1] < datetime.datetime.utcnow():
+                return resp(400, {"error": "Срок действия кодового слова истёк"})
+            cur.execute(
+                "UPDATE users SET plan = 'trial', plan_expires_at = NOW() + INTERVAL '3 days', "
+                "trial_started_at = NOW(), trial_code_word = %s WHERE id = %s",
+                (tc[0], uid)
+            )
+            conn.commit()
+            cur.execute(f"SELECT {USER_COLS} FROM users WHERE id = %s", (uid,))
+            urow2 = cur.fetchone()
+            return resp(200, {"ok": True, "user": user_public(urow2, USER_KEYS)})
+
+        # 8.2 Админ: список кодовых слов тестового тарифа
+        if action == "admin_list_trial_codes":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute(
+                "SELECT tc.id, tc.code_word, tc.expires_at, tc.created_at, "
+                "(SELECT COUNT(*) FROM users u WHERE u.trial_code_word = tc.code_word) "
+                "FROM trial_codes tc ORDER BY tc.created_at DESC"
+            )
+            items = [
+                {"id": r[0], "code_word": r[1], "expires_at": str(r[2]) if r[2] else None,
+                 "created_at": str(r[3]) if r[3] else None, "used_count": r[4] or 0}
+                for r in cur.fetchall()
+            ]
+            return resp(200, {"ok": True, "items": items})
+
+        # 8.3 Админ: создать новое кодовое слово тестового тарифа
+        if action == "admin_create_trial_code":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            code_word = (body.get("code_word") or "").strip()
+            expires_at = (body.get("expires_at") or "").strip() or None
+            if not code_word:
+                return resp(400, {"error": "Введите кодовое слово"})
+            cur.execute("SELECT id FROM trial_codes WHERE lower(code_word) = lower(%s)", (code_word,))
+            if cur.fetchone():
+                return resp(409, {"error": "Такое кодовое слово уже существует"})
+            cur.execute(
+                "INSERT INTO trial_codes (code_word, expires_at) VALUES (%s, %s) RETURNING id",
+                (code_word, expires_at)
+            )
+            new_id = cur.fetchone()[0]
+            conn.commit()
+            return resp(200, {"ok": True, "id": new_id})
+
+        # 8.4 Админ: удалить кодовое слово тестового тарифа
+        if action == "admin_delete_trial_code":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            cur.execute("DELETE FROM trial_codes WHERE id = %s", (body.get("id"),))
+            conn.commit()
+            return resp(200, {"ok": True})
+
         # 8.0 Заведующая: код в SMS — вход с нового устройства или восстановление пароля
         if action == "admin_request_sms":
             admin_phone = normalize_phone(body.get("phone", ""))
@@ -773,7 +867,8 @@ def handler(event: dict, context) -> dict:
                 "(SELECT COUNT(*) FROM contracts c WHERE c.user_id = u.id AND c.signed_at IS NOT NULL "
                 "  AND c.status NOT IN ('deleted','archived_test')), "
                 "(SELECT COUNT(*) FROM invoices i WHERE i.user_id = u.id "
-                "  AND i.status NOT IN ('deleted','archived_test')) "
+                "  AND i.status NOT IN ('deleted','archived_test')), "
+                "u.trial_code_word "
                 "FROM users u WHERE u.is_test = FALSE ORDER BY u.created_at DESC LIMIT 300"
             )
             users = [
@@ -784,6 +879,7 @@ def handler(event: dict, context) -> dict:
                     "last_login_at": str(r[8]) if r[8] else None,
                     "activity_description": r[9],
                     "docs_total": r[10] or 0, "docs_signed": r[11] or 0, "invoices": r[12] or 0,
+                    "trial_code_word": r[13],
                 }
                 for r in cur.fetchall()
             ]

@@ -17,10 +17,11 @@ interface Row {
   docs_total: number;
   docs_signed: number;
   invoices: number;
+  trial_code_word?: string | null;
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  start: "Старт", opora: "Опора", medium: "Рост", pro: "Творец", rost: "Рост", tvorets: "Творец", family: "Для родных", test: "ТЕСТ",
+  start: "Старт", opora: "Опора", medium: "Рост", pro: "Творец", rost: "Рост", tvorets: "Творец", family: "Для родных", test: "ТЕСТ", trial: "Тест-драйв",
 };
 
 function fmtPhone(p: string | null) {
@@ -104,6 +105,7 @@ export default function AdminRealUsers() {
               (u.full_name || "").toLowerCase().includes(q) ||
               (u.activity_description || "").toLowerCase().includes(q) ||
               (u.email || "").toLowerCase().includes(q) ||
+              (u.trial_code_word || "").toLowerCase().includes(q) ||
               (!!digits && (u.phone || "").includes(digits))
             );
           })
@@ -141,6 +143,7 @@ export default function AdminRealUsers() {
                     ["Документов создано", String(u.docs_total)],
                     ["Подписано клиентами", String(u.docs_signed)],
                     ["Счетов", String(u.invoices)],
+                    ...(u.trial_code_word ? [["Кодовое слово (тест-драйв)", `«${u.trial_code_word}»`]] : []),
                   ].map(([label, v]) => (
                     <div key={label} className="flex items-center justify-between gap-3">
                       <span className="text-[11px] text-muted-foreground flex-shrink-0">{label}</span>

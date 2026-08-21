@@ -9,6 +9,7 @@ import BottomNav from "@/components/app/BottomNav";
 import ProfileSetup from "@/components/app/ProfileSetup";
 import ComingSoon from "@/components/app/ComingSoon";
 import LimitDialog from "@/components/app/LimitDialog";
+import TrialCodeModal from "@/components/app/TrialCodeModal";
 import { authApi, getToken, clearAuth, AuthUser } from "@/lib/auth";
 import { fetchDocLimits, DocLimits } from "@/lib/limits";
 import { reachGoal } from "@/lib/metrika";
@@ -162,10 +163,21 @@ export default function Index() {
     toast("Докупка пакета документов скоро появится", { icon: "📦" });
   };
 
+  const [showTrialCode, setShowTrialCode] = useState(false);
+
+  const maybeShowTrialCode = (u: AuthUser) => {
+    if (u.role === "admin" || u.plan || u.trial_started_at) return;
+    const seenKey = `trialCodeSeen_${u.id}`;
+    if (localStorage.getItem(seenKey)) return;
+    localStorage.setItem(seenKey, "1");
+    setShowTrialCode(true);
+  };
+
   const handleAuth = (u: AuthUser) => {
     setUser(u);
     setDemoMode(false);
     if (u.phone) localStorage.setItem("userPhone", u.phone);
+    if (u.profile_completed) maybeShowTrialCode(u);
   };
 
   const handleLogout = () => {
@@ -202,7 +214,7 @@ export default function Index() {
 
   // Дозаполнение профиля после первого входа по телефону
   if (user && !user.profile_completed && !demoMode) {
-    return <ProfileSetup user={user} onDone={(u) => setUser(u)} />;
+    return <ProfileSetup user={user} onDone={(u) => { setUser(u); maybeShowTrialCode(u); }} />;
   }
 
   return (
@@ -297,6 +309,7 @@ export default function Index() {
           userPlan={user?.plan ?? null}
           planExpiresAt={user?.plan_expires_at ?? null}
           familyRequestStatus={user?.family_request_status ?? null}
+          trialStartedAt={user?.trial_started_at ?? null}
           onUserUpdated={setUser}
           onDocCreated={reloadLimits}
           onGoToAccount={() => {
@@ -318,6 +331,13 @@ export default function Index() {
         onChangePlan={handleChangePlan}
         onBuyPack={handleBuyPack}
       />
+
+      {showTrialCode && (
+        <TrialCodeModal
+          onClose={() => setShowTrialCode(false)}
+          onActivated={(u) => { setUser(u); toast("Тестовый тариф активирован на 3 дня", { icon: "🎟" }); }}
+        />
+      )}
     </div>
   );
 }

@@ -94,7 +94,11 @@ PLAN_DOC_LIMITS = {
     "pro": 150,
     "family": 150,
     "test": 15,
+    "trial": 5,
 }
+# Тестовый тариф (trial) — разовый бюджет документов и отправок на весь срок действия (3 дня),
+# а не помесячный лимит, как у остальных тарифов.
+TRIAL_SEND_LIMIT = 2
 
 # Дата старта тарификации для тех, кто оплатил по предпродаже (полугодовой период).
 # Совпадает с официальным запуском полной версии сервиса.
@@ -113,6 +117,8 @@ def compute_limits(cur, user_id: int, plan, plan_expires_at):
     """Считает лимит документов за текущий расчётный период.
 
     Правила периода:
+    - Тестовый тариф (trial): разовый бюджет на весь срок действия (3 дня от активации),
+      не сбрасывается и не обновляется помесячно.
     - Предпродажа (полугодовой период): отсчёт стартует с 11 сентября 2026,
       далее сброс каждые 30 дней от этой даты.
     - Обычная оплата (месяц): каждые 30 дней от даты оплаты.
@@ -122,6 +128,40 @@ def compute_limits(cur, user_id: int, plan, plan_expires_at):
     """
     limit = PLAN_DOC_LIMITS.get(plan) if plan else None
     today = datetime.date.today()
+
+    if plan == "trial":
+        cur.execute("SELECT trial_started_at FROM users WHERE id = %s", (user_id,))
+        trow = cur.fetchone()
+        started = trow[0].date() if trow and trow[0] and hasattr(trow[0], "date") else (trow[0] if trow else None)
+        period_start = started or today
+        period_end = period_start + datetime.timedelta(days=3)
+        cur.execute(
+            "SELECT COUNT(*) FROM invoices WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
+            "AND created_at >= %s",
+            (user_id, period_start)
+        )
+        used_invoices = cur.fetchone()[0]
+        cur.execute(
+            "SELECT COUNT(*) FROM documents WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
+            "AND created_at >= %s",
+            (user_id, period_start)
+        )
+        used_docs = cur.fetchone()[0]
+        cur.execute(
+            "SELECT COUNT(*) FROM contracts WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
+            "AND created_at >= %s",
+            (user_id, period_start)
+        )
+        used_contracts = cur.fetchone()[0]
+        used = used_invoices + used_docs + used_contracts
+        result = {
+            "plan": plan, "limit": limit, "used": used, "unlimited": limit is None,
+            "period_start": str(period_start), "period_end": str(period_end),
+        }
+        remaining = (limit - used) if limit is not None else None
+        result["remaining"] = max(0, remaining) if remaining is not None else None
+        result["reached"] = used >= limit if limit is not None else False
+        return result
 
     # Последний оплаченный заказ тарифа — по нему определяем тип и дату оплаты
     cur.execute(

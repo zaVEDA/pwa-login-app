@@ -12,6 +12,7 @@ PLANS = {
     "medium": {"name": "Рост", "month": 3333.00, "half_year": 15555.00, "presale_half_year": 12333.00},
     "pro": {"name": "Творец", "month": 7777.00, "half_year": 38888.00, "presale_half_year": 33777.00},
     "test": {"name": "ТЕСТ", "month": 1.00, "half_year": 1.00, "presale_half_year": 1.00},
+    "trial": {"name": "Тест-драйв", "once": 355.00},
 }
 PRESALE_UNTIL = datetime.date(2026, 8, 24)
 PROMO_TOTAL = 12
@@ -43,6 +44,8 @@ def resp(status, body):
 
 def get_amount(plan: str, period: str) -> float:
     cfg = PLANS[plan]
+    if period == "once":
+        return cfg["once"]
     if period == "month":
         return cfg["month"]
     if datetime.date.today() <= PRESALE_UNTIL:
@@ -92,7 +95,8 @@ def handler(event: dict, context) -> dict:
 
     if plan not in PLANS:
         return resp(400, {"error": "Неизвестный тариф"})
-    if period not in ("month", "half_year"):
+    valid_periods = ("once",) if plan == "trial" else ("month", "half_year")
+    if period not in valid_periods:
         return resp(400, {"error": "Неизвестный период оплаты"})
     if not token:
         return resp(401, {"error": "Требуется вход"})
@@ -111,9 +115,12 @@ def handler(event: dict, context) -> dict:
             return resp(401, {"error": "Сессия истекла"})
         uid = s[0]
 
-        cur.execute("SELECT email, phone FROM users WHERE id = %s", (uid,))
+        cur.execute("SELECT email, phone, trial_started_at FROM users WHERE id = %s", (uid,))
         urow = cur.fetchone()
         user_email = (urow[0] if urow else None) or "noemail@zavedushaya.ru"
+
+        if plan == "trial" and urow and urow[2]:
+            return resp(409, {"error": "Тестовый тариф уже был использован на этом аккаунте"})
 
         amount = get_amount(plan, period)
         amount_str = f"{amount:.2f}"
@@ -140,7 +147,7 @@ def handler(event: dict, context) -> dict:
         signature = calc_signature(merchant_login, amount_str, inv_id, password_1)
 
         plan_name = PLANS[plan]["name"]
-        period_label = "1 месяц" if period == "month" else "6 месяцев"
+        period_label = "разово" if period == "once" else ("1 месяц" if period == "month" else "6 месяцев")
         query_params = {
             "MerchantLogin": merchant_login,
             "OutSum": amount_str,

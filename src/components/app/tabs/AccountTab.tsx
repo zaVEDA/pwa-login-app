@@ -21,6 +21,7 @@ const planLabels: Record<PlanType, string> = {
   pro: "Творец",
   family: "Для родных",
   test: "ТЕСТ",
+  trial: "Тест-драйв",
 };
 
 interface Props {
@@ -37,6 +38,7 @@ interface Props {
   userPlan?: PlanType | null;
   planExpiresAt?: string | null;
   familyRequestStatus?: "pending" | "approved" | "rejected" | null;
+  trialStartedAt?: string | null;
   onUserUpdated?: (user: AuthUser) => void;
 }
 
@@ -54,6 +56,7 @@ export default function AccountTab({
   userPlan,
   planExpiresAt,
   familyRequestStatus,
+  trialStartedAt,
   onUserUpdated,
 }: Props) {
   const [showPlanModal, setShowPlanModal] = useState(false);
@@ -206,8 +209,9 @@ export default function AccountTab({
               currentPlan={userPlan ?? null}
               isAdmin={userRole === "admin"}
               familyRequestStatus={familyRequestStatus}
+              trialStartedAt={trialStartedAt}
               onClose={() => setShowPlanModal(false)}
-              onSelected={(u) => onUserUpdated?.(u)}
+              onSelected={(u) => { onUserUpdated?.(u); setShowPlanModal(false); }}
             />
           )}
 

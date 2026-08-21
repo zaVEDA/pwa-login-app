@@ -96,7 +96,8 @@ COLS = ("id, template_key, title, contract_number, contract_date, client_name, f
         "signed_at, signer_name, signer_phone, signer_ip, sign_id, sign_hash, sent_at, client_phone")
 
 
-PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150, "test": 15}
+PLAN_DOC_LIMITS = {"start": 15, "medium": 150, "pro": 150, "family": 150, "test": 15, "trial": 5}
+TRIAL_SEND_LIMIT = 2
 # Дата старта тарификации для тех, кто оплатил по предпродаже — совпадает
 # с официальным запуском полной версии сервиса.
 PRESALE_START = datetime.date(2026, 9, 11)
@@ -110,11 +111,32 @@ def _add_months(d: datetime.date, months: int) -> datetime.date:
 def check_limit(cur, user_id: int) -> dict:
     """Считает, сколько документов пользователь создал за расчётный период тарифа.
     Учитываются счета, акты/накладные и договоры вместе."""
-    cur.execute("SELECT plan FROM users WHERE id = %s", (user_id,))
+    cur.execute("SELECT plan, trial_started_at FROM users WHERE id = %s", (user_id,))
     urow = cur.fetchone()
     plan = urow[0] if urow else None
     limit = PLAN_DOC_LIMITS.get(plan) if plan else None
     today = datetime.date.today()
+
+    if plan == "trial":
+        # Тестовый тариф: разовый бюджет на весь срок действия (3 дня от активации)
+        started = urow[1].date() if urow and urow[1] and hasattr(urow[1], "date") else (urow[1] if urow else None)
+        start = started or today
+        end = start + datetime.timedelta(days=3)
+        used = 0
+        for table in ("invoices", "documents", "contracts"):
+            cur.execute(
+                f"SELECT COUNT(*) FROM {table} WHERE user_id = %s AND status NOT IN ('deleted','archived_test') "
+                "AND created_at >= %s",
+                (user_id, start)
+            )
+            used += cur.fetchone()[0]
+        result = {
+            "plan": plan, "limit": limit, "used": used, "unlimited": limit is None,
+            "period_start": str(start), "period_end": str(end),
+        }
+        result["remaining"] = max(0, limit - used) if limit is not None else None
+        result["reached"] = used >= limit if limit is not None else False
+        return result
 
     cur.execute(
         "SELECT period, paid_at FROM plan_orders WHERE user_id = %s AND status = 'paid' "
@@ -590,6 +612,16 @@ def handler(event: dict, context) -> dict:
             cur.close()
             conn.close()
             return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
+
+        # Тестовый тариф: разовый лимит отправок (2 штуки) на весь срок действия
+        if action == "share_link" and body.get("channel") == "sms":
+            cur.execute("SELECT plan, trial_sends_used FROM users WHERE id = %s", (user_id,))
+            _tu = cur.fetchone()
+            if _tu and _tu[0] == "trial" and (_tu[1] or 0) >= TRIAL_SEND_LIMIT:
+                cur.close()
+                conn.close()
+                return {"statusCode": 403, "headers": cors, "body": json.dumps({"error": "trial_send_limit_reached"})}
+
         cur.execute("SELECT full_name FROM users WHERE id = %s", (user_id,))
         urow = cur.fetchone()
         performer = (urow[0] if urow else "") or ""
@@ -648,6 +680,11 @@ def handler(event: dict, context) -> dict:
                 )
                 if client_phone:
                     log_sms(cur3, client_phone, user_id, "contract_send", sms_sent)
+                if sms_sent:
+                    cur3.execute(
+                        "UPDATE users SET trial_sends_used = trial_sends_used + 1 WHERE id = %s AND plan = 'trial'",
+                        (user_id,)
+                    )
                 if client_phone and c.get("client_name"):
                     cur3.execute(
                         "SELECT id FROM clients WHERE user_id = %s AND (inn IS NULL OR inn = '') AND name = %s LIMIT 1",
