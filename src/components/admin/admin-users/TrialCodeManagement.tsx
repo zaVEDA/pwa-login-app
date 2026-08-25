@@ -100,6 +100,11 @@ export default function TrialCodeManagement() {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {it.expires_at ? `До ${new Date(it.expires_at).toLocaleDateString("ru-RU")}` : "Без срока"} · использован {it.used_count} раз
                 </p>
+                {it.partner_user_id && (
+                  <p className="text-[11px] text-primary mt-0.5">
+                    Партнёр: {it.partner_name || it.partner_phone || `#${it.partner_user_id}`}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => remove(it.id)}

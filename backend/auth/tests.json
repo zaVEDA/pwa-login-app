@@ -233,6 +233,16 @@
       "expectedStatus": 403
     },
     {
+      "name": "Рефералы партнёра без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "admin_partner_referrals",
+        "partner_user_id": 1
+      },
+      "expectedStatus": 403
+    },
+    {
       "name": "Обращение в поддержку без текста",
       "method": "POST",
       "path": "/",
