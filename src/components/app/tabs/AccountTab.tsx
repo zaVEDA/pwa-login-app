@@ -59,7 +59,9 @@ export default function AccountTab({
   trialStartedAt,
   onUserUpdated,
 }: Props) {
-  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(() => {
+    try { return sessionStorage.getItem("openPlanModal") === "1"; } catch { return false; }
+  });
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showClientsModal, setShowClientsModal] = useState(false);
@@ -70,6 +72,13 @@ export default function AccountTab({
   useEffect(() => {
     if (phone) fetchDocLimits(phone).then(setLimits);
   }, [phone]);
+
+  useEffect(() => {
+    if (showPlanModal) {
+      try { sessionStorage.removeItem("openPlanModal"); } catch { /* ignore */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     notifyApi.list().then((r) => {

@@ -1,8 +1,13 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
+import CreateDocMenu from "@/components/app/CreateDocMenu";
+import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
+import { templateDocs } from "@/components/app/templates/docs";
 import { PlanType } from "@/lib/auth";
 import { DocLimits } from "@/lib/limits";
+
+const PERSONAL_DATA_TITLE = "Согласие на обработку персональных данных";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 
@@ -56,14 +61,18 @@ interface Props {
   phone: string;
   userPlan?: PlanType | null;
   userRole?: string;
+  userEmail?: string | null;
   docLimits?: DocLimits | null;
   onShowLimit?: () => void;
   planExpiresAt?: string | null;
+  onGoToAccount?: () => void;
 }
 
-export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole, docLimits, onShowLimit, planExpiresAt }: Props) {
+export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, userPlan, userRole, userEmail, docLimits, onShowLimit, planExpiresAt, onGoToAccount }: Props) {
   const theme = themes[colorTheme];
   const [showInvoice, setShowInvoice] = useState(false);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [newAgreementDoc, setNewAgreementDoc] = useState<string | null>(null);
   const isAdmin = userRole === "admin";
 
   const showLimitBanner =
@@ -85,6 +94,15 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
   return (
     <div className="space-y-6 animate-slide-up">
       {showInvoice && <InvoiceModal onClose={() => setShowInvoice(false)} phone={phone} userPlan={userPlan} />}
+      {newAgreementDoc && templateDocs[newAgreementDoc] && (
+        <TemplateFillModal
+          doc={templateDocs[newAgreementDoc]}
+          phone={phone}
+          userProfile={{ phone, email: userEmail }}
+          onClose={() => setNewAgreementDoc(null)}
+          onGoToAccount={() => { setNewAgreementDoc(null); onGoToAccount?.(); }}
+        />
+      )}
 
       {/* Подписка закончилась — предупреждение об удалении документов */}
       {!isAdmin && expiredDaysLeft !== null && (
@@ -152,14 +170,24 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
         <h2 className="font-cormorant text-xl font-semibold mb-3">Быстрые действия</h2>
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setShowInvoice(true)}
+            onClick={() => { try { sessionStorage.setItem("openPlanModal", "1"); } catch { /* ignore */ } setActiveTab("account"); }}
             className="card-dark rounded-2xl p-4 text-left active:scale-[0.97] transition-transform"
           >
             <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center mb-3">
-              <Icon name="FilePlus" size={18} className="text-primary" />
+              <Icon name="Crown" size={18} className="text-primary" />
             </div>
-            <p className="text-sm font-medium text-foreground">Создать документ</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Договор, акт, счёт</p>
+            <p className="text-sm font-medium text-foreground">Тариф</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Ознакомиться и выбрать</p>
+          </button>
+          <button
+            onClick={() => setActiveTab("account")}
+            className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border"
+          >
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <Icon name="UserCircle" size={18} className="text-primary" />
+            </div>
+            <p className="text-sm font-medium text-foreground">Аккаунт</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Личный кабинет и мои данные</p>
           </button>
           <button
             onClick={() => setActiveTab("templates")}
@@ -171,25 +199,30 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
             <p className="text-sm font-medium text-foreground">Шаблоны</p>
             <p className="text-xs text-muted-foreground mt-0.5">Под вашу деятельность</p>
           </button>
-          <button
-            onClick={() => setActiveTab("knowledge")}
-            className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border"
-          >
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-              <Icon name="GraduationCap" size={18} className="text-primary" />
-            </div>
-            <p className="text-xs font-bold text-amber-700 leading-snug mb-1">В активной разработке</p>
-            <p className="text-sm font-medium text-foreground">База знаний</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Законы и инструкции</p>
-          </button>
-          <button className="card-warm rounded-2xl p-4 text-left active:scale-[0.97] transition-transform border">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-              <Icon name="BarChart3" size={18} className="text-primary" />
-            </div>
-            <p className="text-xs font-bold text-amber-700 leading-snug mb-1">В активной разработке</p>
-            <p className="text-sm font-medium text-foreground">Учёт доходов</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Доходы и налоги</p>
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowCreateMenu((v) => !v)}
+              className="w-full card-dark rounded-2xl p-4 text-left active:scale-[0.97] transition-transform"
+            >
+              <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center mb-3">
+                <Icon name="FilePlus" size={18} className="text-primary" />
+              </div>
+              <p className="text-sm font-medium text-foreground">Создать документ</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Договор, акт, счёт</p>
+            </button>
+            {showCreateMenu && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowCreateMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 z-40 w-72 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in max-h-[70vh] overflow-y-auto">
+                  <CreateDocMenu
+                    onPersonalData={() => { setShowCreateMenu(false); setNewAgreementDoc(PERSONAL_DATA_TITLE); }}
+                    onInvoice={() => { setShowCreateMenu(false); setShowInvoice(true); }}
+                    onAgreementSelect={(title) => { setShowCreateMenu(false); setNewAgreementDoc(title); }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>}
 

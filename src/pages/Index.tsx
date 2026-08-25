@@ -283,9 +283,14 @@ export default function Index() {
               phone={phone}
               userPlan={user?.plan ?? null}
               userRole={user?.role}
+              userEmail={user?.email}
               docLimits={docLimits}
               onShowLimit={() => setLimitDialogOpen(true)}
               planExpiresAt={user?.plan_expires_at ?? null}
+              onGoToAccount={() => {
+                try { sessionStorage.setItem("openRequisites", "1"); } catch { /* ignore */ }
+                setActiveTab("account");
+              }}
             />
           )
         )}

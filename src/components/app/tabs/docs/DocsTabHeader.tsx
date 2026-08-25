@@ -1,6 +1,5 @@
-import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import { templates } from "../constants";
+import CreateDocMenu from "@/components/app/CreateDocMenu";
 import DocsFilters from "./DocsFilters";
 import type { DateRange } from "react-day-picker";
 
@@ -44,16 +43,7 @@ export default function DocsTabHeader({
   setClientPickerOpen,
   clientOptions,
 }: Props) {
-  const [actHintOpen, setActHintOpen] = useState(false);
-  const [agreementListOpen, setAgreementListOpen] = useState(false);
-
-  const closeMenu = () => {
-    setShowTemplatePicker(false);
-    setActHintOpen(false);
-    setAgreementListOpen(false);
-  };
-
-  const agreementTemplates = templates.filter((t) => t.title !== PERSONAL_DATA_TITLE);
+  const closeMenu = () => setShowTemplatePicker(false);
 
   return (
     <>
@@ -71,74 +61,11 @@ export default function DocsTabHeader({
           <>
             <div className="fixed inset-0 z-30" onClick={closeMenu} />
             <div className="absolute right-0 top-14 z-40 w-80 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in max-h-[70vh] overflow-y-auto">
-              <p className="px-3.5 pt-2.5 pb-1 text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                Выберите вид документа
-              </p>
-
-              <button
-                onClick={() => { closeMenu(); setNewAgreementDoc(PERSONAL_DATA_TITLE); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
-              >
-                <Icon name="ShieldCheck" size={16} className="text-primary flex-shrink-0" />
-                <span>
-                  Согласие на обработку
-                  <br />
-                  персональных данных
-                </span>
-              </button>
-
-              <button
-                onClick={() => { closeMenu(); setShowInvoice(true); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
-              >
-                <Icon name="Receipt" size={16} className="text-primary flex-shrink-0" />
-                Счёт
-              </button>
-
-              <button
-                onClick={() => setActHintOpen((v) => !v)}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
-              >
-                <Icon name="FileCheck" size={16} className="text-primary flex-shrink-0" />
-                Акт
-                <Icon name={actHintOpen ? "ChevronUp" : "ChevronDown"} size={13} className="ml-auto text-muted-foreground" />
-              </button>
-              {actHintOpen && (
-                <div className="px-3.5 pb-3 -mt-1 bg-amber-50/60">
-                  <p className="text-[11px] leading-snug text-muted-foreground mb-2">
-                    Акт формируется на основании счёта или договора. Сначала оформите счёт или договор, а затем создайте акт из его карточки кнопкой «Создать на основании».
-                  </p>
-                  <button
-                    onClick={() => { closeMenu(); setShowInvoice(true); }}
-                    className="text-xs font-medium text-primary hover:underline"
-                  >
-                    Создать счёт →
-                  </button>
-                </div>
-              )}
-
-              <button
-                onClick={() => setAgreementListOpen((v) => !v)}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
-              >
-                <Icon name="FileSignature" size={16} className="text-primary flex-shrink-0" />
-                Договор / соглашение
-                <Icon name={agreementListOpen ? "ChevronUp" : "ChevronDown"} size={13} className="ml-auto text-muted-foreground" />
-              </button>
-              {agreementListOpen && (
-                <div className="bg-amber-50/60 border-t border-border/40">
-                  {agreementTemplates.map((t) => (
-                    <button
-                      key={t.title}
-                      onClick={() => { closeMenu(); setNewAgreementDoc(t.title); }}
-                      className="w-full flex items-center gap-2.5 pl-8 pr-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-100/60 transition-colors"
-                    >
-                      <Icon name={t.icon} size={15} className="text-primary flex-shrink-0" />
-                      {t.title}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <CreateDocMenu
+                onPersonalData={() => { closeMenu(); setNewAgreementDoc(PERSONAL_DATA_TITLE); }}
+                onInvoice={() => { closeMenu(); setShowInvoice(true); }}
+                onAgreementSelect={(title) => { closeMenu(); setNewAgreementDoc(title); }}
+              />
             </div>
           </>
         )}
