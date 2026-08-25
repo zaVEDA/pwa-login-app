@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi } from "@/lib/auth";
-import SetUserPassword from "./admin-users/SetUserPassword";
 
 interface Row {
   id: number;
@@ -56,6 +55,18 @@ export default function AdminRealUsers() {
 
   useEffect(() => { loadUsers(); }, []);
 
+  const codeWordStats = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const u of rows) {
+      if (u.trial_code_word) {
+        map.set(u.trial_code_word, (map.get(u.trial_code_word) || 0) + 1);
+      }
+    }
+    return Array.from(map.entries())
+      .map(([code_word, count]) => ({ code_word, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [rows]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-10">
@@ -80,7 +91,26 @@ export default function AdminRealUsers() {
         ))}
       </div>
 
-      <SetUserPassword />
+      {codeWordStats.length > 0 && (
+        <div className="card-warm rounded-2xl p-4 shadow-sm space-y-2">
+          <div className="flex items-center gap-2">
+            <Icon name="Ticket" size={15} className="text-primary" />
+            <p className="font-cormorant text-lg font-semibold">Пришли по кодовому слову</p>
+          </div>
+          <div className="space-y-1.5">
+            {codeWordStats.map((c) => (
+              <button
+                key={c.code_word}
+                onClick={() => setSearch(c.code_word)}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white/60 hover:bg-white text-left transition-colors"
+              >
+                <span className="text-sm font-medium text-foreground truncate">«{c.code_word}»</span>
+                <span className="text-xs font-semibold text-amber-700 flex-shrink-0">{c.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="relative">
         <Icon name="Search" size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />

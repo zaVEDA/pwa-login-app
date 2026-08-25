@@ -95,12 +95,6 @@ export const authApi = {
   adminGetFamilyCode: () => call("admin_get_family_code"),
   adminSetFamilyCode: (code_word: string, expires_at: string | null) =>
     call("admin_set_family_code", { code_word, expires_at }),
-  adminSetUserPassword: (login: string, password: string) =>
-    call("admin_set_user_password", { login, password }),
-  adminGrantAccess: (p: { target: "app" | "lawyer_landing"; login: string; password: string; starts_at: string | null; expires_at: string | null }) =>
-    call("admin_grant_access", p),
-  adminListAccess: () => call("admin_list_access"),
-  adminRevokeAccess: (id: number) => call("admin_revoke_access", { id }),
   requestAdminSms: (phone: string, purpose: "login" | "reset" = "login") =>
     call("admin_request_sms", { phone, purpose }),
   adminSmsStats: (days: number) => call("admin_sms_stats", { days }),
