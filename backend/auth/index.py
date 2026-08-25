@@ -702,15 +702,12 @@ def handler(event: dict, context) -> dict:
                 return resp(403, {"error": "Доступ запрещён"})
             cur.execute(
                 "SELECT tc.id, tc.code_word, tc.expires_at, tc.created_at, "
-                "(SELECT COUNT(*) FROM users u WHERE u.trial_code_word = tc.code_word), "
-                "tc.partner_user_id, au.full_name, au.phone "
-                "FROM trial_codes tc LEFT JOIN users au ON au.id = tc.partner_user_id "
-                "ORDER BY tc.created_at DESC"
+                "(SELECT COUNT(*) FROM users u WHERE u.trial_code_word = tc.code_word) "
+                "FROM trial_codes tc ORDER BY tc.created_at DESC"
             )
             items = [
                 {"id": r[0], "code_word": r[1], "expires_at": str(r[2]) if r[2] else None,
-                 "created_at": str(r[3]) if r[3] else None, "used_count": r[4] or 0,
-                 "anchor_user_id": r[5], "anchor_name": r[6], "anchor_phone": r[7]}
+                 "created_at": str(r[3]) if r[3] else None, "used_count": r[4] or 0}
                 for r in cur.fetchall()
             ]
             return resp(200, {"ok": True, "items": items})
@@ -754,111 +751,7 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return resp(200, {"ok": True})
 
-        # 8.5 Админ: поиск среди уже зарегистрированных пользователей (для прикрепления к кодовому слову)
-        if action == "admin_search_users":
-            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
-            cur.execute(
-                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
-                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
-            )
-            s = cur.fetchone()
-            if not s or s[1] != "admin":
-                return resp(403, {"error": "Доступ запрещён"})
-            q = (body.get("q") or "").strip()
-            if len(q) < 2:
-                return resp(200, {"ok": True, "items": []})
-            digits = re.sub(r"\D", "", q)
-            like = f"%{q.lower()}%"
-            if digits:
-                cur.execute(
-                    "SELECT id, full_name, phone, email FROM users "
-                    "WHERE phone LIKE %s OR lower(full_name) LIKE %s OR lower(email) LIKE %s "
-                    "ORDER BY created_at DESC LIMIT 20",
-                    (f"%{digits}%", like, like)
-                )
-            else:
-                cur.execute(
-                    "SELECT id, full_name, phone, email FROM users "
-                    "WHERE lower(full_name) LIKE %s OR lower(email) LIKE %s "
-                    "ORDER BY created_at DESC LIMIT 20",
-                    (like, like)
-                )
-            items = [{"id": r[0], "full_name": r[1], "phone": r[2], "email": r[3]} for r in cur.fetchall()]
-            return resp(200, {"ok": True, "items": items})
 
-        # 8.6 Админ: прикрепить зарегистрированного пользователя к кодовому слову (все, кто войдёт
-        # по этому слову дальше, будут считаться привязанными к этому же пользователю)
-        if action == "admin_attach_code_user":
-            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
-            cur.execute(
-                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
-                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
-            )
-            s = cur.fetchone()
-            if not s or s[1] != "admin":
-                return resp(403, {"error": "Доступ запрещён"})
-            code_id = body.get("code_id")
-            user_id = body.get("user_id")
-            if not code_id or not user_id:
-                return resp(400, {"error": "Не указан код или пользователь"})
-            cur.execute("SELECT id FROM trial_codes WHERE id = %s", (code_id,))
-            if not cur.fetchone():
-                return resp(404, {"error": "Кодовое слово не найдено"})
-            cur.execute("SELECT id FROM users WHERE id = %s", (user_id,))
-            if not cur.fetchone():
-                return resp(404, {"error": "Пользователь не найден"})
-            cur.execute("SELECT id FROM trial_codes WHERE partner_user_id = %s AND id != %s", (user_id, code_id))
-            if cur.fetchone():
-                return resp(409, {"error": "Этот пользователь уже прикреплён к другому кодовому слову"})
-            cur.execute("UPDATE trial_codes SET partner_user_id = %s WHERE id = %s", (user_id, code_id))
-            conn.commit()
-            return resp(200, {"ok": True})
-
-        # 8.7 Админ: открепить пользователя от кодового слова
-        if action == "admin_detach_code_user":
-            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
-            cur.execute(
-                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
-                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
-            )
-            s = cur.fetchone()
-            if not s or s[1] != "admin":
-                return resp(403, {"error": "Доступ запрещён"})
-            code_id = body.get("code_id")
-            cur.execute("UPDATE trial_codes SET partner_user_id = NULL WHERE id = %s", (code_id,))
-            conn.commit()
-            return resp(200, {"ok": True})
-
-        # 8.8 Админ: список пользователей, вошедших по кодовому слову (прикреплённых к тому же человеку)
-        if action == "admin_code_referrals":
-            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
-            cur.execute(
-                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
-                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
-            )
-            s = cur.fetchone()
-            if not s or s[1] != "admin":
-                return resp(403, {"error": "Доступ запрещён"})
-            code_id = body.get("code_id")
-            if not code_id:
-                return resp(400, {"error": "Не указано кодовое слово"})
-            cur.execute("SELECT code_word, partner_user_id FROM trial_codes WHERE id = %s", (code_id,))
-            tc = cur.fetchone()
-            if not tc:
-                return resp(404, {"error": "Кодовое слово не найдено"})
-            code_word, anchor_id = tc
-            cur.execute(
-                "SELECT id, full_name, phone, email, plan, plan_expires_at, created_at "
-                "FROM users WHERE trial_code_word = %s AND id != COALESCE(%s, 0) ORDER BY created_at DESC",
-                (code_word, anchor_id)
-            )
-            items = [
-                {"id": r[0], "full_name": r[1], "phone": r[2], "email": r[3],
-                 "plan": r[4], "plan_expires_at": str(r[5]) if r[5] else None,
-                 "created_at": str(r[6]) if r[6] else None}
-                for r in cur.fetchall()
-            ]
-            return resp(200, {"ok": True, "code_word": code_word, "items": items})
 
         # 8.0 Заведующая: код в SMS — вход с нового устройства или восстановление пароля
         if action == "admin_request_sms":

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi, TrialCodeItem } from "@/lib/auth";
-import AttachCodeUserModal from "./AttachCodeUserModal";
 
 export default function TrialCodeManagement() {
   const [items, setItems] = useState<TrialCodeItem[]>([]);
@@ -11,7 +10,6 @@ export default function TrialCodeManagement() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
-  const [attachCode, setAttachCode] = useState<TrialCodeItem | null>(null);
 
   const load = () => {
     authApi.adminListTrialCodes().then(({ status, data }) => {
@@ -59,6 +57,7 @@ export default function TrialCodeManagement() {
       </div>
       <p className="text-xs text-muted-foreground">
         По коду тариф активируется сразу — на 3 дня, до 5 документов и 2 отправки. Можно создать сколько угодно кодов.
+        Кто по какому слову зашёл — смотрите в разделе «Пользователи» через поиск.
       </p>
 
       {error && (
@@ -96,45 +95,23 @@ export default function TrialCodeManagement() {
       {items.length > 0 && (
         <div className="space-y-2 pt-1">
           {items.map((it) => (
-            <div key={it.id} className="bg-white/60 rounded-xl p-3 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">«{it.code_word}»</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {it.expires_at ? `До ${new Date(it.expires_at).toLocaleDateString("ru-RU")}` : "Без срока"} · использован {it.used_count} раз
-                  </p>
-                  {it.anchor_user_id && (
-                    <p className="text-[11px] text-primary mt-0.5">
-                      Прикреплён: {it.anchor_name || it.anchor_phone || `#${it.anchor_user_id}`}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => remove(it.id)}
-                  disabled={busyId === it.id}
-                  className="w-8 h-8 rounded-lg border border-red-200 text-red-500 flex items-center justify-center flex-shrink-0 disabled:opacity-60"
-                >
-                  <Icon name="Trash2" size={14} />
-                </button>
+            <div key={it.id} className="bg-white/60 rounded-xl p-3 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">«{it.code_word}»</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {it.expires_at ? `До ${new Date(it.expires_at).toLocaleDateString("ru-RU")}` : "Без срока"} · использован {it.used_count} раз
+                </p>
               </div>
               <button
-                onClick={() => setAttachCode(it)}
-                className="w-full py-2 rounded-lg border border-primary/30 bg-primary/5 text-primary text-xs font-medium flex items-center justify-center gap-1.5"
+                onClick={() => remove(it.id)}
+                disabled={busyId === it.id}
+                className="w-8 h-8 rounded-lg border border-red-200 text-red-500 flex items-center justify-center flex-shrink-0 disabled:opacity-60"
               >
-                <Icon name="UserPlus" size={13} />
-                {it.anchor_user_id ? "Кто вошёл по этому слову" : "Прикрепить пользователя"}
+                <Icon name="Trash2" size={14} />
               </button>
             </div>
           ))}
         </div>
-      )}
-
-      {attachCode && (
-        <AttachCodeUserModal
-          code={attachCode}
-          onClose={() => setAttachCode(null)}
-          onUpdated={load}
-        />
       )}
     </div>
   );

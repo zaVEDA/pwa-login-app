@@ -86,7 +86,7 @@ export default function AdminRealUsers() {
         <Icon name="Search" size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Поиск по телефону, почте или имени..."
+          placeholder="Поиск по телефону, почте, имени или кодовому слову..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white/70 text-sm outline-none focus:border-primary"
@@ -124,6 +124,9 @@ export default function AdminRealUsers() {
                   <p className="text-[11px] text-muted-foreground truncate">{u.email || "почта не указана"}</p>
                   {u.full_name && (
                     <p className="text-[11px] text-muted-foreground/80 truncate">{u.full_name}</p>
+                  )}
+                  {u.trial_code_word && (
+                    <p className="text-[11px] text-primary truncate mt-0.5">по слову «{u.trial_code_word}»</p>
                   )}
                 </div>
                 {u.plan ? (
