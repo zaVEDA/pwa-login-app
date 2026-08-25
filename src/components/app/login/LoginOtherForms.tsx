@@ -37,6 +37,8 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
     handleAdminForgot,
   } = m;
 
+  const recoverPhoneMissing = phone.replace(/\D/g, "").length !== 10;
+
   return (
     <>
       {/* SMS CODE */}
@@ -128,9 +130,29 @@ export default function LoginOtherForms({ m, devBlock }: Props) {
           </div>
           {recoverChannel === "sms" ? (
             <>
-              <PhoneInput value={phone} onChange={setPhone}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary" />
-              <PuzzleCaptcha key={captchaKey} onVerified={setCaptchaPassToken} />
+              <div>
+                <PhoneInput
+                  value={phone}
+                  onChange={setPhone}
+                  className={`w-full px-4 py-3 rounded-xl border bg-white/70 text-sm font-medium outline-none transition-colors ${
+                    recoverPhoneMissing ? "border-primary/50 focus:border-primary animate-pulse-glow" : "border-border focus:border-primary"
+                  }`}
+                />
+                {recoverPhoneMissing && (
+                  <div className="flex items-center gap-1.5 mt-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30">
+                    <Icon name="ArrowUp" size={15} className="text-primary flex-shrink-0" />
+                    <p className="text-[13px] font-bold text-primary leading-snug">
+                      Введите номер телефона — на него придёт код
+                    </p>
+                  </div>
+                )}
+              </div>
+              <PuzzleCaptcha
+                key={captchaKey}
+                onVerified={setCaptchaPassToken}
+                disabled={recoverPhoneMissing}
+                disabledHint="Сначала введите номер телефона выше"
+              />
             </>
           ) : (
             <input type="email" placeholder="you@mail.ru" value={email} onChange={(e) => setEmail(e.target.value)}
