@@ -15,7 +15,17 @@ export default function PuzzleCaptcha({ onVerified, disabled, disabledHint }: Pr
   const [sliderX, setSliderX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [status, setStatus] = useState<"idle" | "checking" | "success" | "fail">("idle");
+  const [lockedNotice, setLockedNotice] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
+  const lockedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showLockedNotice = useCallback(() => {
+    setLockedNotice(true);
+    if (lockedTimerRef.current) clearTimeout(lockedTimerRef.current);
+    lockedTimerRef.current = setTimeout(() => setLockedNotice(false), 3800);
+  }, []);
+
+  useEffect(() => () => { if (lockedTimerRef.current) clearTimeout(lockedTimerRef.current); }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -161,14 +171,32 @@ export default function PuzzleCaptcha({ onVerified, disabled, disabledHint }: Pr
         </button>
       </div>
 
-      <p className={`text-[11px] text-center font-medium ${disabled ? "text-amber-700" : "text-primary"}`}>
-        {disabled
-          ? (disabledHint || "Сначала примите условия выше")
-          : "Потяните бегунок вправо, чтобы собрать пазл →"}
-      </p>
+      {disabled ? (
+        <div className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 flex items-center gap-2" style={{ maxWidth: `${challenge.canvas_width}px` }}>
+          <Icon name="AlertTriangle" size={16} className="text-amber-600 flex-shrink-0" />
+          <p className="text-[13px] font-semibold text-amber-800 leading-snug">
+            {disabledHint || "Сначала примите условия выше"}
+          </p>
+        </div>
+      ) : (
+        <p className="text-[11px] text-center font-medium text-primary">
+          Потяните бегунок вправо, чтобы собрать пазл →
+        </p>
+      )}
+
+      {lockedNotice && (
+        <div className="w-full px-3.5 py-3 rounded-xl bg-amber-50 border-2 border-amber-300 flex items-start gap-2 animate-fade-in" style={{ maxWidth: `${challenge.canvas_width}px` }}>
+          <Icon name="ArrowUp" size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] font-medium text-amber-800 leading-relaxed">
+            Пожалуйста, сначала заполните данные выше, ознакомьтесь с офертой и согласием — поставьте галочки
+          </p>
+        </div>
+      )}
 
       <div
         ref={trackRef}
+        onMouseDown={() => { if (disabled) showLockedNotice(); }}
+        onTouchStart={() => { if (disabled) showLockedNotice(); }}
         className={`relative h-10 w-full rounded-xl bg-muted/60 border border-border overflow-hidden ${disabled ? "opacity-50" : ""}`}
         style={{ maxWidth: `${challenge.canvas_width}px` }}
       >
@@ -193,10 +221,10 @@ export default function PuzzleCaptcha({ onVerified, disabled, disabledHint }: Pr
         )}
 
         <div
-          onMouseDown={(e) => { if (disabled) return; e.preventDefault(); setDragging(true); }}
-          onTouchStart={() => { if (disabled) return; setDragging(true); }}
+          onMouseDown={(e) => { if (disabled) { showLockedNotice(); return; } e.preventDefault(); setDragging(true); }}
+          onTouchStart={() => { if (disabled) { showLockedNotice(); return; } setDragging(true); }}
           className={`absolute top-0 h-10 w-10 rounded-xl gold-gradient flex items-center justify-center shadow-md ${
-            disabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"
+            disabled ? "cursor-not-allowed animate-pulse-glow" : "cursor-grab active:cursor-grabbing"
           } ${!disabled && !dragging ? "animate-pulse-glow" : ""}`}
           style={{
             left: `calc(${sliderRatio * 100}% - ${sliderRatio * 40}px)`,

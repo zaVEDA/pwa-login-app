@@ -57,7 +57,12 @@ export default function LoginRegisterForm({ m }: Props) {
           }`}
         />
         {phoneMissing && (
-          <p className="text-[11px] text-primary mt-1 px-1">Начните с номера телефона — он нужен для входа по SMS</p>
+          <div className="flex items-center gap-1.5 mt-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30">
+            <Icon name="ArrowUp" size={15} className="text-primary flex-shrink-0" />
+            <p className="text-[13px] font-bold text-primary leading-snug">
+              Начните с номера телефона — он нужен для входа по SMS
+            </p>
+          </div>
         )}
       </div>
       <input
