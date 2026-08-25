@@ -29,12 +29,19 @@ export interface TrialCodeItem {
   expires_at: string | null;
   created_at: string | null;
   used_count: number;
-  partner_user_id?: number | null;
-  partner_name?: string | null;
-  partner_phone?: string | null;
+  anchor_user_id?: number | null;
+  anchor_name?: string | null;
+  anchor_phone?: string | null;
 }
 
-export interface PartnerReferral {
+export interface UserSearchItem {
+  id: number;
+  full_name: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
+export interface CodeReferral {
   id: number;
   full_name: string | null;
   phone: string | null;
@@ -129,8 +136,11 @@ export const authApi = {
   logout: () => call("logout"),
   redeemTrialCode: (code_word: string) => call("redeem_trial_code", { code_word }),
   adminListTrialCodes: () => call("admin_list_trial_codes"),
-  adminCreateTrialCode: (code_word: string, expires_at: string | null, partner_user_id?: number | null) =>
-    call("admin_create_trial_code", { code_word, expires_at, partner_user_id }),
+  adminCreateTrialCode: (code_word: string, expires_at: string | null) =>
+    call("admin_create_trial_code", { code_word, expires_at }),
   adminDeleteTrialCode: (id: number) => call("admin_delete_trial_code", { id }),
-  adminPartnerReferrals: (partner_user_id: number) => call("admin_partner_referrals", { partner_user_id }),
+  adminSearchUsers: (q: string) => call("admin_search_users", { q }),
+  adminAttachCodeUser: (code_id: number, user_id: number) => call("admin_attach_code_user", { code_id, user_id }),
+  adminDetachCodeUser: (code_id: number) => call("admin_detach_code_user", { code_id }),
+  adminCodeReferrals: (code_id: number) => call("admin_code_referrals", { code_id }),
 };

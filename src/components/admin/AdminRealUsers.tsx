@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { authApi } from "@/lib/auth";
 import SetUserPassword from "./admin-users/SetUserPassword";
-import PartnerModal from "./admin-users/PartnerModal";
 
 interface Row {
   id: number;
@@ -19,8 +18,6 @@ interface Row {
   docs_signed: number;
   invoices: number;
   trial_code_word?: string | null;
-  partner_code_word?: string | null;
-  partner_referrals_count?: number;
 }
 
 const PLAN_LABELS: Record<string, string> = {
@@ -46,7 +43,6 @@ export default function AdminRealUsers() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [partnerUser, setPartnerUser] = useState<Row | null>(null);
 
   const loadUsers = () => {
     authApi.adminListUsers()
@@ -150,7 +146,6 @@ export default function AdminRealUsers() {
                     ["Подписано клиентами", String(u.docs_signed)],
                     ["Счетов", String(u.invoices)],
                     ...(u.trial_code_word ? [["Пришёл по кодовому слову", `«${u.trial_code_word}»`]] : []),
-                    ...(u.partner_code_word ? [["Кодовое слово партнёра", `«${u.partner_code_word}» · рефералов: ${u.partner_referrals_count ?? 0}`]] : []),
                   ].map(([label, v]) => (
                     <div key={label} className="flex items-center justify-between gap-3">
                       <span className="text-[11px] text-muted-foreground flex-shrink-0">{label}</span>
@@ -165,27 +160,12 @@ export default function AdminRealUsers() {
                       </p>
                     </div>
                   )}
-                  <button
-                    onClick={() => setPartnerUser(u)}
-                    className="w-full mt-1.5 py-2 rounded-lg border border-primary/30 bg-primary/5 text-primary text-xs font-medium flex items-center justify-center gap-1.5"
-                  >
-                    <Icon name="HandCoins" size={13} />
-                    {u.partner_code_word ? "Партнёрская программа" : "Сделать партнёром"}
-                  </button>
                 </div>
               )}
             </div>
           );
         })}
       </div>
-
-      {partnerUser && (
-        <PartnerModal
-          user={partnerUser}
-          onClose={() => setPartnerUser(null)}
-          onUpdated={loadUsers}
-        />
-      )}
     </div>
   );
 }

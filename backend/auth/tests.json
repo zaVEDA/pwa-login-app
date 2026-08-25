@@ -233,12 +233,33 @@
       "expectedStatus": 403
     },
     {
-      "name": "Рефералы партнёра без прав администратора",
+      "name": "Поиск пользователей без прав администратора",
       "method": "POST",
       "path": "/",
       "body": {
-        "action": "admin_partner_referrals",
-        "partner_user_id": 1
+        "action": "admin_search_users",
+        "q": "ivan"
+      },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Прикрепление пользователя к коду без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "admin_attach_code_user",
+        "code_id": 1,
+        "user_id": 1
+      },
+      "expectedStatus": 403
+    },
+    {
+      "name": "Список вошедших по коду без прав администратора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "admin_code_referrals",
+        "code_id": 1
       },
       "expectedStatus": 403
     },
