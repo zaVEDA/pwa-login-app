@@ -32,9 +32,10 @@ export default function LoginRegisterForm({ m }: Props) {
 
   // Пока не заполнены поля и не приняты условия — капча заблокирована
   const captchaLocked = !registerFieldsReady || !consent;
+  const phoneMissing = phone.replace(/\D/g, "").length !== 10;
   let captchaHint = "";
-  if (phone.replace(/\D/g, "").length !== 10) {
-    captchaHint = "Введите номер телефона";
+  if (phoneMissing) {
+    captchaHint = "Сначала введите номер телефона выше ↑";
   } else if (!emailValid) {
     captchaHint = "Введите электронный адрес";
   } else if (!passwordValid) {
@@ -47,11 +48,18 @@ export default function LoginRegisterForm({ m }: Props) {
 
   return (
     <>
-      <PhoneInput
-        value={phone}
-        onChange={setPhone}
-        className="w-full px-4 py-3 rounded-xl border border-border bg-white/70 text-sm font-medium outline-none focus:border-primary transition-colors"
-      />
+      <div>
+        <PhoneInput
+          value={phone}
+          onChange={setPhone}
+          className={`w-full px-4 py-3 rounded-xl border bg-white/70 text-sm font-medium outline-none transition-colors ${
+            phoneMissing ? "border-primary/50 focus:border-primary animate-pulse-glow" : "border-border focus:border-primary"
+          }`}
+        />
+        {phoneMissing && (
+          <p className="text-[11px] text-primary mt-1 px-1">Начните с номера телефона — он нужен для входа по SMS</p>
+        )}
+      </div>
       <input
         type="email"
         inputMode="email"

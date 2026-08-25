@@ -161,31 +161,49 @@ export default function PuzzleCaptcha({ onVerified, disabled, disabledHint }: Pr
         </button>
       </div>
 
-      <p className={`text-[11px] text-center ${disabled ? "text-amber-700" : "text-muted-foreground"}`}>
-        {disabled ? (disabledHint || "Сначала примите условия выше") : "Передвиньте пазл на место"}
+      <p className={`text-[11px] text-center font-medium ${disabled ? "text-amber-700" : "text-primary"}`}>
+        {disabled
+          ? (disabledHint || "Сначала примите условия выше")
+          : "Потяните бегунок вправо, чтобы собрать пазл →"}
       </p>
 
       <div
         ref={trackRef}
-        className={`relative h-10 w-full rounded-xl bg-muted/60 border border-border ${disabled ? "opacity-50" : ""}`}
+        className={`relative h-10 w-full rounded-xl bg-muted/60 border border-border overflow-hidden ${disabled ? "opacity-50" : ""}`}
         style={{ maxWidth: `${challenge.canvas_width}px` }}
       >
         <div
           className="absolute top-0 left-0 h-full rounded-xl gold-gradient opacity-30"
           style={{ width: `${sliderRatio * 100}%` }}
         />
+
+        {/* Подсказка направления: бегущие вправо стрелки-шевроны, видны только пока не начали тянуть */}
+        {!disabled && !dragging && sliderRatio < 0.05 && (
+          <div className="absolute inset-y-0 left-12 right-2 flex items-center gap-1 pointer-events-none">
+            {[0, 1, 2].map((i) => (
+              <Icon
+                key={i}
+                name="ChevronRight"
+                size={14}
+                className="text-primary/70 animate-chevron-right"
+                style={{ animationDelay: `${i * 0.18}s` }}
+              />
+            ))}
+          </div>
+        )}
+
         <div
           onMouseDown={(e) => { if (disabled) return; e.preventDefault(); setDragging(true); }}
           onTouchStart={() => { if (disabled) return; setDragging(true); }}
           className={`absolute top-0 h-10 w-10 rounded-xl gold-gradient flex items-center justify-center shadow-md ${
             disabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"
-          }`}
+          } ${!disabled && !dragging ? "animate-pulse-glow" : ""}`}
           style={{
             left: `calc(${sliderRatio * 100}% - ${sliderRatio * 40}px)`,
             transition: dragging ? "none" : "left 0.25s ease",
           }}
         >
-          <Icon name={disabled ? "Lock" : "ArrowRightLeft"} size={16} className="text-white" />
+          <Icon name={disabled ? "Lock" : "GripHorizontal"} size={16} className="text-white" />
         </div>
       </div>
     </div>
