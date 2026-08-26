@@ -29,6 +29,7 @@ export interface TrialCodeItem {
   expires_at: string | null;
   created_at: string | null;
   used_count: number;
+  comment: string | null;
 }
 
 export interface FamilyRequestItem {
@@ -110,7 +111,9 @@ export const authApi = {
   logout: () => call("logout"),
   redeemTrialCode: (code_word: string) => call("redeem_trial_code", { code_word }),
   adminListTrialCodes: () => call("admin_list_trial_codes"),
-  adminCreateTrialCode: (code_word: string, expires_at: string | null) =>
-    call("admin_create_trial_code", { code_word, expires_at }),
+  adminCreateTrialCode: (code_word: string, expires_at: string | null, comment: string | null = null) =>
+    call("admin_create_trial_code", { code_word, expires_at, comment }),
   adminDeleteTrialCode: (id: number) => call("admin_delete_trial_code", { id }),
+  adminUpdateTrialCode: (id: number, comment: string | null, expires_at: string | null) =>
+    call("admin_update_trial_code", { id, comment, expires_at }),
 };

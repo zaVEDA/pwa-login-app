@@ -1,0 +1,1 @@
+ALTER TABLE trial_codes ADD COLUMN IF NOT EXISTS comment TEXT NULL;

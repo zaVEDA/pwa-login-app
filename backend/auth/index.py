@@ -702,12 +702,12 @@ def handler(event: dict, context) -> dict:
                 return resp(403, {"error": "Доступ запрещён"})
             cur.execute(
                 "SELECT tc.id, tc.code_word, tc.expires_at, tc.created_at, "
-                "(SELECT COUNT(*) FROM users u WHERE u.trial_code_word = tc.code_word) "
+                "(SELECT COUNT(*) FROM users u WHERE u.trial_code_word = tc.code_word), tc.comment "
                 "FROM trial_codes tc ORDER BY tc.created_at DESC"
             )
             items = [
                 {"id": r[0], "code_word": r[1], "expires_at": str(r[2]) if r[2] else None,
-                 "created_at": str(r[3]) if r[3] else None, "used_count": r[4] or 0}
+                 "created_at": str(r[3]) if r[3] else None, "used_count": r[4] or 0, "comment": r[5]}
                 for r in cur.fetchall()
             ]
             return resp(200, {"ok": True, "items": items})
@@ -724,14 +724,15 @@ def handler(event: dict, context) -> dict:
                 return resp(403, {"error": "Доступ запрещён"})
             code_word = (body.get("code_word") or "").strip()
             expires_at = (body.get("expires_at") or "").strip() or None
+            comment = (body.get("comment") or "").strip() or None
             if not code_word:
                 return resp(400, {"error": "Введите кодовое слово"})
             cur.execute("SELECT id FROM trial_codes WHERE lower(code_word) = lower(%s)", (code_word,))
             if cur.fetchone():
                 return resp(409, {"error": "Такое кодовое слово уже существует"})
             cur.execute(
-                "INSERT INTO trial_codes (code_word, expires_at) VALUES (%s, %s) RETURNING id",
-                (code_word, expires_at)
+                "INSERT INTO trial_codes (code_word, expires_at, comment) VALUES (%s, %s, %s) RETURNING id",
+                (code_word, expires_at, comment)
             )
             new_id = cur.fetchone()[0]
             conn.commit()
@@ -748,6 +749,28 @@ def handler(event: dict, context) -> dict:
             if not s or s[1] != "admin":
                 return resp(403, {"error": "Доступ запрещён"})
             cur.execute("DELETE FROM trial_codes WHERE id = %s", (body.get("id"),))
+            conn.commit()
+            return resp(200, {"ok": True})
+
+        # 8.5 Админ: изменить кодовое слово тестового тарифа (комментарий, срок действия)
+        if action == "admin_update_trial_code":
+            token = headers.get("x-auth-token") or headers.get("X-Auth-Token") or body.get("token") or ""
+            cur.execute(
+                "SELECT s.user_id, u.role FROM user_sessions s JOIN users u ON u.id = s.user_id "
+                "WHERE s.token = %s AND (s.expires_at IS NULL OR s.expires_at > NOW())", (token,)
+            )
+            s = cur.fetchone()
+            if not s or s[1] != "admin":
+                return resp(403, {"error": "Доступ запрещён"})
+            code_id = body.get("id")
+            if not code_id:
+                return resp(400, {"error": "Не передан id"})
+            comment = (body.get("comment") or "").strip() or None
+            expires_at = (body.get("expires_at") or "").strip() or None
+            cur.execute(
+                "UPDATE trial_codes SET comment = %s, expires_at = %s WHERE id = %s",
+                (comment, expires_at, code_id)
+            )
             conn.commit()
             return resp(200, {"ok": True})
 
