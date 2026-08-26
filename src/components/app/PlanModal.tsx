@@ -288,34 +288,24 @@ export default function PlanModal({ currentPlan, familyRequestStatus, trialStart
 
             {currentPlan !== "trial" && !trialStartedAt && (
               <div className="space-y-2 mt-2">
+                <input
+                  value={trialCodeWord}
+                  onChange={(e) => setTrialCodeWord(e.target.value)}
+                  placeholder="Кодовое слово (необязательно)"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-white text-sm outline-none focus:border-primary/60"
+                />
                 <button
-                  onClick={payTrial}
-                  disabled={loading}
+                  onClick={trialCodeWord.trim() ? activateTrialCode : payTrial}
+                  disabled={loading || trialLoading}
                   className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl gold-gradient text-white font-semibold text-sm disabled:opacity-60"
                 >
-                  <Icon name="CreditCard" size={15} />
-                  Оплатить 355 ₽
+                  {loading || trialLoading ? (
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                  ) : (
+                    <Icon name={trialCodeWord.trim() ? "Ticket" : "CreditCard"} size={15} />
+                  )}
+                  {trialCodeWord.trim() ? "Активировать бесплатно" : "Оплатить 355 ₽"}
                 </button>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-[10px] text-muted-foreground">или по кодовому слову</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    value={trialCodeWord}
-                    onChange={(e) => setTrialCodeWord(e.target.value)}
-                    placeholder="Кодовое слово"
-                    className="flex-1 px-3 py-2 rounded-xl border border-border bg-white text-sm outline-none focus:border-primary/60"
-                  />
-                  <button
-                    onClick={activateTrialCode}
-                    disabled={trialLoading}
-                    className="px-3.5 py-2 rounded-xl border border-primary/40 bg-white text-primary text-xs font-medium flex-shrink-0 disabled:opacity-60"
-                  >
-                    Активировать
-                  </button>
-                </div>
               </div>
             )}
             {currentPlan !== "trial" && trialStartedAt && (
