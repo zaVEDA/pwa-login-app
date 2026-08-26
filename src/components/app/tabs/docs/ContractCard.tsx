@@ -15,6 +15,7 @@ interface Props {
   shareId: number | null;
   setShareId: (id: number | null) => void;
   onShare: (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => void;
+  onSendFlow?: (c: Contract) => void;
 }
 
 const CHANNELS = [
@@ -25,7 +26,7 @@ const CHANNELS = [
 ];
 
 export default function ContractCard({
-  contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId, shareId, setShareId, onShare,
+  contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId, shareId, setShareId, onShare, onSendFlow,
 }: Props) {
   const signed = contract.status === "signed";
   const deleted = contract.status === "deleted";
@@ -76,7 +77,11 @@ export default function ContractCard({
               <Icon name={pdfLoadingId === contract.id ? "Loader" : signed ? "Stamp" : "FileDown"} size={15} className={pdfLoadingId === contract.id ? "animate-spin" : ""} />
             </button>
             <button
-              onClick={() => { setShareId(shareId === contract.id ? null : contract.id); setSmsMode(false); }}
+              onClick={() => {
+                if (!signed && onSendFlow) { onSendFlow(contract); return; }
+                setShareId(shareId === contract.id ? null : contract.id);
+                setSmsMode(false);
+              }}
               disabled={pdfLoadingId === contract.id || deleted}
               aria-label="Отправить"
               className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center active:scale-95 transition-transform disabled:opacity-40"
@@ -149,7 +154,11 @@ export default function ContractCard({
       {/* Заметная кнопка отправки на подпись — только для черновиков */}
       {draft && (
         <button
-          onClick={() => { setShareId(contract.id); setSmsMode(true); }}
+          onClick={() => {
+            if (onSendFlow) { onSendFlow(contract); return; }
+            setShareId(contract.id);
+            setSmsMode(true);
+          }}
           className="mt-3 w-full py-2.5 rounded-xl gold-gradient text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
         >
           <Icon name="FileSignature" size={14} />

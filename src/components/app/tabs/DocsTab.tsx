@@ -165,6 +165,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [contractMenuId, setContractMenuId] = useState<number | null>(null);
   const [openContract, setOpenContract] = useState<Contract | null>(null);
+  const [autoSendContract, setAutoSendContract] = useState(false);
   const [contractPdfId, setContractPdfId] = useState<number | null>(null);
   const [contractShareId, setContractShareId] = useState<number | null>(null);
   const [realizationDocs, setRealizationDocs] = useState<RealizationDoc[]>([]);
@@ -438,7 +439,8 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
         setOpenInvoiceId={setOpenInvoiceId}
         loadInvoices={loadInvoices}
         openContract={openContract}
-        setOpenContract={setOpenContract}
+        setOpenContract={(c) => { setOpenContract(c); if (!c) setAutoSendContract(false); }}
+        autoSendContract={autoSendContract}
         loadContracts={loadContracts}
         newAgreementDoc={newAgreementDoc}
         setNewAgreementDoc={setNewAgreementDoc}
@@ -509,6 +511,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
           contractShareId={contractShareId}
           setContractShareId={setContractShareId}
           shareContract={shareContract}
+          onContractSendFlow={(c) => { setAutoSendContract(true); setOpenContract(c); }}
           shareDocId={shareDocId}
           setShareDocId={setShareDocId}
           setOpenDocId={setOpenDocId}

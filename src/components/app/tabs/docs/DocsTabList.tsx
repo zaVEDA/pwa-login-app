@@ -45,6 +45,7 @@ interface Props {
   contractShareId: number | null;
   setContractShareId: (v: number | null) => void;
   shareContract: (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => void;
+  onContractSendFlow?: (c: Contract) => void;
 
   shareDocId: number | null;
   setShareDocId: (v: number | null) => void;
@@ -92,6 +93,7 @@ export default function DocsTabList({
   contractShareId,
   setContractShareId,
   shareContract,
+  onContractSendFlow,
   shareDocId,
   setShareDocId,
   setOpenDocId,
@@ -139,6 +141,7 @@ export default function DocsTabList({
               shareId={contractShareId}
               setShareId={setContractShareId}
               onShare={shareContract}
+              onSendFlow={onContractSendFlow}
             />
           ))}
         </div>

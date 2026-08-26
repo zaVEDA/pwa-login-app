@@ -127,6 +127,8 @@ const consentPersonalData: TemplateDoc = {
   },
 };
 
+export const PERSONAL_DATA_TITLE = consentPersonalData.title;
+
 export const templateDocs: Record<string, TemplateDoc> = {
   [consentPhotoVideo.title]: consentPhotoVideo,
   [consentPersonalData.title]: consentPersonalData,

@@ -1,15 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { TemplateDoc } from "./docs";
+import { TemplateDoc, templateDocs, PERSONAL_DATA_TITLE } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
 import TemplateFillHeader from "./TemplateFillHeader";
 import TemplateFillFields from "./TemplateFillFields";
 import TemplateFillFooter from "./TemplateFillFooter";
+import AttachPdConsentAsk from "./AttachPdConsentAsk";
+import SendBundleModal from "./SendBundleModal";
+import PdConsentReview from "./PdConsentReview";
 
 interface Props {
   doc: TemplateDoc;
   phone: string;
   userProfile?: { phone?: string | null; email?: string | null };
   contract?: Contract | null;
+  /** Сразу открыть вопрос о соглашении ПДн и форму отправки (вызов из карточки договора) */
+  autoSend?: boolean;
   onClose: () => void;
   onSaved?: () => void;
   onGoToAccount?: () => void;
@@ -27,7 +32,7 @@ const ENTITY_LABEL: Record<string, string> = {
 const draftKey = (docTitle: string, contractId?: number | string | null) =>
   `doc_draft_${docTitle}_${contractId ?? "new"}`;
 
-export default function TemplateFillModal({ doc, phone, userProfile, contract, onClose, onSaved, onGoToAccount }: Props) {
+export default function TemplateFillModal({ doc, phone, userProfile, contract, autoSend, onClose, onSaved, onGoToAccount }: Props) {
   const draftLoadedRef = useRef(false);
   // Для нового (ещё не сохранённого) документа генерируем уникальный ключ черновика на каждое открытие,
   // чтобы при открытии нового шаблона поля не подтягивали данные из прошлого незавершённого документа
@@ -77,6 +82,17 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
   const [pdfLoading, setPdfLoading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [smsSentNotice, setSmsSentNotice] = useState(false);
+
+  // Флоу «приложить соглашение о ПДн»: вопрос → проверка автозаполненной формы → окно отправки
+  const [askPdConsent, setAskPdConsent] = useState(false);
+  const [pdConsentValues, setPdConsentValues] = useState<Record<string, string> | null>(null);
+  const [pdConsentReview, setPdConsentReview] = useState(false);
+  const [bundleOpen, setBundleOpen] = useState(false);
+  const [bundleSending, setBundleSending] = useState(false);
+  const [bundleError, setBundleError] = useState("");
+
+  const isPdConsentDoc = doc.title === PERSONAL_DATA_TITLE;
+  const pdConsentDoc = templateDocs[PERSONAL_DATA_TITLE];
 
   const locked = status === "signed";
   const draftStorageKey = draftKey(doc.title, contract?.id ?? newInstanceIdRef.current);
@@ -133,6 +149,16 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
       .finally(() => setRequisitesLoaded(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phone]);
+
+  // Вызов «Отправить на подпись» из карточки договора — сразу показываем вопрос о соглашении ПДн
+  const autoSendDoneRef = useRef(false);
+  useEffect(() => {
+    if (!autoSend || autoSendDoneRef.current || !requisitesLoaded || locked) return;
+    autoSendDoneRef.current = true;
+    if (isPdConsentDoc) setShareOpen(true);
+    else setAskPdConsent(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSend, requisitesLoaded, locked]);
 
   const set = (k: string, v: string) => {
     if (locked) return;
@@ -197,7 +223,105 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
     setPreview(true);
     const id = savedId ?? (await saveContract());
     if (!id) return;
-    setShareOpen(true);
+    // Само согласие о ПДн отправляем как раньше — предлагать приложить его к самому себе не нужно
+    if (isPdConsentDoc || locked) { setShareOpen(true); return; }
+    setAskPdConsent(true);
+  };
+
+  // «Да» — заполняем соглашение о ПДн данными из текущего документа и открываем на проверку
+  const acceptPdConsent = () => {
+    setAskPdConsent(false);
+    const v: Record<string, string> = { signDate: values.signDate || todayStr() };
+    pdConsentDoc.fields.forEach((f) => {
+      if (values[f.key]) v[f.key] = values[f.key];
+      if (f.autofill === "performer" && !v[f.key] && performerAutofill) v[f.key] = performerAutofill;
+      if (f.autofill === "phone" && !v[f.key]) {
+        const p = signContact.phone || userProfile?.phone;
+        if (p) v[f.key] = String(p).replace(/\D/g, "").slice(-10);
+      }
+      if (f.autofill === "email" && !v[f.key]) {
+        const e = signContact.email || userProfile?.email;
+        if (e) v[f.key] = e;
+      }
+    });
+    if (!v.identMode) v.identMode = "none";
+    setPdConsentValues(v);
+    setPdConsentReview(true);
+  };
+
+  const declinePdConsent = () => {
+    setAskPdConsent(false);
+    setPdConsentValues(null);
+    setBundleOpen(true);
+  };
+
+  // Отправка одного документа на подпись по SMS. Возвращает true при успехе.
+  const sendOne = async (contractId: number, clientPhone: string): Promise<boolean> => {
+    const res = await fetch(CONTRACTS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Phone": phone },
+      body: JSON.stringify({ action: "share_link", id: contractId, origin: window.location.origin, channel: "sms", client_phone: clientPhone }),
+    });
+    if (res.status === 403) throw new Error("Лимит отправок на тестовом тарифе исчерпан. Выберите платный тариф.");
+    const raw = await res.json();
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return !!parsed.sms_sent;
+  };
+
+  // Сохраняет соглашение о ПДн отдельным документом и возвращает его id
+  const savePdConsent = async (v: Record<string, string>): Promise<number | null> => {
+    const consentText = `${pdConsentDoc.heading}\n\n${pdConsentDoc.build(v)}`;
+    const res = await fetch(CONTRACTS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Phone": phone },
+      body: JSON.stringify({
+        id: null,
+        template_key: pdConsentDoc.title,
+        title: pdConsentDoc.title,
+        client_name: v.fio || values.fio || "",
+        contract_date: v.signDate || todayStr(),
+        values: v,
+        body: consentText,
+      }),
+    });
+    if (res.status === 403) throw new Error("Лимит документов исчерпан. Докупите пакет или смените тариф.");
+    const raw = await res.json();
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return parsed.contract?.id ?? null;
+  };
+
+  const sendBundle = async ({ phone: clientPhone, sendMain, sendConsent }: { phone: string; sendMain: boolean; sendConsent: boolean }) => {
+    setBundleSending(true);
+    setBundleError("");
+    try {
+      let okAny = false;
+
+      if (sendMain && savedId) {
+        const ok = await sendOne(savedId, clientPhone);
+        if (!ok) { setBundleError("Не удалось отправить SMS. Проверьте номер и попробуйте ещё раз"); return; }
+        okAny = true;
+        setStatus("sent");
+      }
+
+      if (sendConsent && pdConsentValues) {
+        const consentId = await savePdConsent(pdConsentValues);
+        if (!consentId) { setBundleError("Не удалось сохранить соглашение о персональных данных"); return; }
+        const ok = await sendOne(consentId, clientPhone);
+        if (!ok) { setBundleError("Договор отправлен, но соглашение о ПДн отправить не удалось"); return; }
+        okAny = true;
+      }
+
+      if (okAny) {
+        setBundleOpen(false);
+        setPdConsentValues(null);
+        setSmsSentNotice(true);
+        onSaved?.();
+      }
+    } catch (e) {
+      setBundleError(e instanceof Error ? e.message : "Нет связи с сервером");
+    } finally {
+      setBundleSending(false);
+    }
   };
 
   const tryClose = () => {
@@ -351,6 +475,31 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, o
           onCancelClose={() => setConfirmClose(false)}
         />
       </div>
+
+      {askPdConsent && (
+        <AttachPdConsentAsk onYes={acceptPdConsent} onNo={declinePdConsent} />
+      )}
+
+      {pdConsentReview && pdConsentValues && (
+        <PdConsentReview
+          doc={pdConsentDoc}
+          values={pdConsentValues}
+          onSet={(k, v) => setPdConsentValues((p) => ({ ...(p || {}), [k]: v }))}
+          onBack={() => { setPdConsentReview(false); setAskPdConsent(true); }}
+          onReady={() => { setPdConsentReview(false); setBundleOpen(true); }}
+        />
+      )}
+
+      {bundleOpen && (
+        <SendBundleModal
+          mainTitle={doc.title}
+          initialPhone={contract?.client_phone || ""}
+          sending={bundleSending}
+          error={bundleError}
+          onClose={() => { setBundleOpen(false); setBundleError(""); }}
+          onSend={sendBundle}
+        />
+      )}
     </div>
   );
 }

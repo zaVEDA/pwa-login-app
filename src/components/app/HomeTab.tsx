@@ -3,11 +3,9 @@ import Icon from "@/components/ui/icon";
 import InvoiceModal from "@/components/app/InvoiceModal";
 import CreateDocMenu from "@/components/app/CreateDocMenu";
 import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
-import { templateDocs } from "@/components/app/templates/docs";
+import { templateDocs, PERSONAL_DATA_TITLE } from "@/components/app/templates/docs";
 import { PlanType } from "@/lib/auth";
 import { DocLimits } from "@/lib/limits";
-
-const PERSONAL_DATA_TITLE = "Согласие на обработку персональных данных";
 
 type Tab = "home" | "docs" | "templates" | "knowledge" | "account";
 

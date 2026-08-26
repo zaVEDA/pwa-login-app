@@ -21,6 +21,7 @@ interface Props {
 
   openContract: Contract | null;
   setOpenContract: (v: Contract | null) => void;
+  autoSendContract?: boolean;
   loadContracts: () => void;
 
   newAgreementDoc: string | null;
@@ -50,6 +51,7 @@ export default function DocsTabModals({
   loadInvoices,
   openContract,
   setOpenContract,
+  autoSendContract,
   loadContracts,
   newAgreementDoc,
   setNewAgreementDoc,
@@ -79,6 +81,7 @@ export default function DocsTabModals({
           phone={phone}
           userProfile={{ phone, email: userEmail }}
           contract={openContract}
+          autoSend={autoSendContract}
           onClose={() => setOpenContract(null)}
           onSaved={loadContracts}
           onGoToAccount={() => { setOpenContract(null); onGoToAccount?.(); }}
