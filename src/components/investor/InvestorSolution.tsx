@@ -20,6 +20,7 @@ const milestones = [
   { done: false, text: "Партнёрские программы" },
   { done: false, text: "Реклама Авито" },
   { done: false, text: "Личные продажи юр. лицам" },
+  { done: false, text: "Настройка резервного копирования данных и перенос кода на другую платформу" },
 ];
 
 const spendItems = [
