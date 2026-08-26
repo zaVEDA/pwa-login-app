@@ -6,7 +6,7 @@ const DEMO_URL = window.location.origin + "/?demo=1";
 const investOptions = [
   {
     title: "Минимальный вход",
-    amount: "от 350 000 ₽",
+    amount: "от 500 000 ₽",
     color: "hsl(38 40% 94%)",
     border: "hsl(36 28% 82%)",
     items: [
@@ -17,7 +17,7 @@ const investOptions = [
   },
   {
     title: "Полное финансирование",
-    amount: "1 500 000 ₽",
+    amount: "1 111 111 ₽",
     color: "linear-gradient(135deg, hsl(35 72% 48% / 0.08), hsl(40 80% 62% / 0.12))",
     border: "hsl(35 72% 48% / 0.35)",
     accent: true,

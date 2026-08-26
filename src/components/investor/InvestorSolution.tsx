@@ -161,8 +161,8 @@ export default function InvestorSolution() {
         </div>
         <div className="mt-5 p-4 rounded-2xl text-center"
           style={{ background: "hsl(35 72% 48% / 0.08)", border: "1px dashed hsl(35 72% 48% / 0.3)" }}>
-          <p className="font-cormorant text-2xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>Итого: 1 500 000 ₽</p>
-          <p className="text-xs text-muted-foreground mt-1">Минимальный вход от 350 000 ₽</p>
+          <p className="font-cormorant text-2xl font-semibold" style={{ color: "hsl(35 72% 38%)" }}>Итого: 1 111 111 ₽</p>
+          <p className="text-xs text-muted-foreground mt-1">Минимальный вход от 500 000 ₽</p>
         </div>
       </section>
     </>
