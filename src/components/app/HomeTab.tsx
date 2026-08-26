@@ -209,16 +209,20 @@ export default function HomeTab({ colorTheme, todayPhrase, setActiveTab, phone, 
               <p className="text-xs text-muted-foreground mt-0.5">Договор, акт, счёт</p>
             </button>
             {showCreateMenu && (
-              <>
-                <div className="fixed inset-0 z-30" onClick={() => setShowCreateMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 z-40 w-72 bg-white rounded-xl shadow-xl border border-border overflow-hidden animate-fade-in max-h-[70vh] overflow-y-auto">
+              <div
+                className="fixed inset-0 z-[70] flex flex-col items-center pt-6 px-4"
+                style={{ left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "448px" }}
+              >
+                <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreateMenu(false)} />
+                <div className="relative w-full bg-white rounded-2xl shadow-2xl border border-border overflow-hidden animate-fade-in max-h-[calc(100vh-6rem)] overflow-y-auto">
                   <CreateDocMenu
+                    onClose={() => setShowCreateMenu(false)}
                     onPersonalData={() => { setShowCreateMenu(false); setNewAgreementDoc(PERSONAL_DATA_TITLE); }}
                     onInvoice={() => { setShowCreateMenu(false); setShowInvoice(true); }}
                     onAgreementSelect={(title) => { setShowCreateMenu(false); setNewAgreementDoc(title); }}
                   />
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
