@@ -18,6 +18,9 @@ export interface ClientInfo {
   client_type?: string;
   documents_count?: number;
   payments_total?: number;
+  /** С клиентом уже подписано согласие на обработку персональных данных */
+  pd_consent_signed?: boolean;
+  pd_consent_signed_at?: string | null;
 }
 
 export interface ServiceItem {

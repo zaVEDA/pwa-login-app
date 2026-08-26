@@ -15,11 +15,14 @@ def get_or_create_user(cur, phone: str) -> int:
     return cur.fetchone()[0]
 
 
+PD_CONSENT_TITLE = "Согласие на обработку персональных данных"
+
 CLIENTS_WITH_STATS_SQL = """
     SELECT
         c.id, c.client_type, c.name, c.inn, c.ogrnip, c.address, c.phone, c.email,
         COALESCE(inv.cnt, 0) + COALESCE(doc.cnt, 0) + COALESCE(con.cnt, 0) AS documents_count,
-        COALESCE(inv.paid, 0) AS payments_total
+        COALESCE(inv.paid, 0) AS payments_total,
+        pd.signed_at AS pd_consent_signed_at
     FROM clients c
     LEFT JOIN LATERAL (
         SELECT COUNT(*) AS cnt, COALESCE(SUM(total) FILTER (WHERE status = 'paid'), 0) AS paid
@@ -44,6 +47,14 @@ CLIENTS_WITH_STATS_SQL = """
         FROM contracts co
         WHERE co.user_id = c.user_id AND co.status <> 'deleted' AND co.client_name = c.name
     ) con ON true
+    LEFT JOIN LATERAL (
+        SELECT co.signed_at
+        FROM contracts co
+        WHERE co.user_id = c.user_id AND co.status = 'signed'
+          AND co.client_name = c.name AND co.template_key = %s
+        ORDER BY co.signed_at DESC NULLS LAST
+        LIMIT 1
+    ) pd ON true
     WHERE c.user_id = %s
 """
 
@@ -77,7 +88,7 @@ def handler(event: dict, context) -> dict:
         search = (params.get("search") or "").strip()
         search_digits = "".join(ch for ch in search if ch.isdigit())
         sql = CLIENTS_WITH_STATS_SQL
-        query_params = [user_id]
+        query_params = [PD_CONSENT_TITLE, user_id]
         if search_digits:
             sql += " AND regexp_replace(coalesce(c.phone, ''), '\\D', '', 'g') LIKE %s"
             query_params.append(f"%{search_digits}%")
@@ -86,11 +97,15 @@ def handler(event: dict, context) -> dict:
         rows = cur.fetchall()
         cur.close()
         conn.close()
-        keys = ["id", "client_type", "name", "inn", "ogrnip", "address", "phone", "email", "documents_count", "payments_total"]
+        keys = ["id", "client_type", "name", "inn", "ogrnip", "address", "phone", "email",
+                "documents_count", "payments_total", "pd_consent_signed_at"]
         clients = []
         for row in rows:
             d = dict(zip(keys, row))
             d["payments_total"] = float(d["payments_total"] or 0)
+            signed = d.get("pd_consent_signed_at")
+            d["pd_consent_signed"] = bool(signed)
+            d["pd_consent_signed_at"] = str(signed) if signed else None
             clients.append(d)
         return {"statusCode": 200, "headers": cors, "body": json.dumps({"clients": clients})}
 

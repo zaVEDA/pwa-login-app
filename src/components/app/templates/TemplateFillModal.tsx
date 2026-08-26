@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { TemplateDoc, templateDocs, PERSONAL_DATA_TITLE } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
+import { CLIENTS_URL, ClientInfo } from "@/components/app/invoice/types";
 import TemplateFillHeader from "./TemplateFillHeader";
 import TemplateFillFields from "./TemplateFillFields";
 import TemplateFillFooter from "./TemplateFillFooter";
@@ -155,8 +156,12 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, a
   useEffect(() => {
     if (!autoSend || autoSendDoneRef.current || !requisitesLoaded || locked) return;
     autoSendDoneRef.current = true;
-    if (isPdConsentDoc) setShareOpen(true);
-    else setAskPdConsent(true);
+    if (isPdConsentDoc) { setShareOpen(true); return; }
+    setPreview(true);
+    pdAlreadySigned(values.fio || contract?.client_name || "").then((signed) => {
+      if (signed) { setPdConsentValues(null); setBundleOpen(true); }
+      else setAskPdConsent(true);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSend, requisitesLoaded, locked]);
 
@@ -219,12 +224,33 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, a
 
   // Главный сценарий: кнопка «Отправить на подпись по SMS» доступна сразу, без предварительного
   // нажатия «Сохранить» — сама сохраняет документ (если нужно) и открывает форму ввода телефона.
+  // Проверяет, подписано ли уже согласие на ПДн с этим клиентом — тогда предлагать его повторно не нужно
+  const pdAlreadySigned = async (clientName: string): Promise<boolean> => {
+    if (!clientName.trim()) return false;
+    try {
+      const res = await fetch(CLIENTS_URL, { headers: { "X-Phone": phone } });
+      const raw = await res.json();
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      const list: ClientInfo[] = parsed.clients || [];
+      const found = list.find((c) => (c.name || "").trim().toLowerCase() === clientName.trim().toLowerCase());
+      return !!found?.pd_consent_signed;
+    } catch {
+      return false;
+    }
+  };
+
   const openSignFlow = async () => {
     setPreview(true);
     const id = savedId ?? (await saveContract());
     if (!id) return;
     // Само согласие о ПДн отправляем как раньше — предлагать приложить его к самому себе не нужно
     if (isPdConsentDoc || locked) { setShareOpen(true); return; }
+    // С этим клиентом согласие уже подписано — сразу к отправке договора
+    if (await pdAlreadySigned(values.fio || contract?.client_name || "")) {
+      setPdConsentValues(null);
+      setBundleOpen(true);
+      return;
+    }
     setAskPdConsent(true);
   };
 

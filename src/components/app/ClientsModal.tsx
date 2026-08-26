@@ -110,6 +110,12 @@ export default function ClientsModal({ phone, onClose }: Props) {
                     {clientTypeLabel(c.client_type)}
                     {c.inn ? ` · ИНН ${c.inn}` : ""}
                   </p>
+                  {c.pd_consent_signed && (
+                    <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700 border border-green-200">
+                      <Icon name="ShieldCheck" size={10} />
+                      Согласие на ПДн подписано
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => handleDelete(c.id)}
