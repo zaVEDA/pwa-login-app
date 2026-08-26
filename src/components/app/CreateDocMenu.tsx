@@ -33,8 +33,31 @@ export default function CreateDocMenu({ onPersonalData, onInvoice, onAgreementSe
       </div>
 
       <button
-        onClick={onPersonalData}
+        onClick={() => setAgreementListOpen((v) => !v)}
         className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors"
+      >
+        <Icon name="FileSignature" size={16} className="text-primary flex-shrink-0" />
+        Договор / соглашение
+        <Icon name={agreementListOpen ? "Minus" : "Plus"} size={14} className="ml-auto text-muted-foreground" />
+      </button>
+      {agreementListOpen && (
+        <div className="bg-amber-50/60 border-t border-border/40">
+          {agreementTemplates.map((t) => (
+            <button
+              key={t.title}
+              onClick={() => onAgreementSelect(t.title)}
+              className="w-full flex items-center gap-2.5 pl-8 pr-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-100/60 transition-colors leading-snug"
+            >
+              <Icon name={t.icon} size={15} className="text-primary flex-shrink-0" />
+              {t.title}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={onPersonalData}
+        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
       >
         <Icon name="ShieldCheck" size={16} className="text-primary flex-shrink-0" />
         <span className="leading-snug">Согласие на обработку персональных данных</span>
@@ -64,29 +87,6 @@ export default function CreateDocMenu({ onPersonalData, onInvoice, onAgreementSe
           <button onClick={onInvoice} className="text-xs font-medium text-primary hover:underline">
             Создать счёт →
           </button>
-        </div>
-      )}
-
-      <button
-        onClick={() => setAgreementListOpen((v) => !v)}
-        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-50 transition-colors border-t border-border/40"
-      >
-        <Icon name="FileSignature" size={16} className="text-primary flex-shrink-0" />
-        Договор / соглашение
-        <Icon name={agreementListOpen ? "Minus" : "Plus"} size={14} className="ml-auto text-muted-foreground" />
-      </button>
-      {agreementListOpen && (
-        <div className="bg-amber-50/60 border-t border-border/40">
-          {agreementTemplates.map((t) => (
-            <button
-              key={t.title}
-              onClick={() => onAgreementSelect(t.title)}
-              className="w-full flex items-center gap-2.5 pl-8 pr-3.5 py-2.5 text-sm text-left text-foreground hover:bg-amber-100/60 transition-colors leading-snug"
-            >
-              <Icon name={t.icon} size={15} className="text-primary flex-shrink-0" />
-              {t.title}
-            </button>
-          ))}
         </div>
       )}
     </>
