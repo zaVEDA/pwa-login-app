@@ -34,8 +34,7 @@ const App = () => (
           <Route path="/" element={<Welcome />} />
           <Route path="/app" element={<Index />} />
           <Route path="/admin" element={<AdminPanel />} />
-          {/* Страница для инвесторов отключена от публичного доступа. Чтобы вернуть — раскомментировать. */}
-          {/* <Route path="/investor" element={<Investor />} /> */}
+          <Route path="/investor" element={<Investor />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/offer" element={<Offer />} />
