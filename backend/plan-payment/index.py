@@ -95,6 +95,8 @@ def handler(event: dict, context) -> dict:
 
     if plan not in PLANS:
         return resp(400, {"error": "Неизвестный тариф"})
+    if plan == "trial":
+        return resp(400, {"error": "Тариф «Тест-драйв» доступен только по кодовому слову"})
     valid_periods = ("once",) if plan == "trial" else ("month", "half_year")
     if period not in valid_periods:
         return resp(400, {"error": "Неизвестный период оплаты"})

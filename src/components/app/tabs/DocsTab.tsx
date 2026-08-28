@@ -475,6 +475,7 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
         />
 
         <DocsTabList
+          userPlan={userPlan}
           invoicesLoading={invoicesLoading}
           dateRange={dateRange}
           clientFilter={clientFilter}

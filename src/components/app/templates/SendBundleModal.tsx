@@ -7,12 +7,13 @@ interface Props {
   initialPhone?: string;
   sending?: boolean;
   error?: string;
+  isTrial?: boolean;
   onClose: () => void;
   onSend: (p: { phone: string; sendMain: boolean; sendConsent: boolean }) => void;
 }
 
 export default function SendBundleModal({
-  mainTitle, initialPhone = "", sending, error, onClose, onSend,
+  mainTitle, initialPhone = "", sending, error, isTrial, onClose, onSend,
 }: Props) {
   const [phone, setPhone] = useState(initialPhone);
   const [sendMain, setSendMain] = useState(true);
@@ -48,6 +49,16 @@ export default function SendBundleModal({
           <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
             <Icon name="AlertCircle" size={14} className="text-red-500 flex-shrink-0" />
             <p className="text-[11px] text-red-600">{error}</p>
+          </div>
+        )}
+
+        {isTrial && (
+          <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2">
+            <Icon name="Stamp" size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-800 leading-relaxed">
+              На тарифе «Тест-драйв» документ будет с полупрозрачной голограммой «ТЕСТ» —
+              и в отправленной клиенту версии, и при сохранении PDF.
+            </p>
           </div>
         )}
 

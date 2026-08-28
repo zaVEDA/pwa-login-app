@@ -71,29 +71,6 @@ export default function PlanModal({ currentPlan, familyRequestStatus, trialStart
   const [trialCodeWord, setTrialCodeWord] = useState("");
   const [trialLoading, setTrialLoading] = useState(false);
 
-  const payTrial = async () => {
-    setError("");
-    setLoading(true);
-    reachGoal("payment_started", { plan: "trial", period: "once" });
-    try {
-      const res = await fetch(PLAN_PAYMENT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() },
-        body: JSON.stringify({ plan: "trial", period: "once" }),
-      });
-      const data = await res.json();
-      if (res.ok && data.payment_url) {
-        window.location.href = data.payment_url;
-      } else {
-        setError(data.error || "Не удалось начать оплату");
-      }
-    } catch {
-      setError("Ошибка соединения");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const activateTrialCode = async () => {
     setError("");
     if (!trialCodeWord.trim()) return setError("Введите кодовое слово");
@@ -280,8 +257,8 @@ export default function PlanModal({ currentPlan, familyRequestStatus, trialStart
                 <Icon name="Sparkle" size={18} className={currentPlan === "trial" ? "text-white" : "text-primary"} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">Тест-драйв · 355 ₽</p>
-                <p className="text-xs text-muted-foreground mt-0.5">3 дня, до 5 документов и 2 отправки клиенту. Можно купить только один раз</p>
+                <p className="text-sm font-medium">Тест-драйв</p>
+                <p className="text-xs text-muted-foreground mt-0.5">3 дня, до 5 документов и 2 отправки клиенту. Доступен только по кодовому слову</p>
               </div>
               {currentPlan === "trial" && <Icon name="CheckCircle" size={18} className="text-primary flex-shrink-0" />}
             </div>
@@ -291,20 +268,20 @@ export default function PlanModal({ currentPlan, familyRequestStatus, trialStart
                 <input
                   value={trialCodeWord}
                   onChange={(e) => setTrialCodeWord(e.target.value)}
-                  placeholder="Кодовое слово (необязательно)"
+                  placeholder="Кодовое слово"
                   className="w-full px-3 py-2.5 rounded-xl border border-border bg-white text-sm outline-none focus:border-primary/60"
                 />
                 <button
-                  onClick={trialCodeWord.trim() ? activateTrialCode : payTrial}
-                  disabled={loading || trialLoading}
+                  onClick={activateTrialCode}
+                  disabled={loading || trialLoading || !trialCodeWord.trim()}
                   className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl gold-gradient text-white font-semibold text-sm disabled:opacity-60"
                 >
                   {loading || trialLoading ? (
                     <Icon name="Loader2" size={16} className="animate-spin" />
                   ) : (
-                    <Icon name={trialCodeWord.trim() ? "Ticket" : "CreditCard"} size={15} />
+                    <Icon name="Ticket" size={15} />
                   )}
-                  {trialCodeWord.trim() ? "Активировать бесплатно" : "Оплатить 355 ₽"}
+                  Активировать бесплатно
                 </button>
               </div>
             )}

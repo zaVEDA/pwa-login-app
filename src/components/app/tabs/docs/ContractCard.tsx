@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import PhoneInput from "@/components/ui/phone-input";
 import { formatDate } from "@/lib/date";
 import { Contract } from "../constants";
+import { PlanType } from "@/lib/auth";
 
 interface Props {
   contract: Contract;
@@ -16,6 +17,7 @@ interface Props {
   setShareId: (id: number | null) => void;
   onShare: (c: Contract, channel: "telegram" | "whatsapp" | "sms" | "email", clientPhone?: string) => void;
   onSendFlow?: (c: Contract) => void;
+  userPlan?: PlanType | null;
 }
 
 const CHANNELS = [
@@ -26,7 +28,7 @@ const CHANNELS = [
 ];
 
 export default function ContractCard({
-  contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId, shareId, setShareId, onShare, onSendFlow,
+  contract, menuId, setMenuId, onOpen, onStatus, onPdf, pdfLoadingId, shareId, setShareId, onShare, onSendFlow, userPlan,
 }: Props) {
   const signed = contract.status === "signed";
   const deleted = contract.status === "deleted";
@@ -115,6 +117,11 @@ export default function ContractCard({
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
                       {signed ? "Телефон клиента" : "Отправить на подпись по SMS"}
                     </p>
+                    {userPlan === "trial" && (
+                      <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5 leading-relaxed">
+                        На тарифе «Тест-драйв» документ будет с голограммой «ТЕСТ»
+                      </p>
+                    )}
                     <PhoneInput
                       autoFocus
                       value={smsPhone}

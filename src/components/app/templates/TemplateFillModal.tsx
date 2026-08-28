@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { TemplateDoc, templateDocs, PERSONAL_DATA_TITLE } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
 import { CLIENTS_URL, ClientInfo } from "@/components/app/invoice/types";
+import { PlanType } from "@/lib/auth";
 import TemplateFillHeader from "./TemplateFillHeader";
 import TemplateFillFields from "./TemplateFillFields";
 import TemplateFillFooter from "./TemplateFillFooter";
@@ -13,6 +14,7 @@ interface Props {
   doc: TemplateDoc;
   phone: string;
   userProfile?: { phone?: string | null; email?: string | null };
+  userPlan?: PlanType | null;
   contract?: Contract | null;
   /** Сразу открыть вопрос о соглашении ПДн и форму отправки (вызов из карточки договора) */
   autoSend?: boolean;
@@ -33,7 +35,7 @@ const ENTITY_LABEL: Record<string, string> = {
 const draftKey = (docTitle: string, contractId?: number | string | null) =>
   `doc_draft_${docTitle}_${contractId ?? "new"}`;
 
-export default function TemplateFillModal({ doc, phone, userProfile, contract, autoSend, onClose, onSaved, onGoToAccount }: Props) {
+export default function TemplateFillModal({ doc, phone, userProfile, userPlan, contract, autoSend, onClose, onSaved, onGoToAccount }: Props) {
   const draftLoadedRef = useRef(false);
   // Для нового (ещё не сохранённого) документа генерируем уникальный ключ черновика на каждое открытие,
   // чтобы при открытии нового шаблона поля не подтягивали данные из прошлого незавершённого документа
@@ -522,6 +524,7 @@ export default function TemplateFillModal({ doc, phone, userProfile, contract, a
           initialPhone={contract?.client_phone || ""}
           sending={bundleSending}
           error={bundleError}
+          isTrial={userPlan === "trial"}
           onClose={() => { setBundleOpen(false); setBundleError(""); }}
           onSend={sendBundle}
         />

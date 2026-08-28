@@ -80,6 +80,7 @@ export default function DocsTabModals({
           doc={templateDocs[openContract.template_key]}
           phone={phone}
           userProfile={{ phone, email: userEmail }}
+          userPlan={userPlan}
           contract={openContract}
           autoSend={autoSendContract}
           onClose={() => setOpenContract(null)}
@@ -92,6 +93,7 @@ export default function DocsTabModals({
           doc={templateDocs[newAgreementDoc]}
           phone={phone}
           userProfile={{ phone, email: userEmail }}
+          userPlan={userPlan}
           onClose={() => setNewAgreementDoc(null)}
           onSaved={loadContracts}
           onGoToAccount={() => { setNewAgreementDoc(null); onGoToAccount?.(); }}
@@ -112,6 +114,7 @@ export default function DocsTabModals({
         onOpenChange={(o) => { setPdfWarnOpen(o); if (!o) setPendingPdf(null); }}
         onConfirm={() => { pendingPdf?.(); setPendingPdf(null); }}
         action={warnAction}
+        isTrial={userPlan === "trial"}
       />
     </>
   );

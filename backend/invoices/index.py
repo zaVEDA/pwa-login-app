@@ -326,7 +326,24 @@ def rub_words(amount) -> str:
     return f"{text} {rub_form} {kop:02d} {kop_form}"
 
 
-def build_torg12(invoice: dict, seller: dict) -> bytes:
+def draw_test_watermark(canvas, doc):
+    """Рисует полупрозрачную диагональную голограмму «ТЕСТ» по центру страницы.
+    Наносится на все документы, созданные на тарифе «Тест-драйв»."""
+    if not getattr(doc, "_is_test", False):
+        return
+    from reportlab.lib.colors import Color
+
+    width, height = doc.pagesize
+    canvas.saveState()
+    canvas.setFont("DejaVuSans-Bold", 92)
+    canvas.setFillColor(Color(0.75, 0.15, 0.15, alpha=0.16))
+    canvas.translate(width / 2, height / 2)
+    canvas.rotate(45)
+    canvas.drawCentredString(0, 0, "ТЕСТ")
+    canvas.restoreState()
+
+
+def build_torg12(invoice: dict, seller: dict, is_test: bool = False) -> bytes:
     """Унифицированная форма № ТОРГ-12 (пост. Госкомстата России от 25.12.1998 № 132).
     Вёрстка воспроизводит структуру и пропорции официального бланка: шапка со сторонами
     сделки и блоком кодов справа, таблица товаров из 15 граф с нумерованной строкой,
@@ -565,12 +582,13 @@ def build_torg12(invoice: dict, seller: dict) -> bytes:
     ]))
     story.append(sign_table)
 
-    doc.build(story)
+    doc._is_test = is_test
+    doc.build(story, onFirstPage=draw_test_watermark, onLaterPages=draw_test_watermark)
     buf.seek(0)
     return buf.read()
 
 
-def build_pdf(invoice: dict, seller: dict) -> bytes:
+def build_pdf(invoice: dict, seller: dict, is_test: bool = False) -> bytes:
     ensure_fonts()
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4,
@@ -743,15 +761,16 @@ def build_pdf(invoice: dict, seller: dict) -> bytes:
     ]))
     story.append(footer_table)
 
-    doc.build(story)
+    doc._is_test = is_test
+    doc.build(story, onFirstPage=draw_test_watermark, onLaterPages=draw_test_watermark)
     buf.seek(0)
     return buf.read()
 
 
-def build_document(invoice: dict, seller: dict, doc_type: str, doc_format: str = "simple") -> bytes:
+def build_document(invoice: dict, seller: dict, doc_type: str, doc_format: str = "simple", is_test: bool = False) -> bytes:
     """Акт выполненных работ или Товарная накладная (простая / ТОРГ-12 / УПД) на основе данных счёта."""
     if doc_type != "act" and doc_format == "torg12":
-        return build_torg12(invoice, seller)
+        return build_torg12(invoice, seller, is_test=is_test)
 
     ensure_fonts()
     buf = io.BytesIO()
@@ -908,7 +927,8 @@ def build_document(invoice: dict, seller: dict, doc_type: str, doc_format: str =
     ]))
     story.append(sign_table)
 
-    doc.build(story)
+    doc._is_test = is_test
+    doc.build(story, onFirstPage=draw_test_watermark, onLaterPages=draw_test_watermark)
     buf.seek(0)
     return buf.read()
 
@@ -1198,6 +1218,11 @@ def handler(event: dict, context) -> dict:
             keys = ["entity_type", "full_name", "inn", "ogrnip", "address", "bik", "bank_name", "corr_account", "checking_account", "okpo", "kpp"]
             seller = dict(zip(keys, row))
 
+        # Тариф пользователя — на «Тест-драйве» все PDF выходят с голограммой «ТЕСТ»
+        cur.execute("SELECT plan FROM users WHERE id = %s", (user_id,))
+        _plan_row = cur.fetchone()
+        is_test_plan = bool(_plan_row and _plan_row[0] == "trial")
+
         # Создать документ реализации (акт/накладную): сохранить в БД и вернуть PDF
         if action == "document":
             doc_type = body.get("doc_type", "act")  # act | invoice_note
@@ -1262,7 +1287,7 @@ def handler(event: dict, context) -> dict:
                 "client_ogrnip": body.get("client_ogrnip", ""),
                 "client_address": body.get("client_address", ""),
             }
-            pdf_bytes = build_document(doc_data, seller, doc_type, doc_format)
+            pdf_bytes = build_document(doc_data, seller, doc_type, doc_format, is_test=is_test_plan)
             pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
             cur.close(); conn.close()
             return {
@@ -1332,7 +1357,7 @@ def handler(event: dict, context) -> dict:
                 "client_ogrnip": body.get("client_ogrnip", ""),
                 "client_address": body.get("client_address", ""),
             }
-            pdf_bytes = build_pdf(invoice_data, seller)
+            pdf_bytes = build_pdf(invoice_data, seller, is_test=is_test_plan)
             pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
             cur.close(); conn.close()
             return {

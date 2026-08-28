@@ -4,8 +4,10 @@ import InvoiceCard from "./InvoiceCard";
 import RealizationDocCard from "./RealizationDocCard";
 import { Contract, Invoice, RealizationDoc } from "../constants";
 import type { DateRange } from "react-day-picker";
+import { PlanType } from "@/lib/auth";
 
 interface Props {
+  userPlan?: PlanType | null;
   invoicesLoading: boolean;
   dateRange: DateRange | undefined;
   clientFilter: string;
@@ -57,6 +59,7 @@ interface Props {
 }
 
 export default function DocsTabList({
+  userPlan,
   invoicesLoading,
   dateRange,
   clientFilter,
@@ -142,6 +145,7 @@ export default function DocsTabList({
               setShareId={setContractShareId}
               onShare={shareContract}
               onSendFlow={onContractSendFlow}
+              userPlan={userPlan}
             />
           ))}
         </div>

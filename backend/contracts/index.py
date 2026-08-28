@@ -197,6 +197,29 @@ def ensure_fonts():
         pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", os.path.join(mpl_dir, "DejaVuSans-Bold.ttf")))
 
 
+def draw_test_watermark(canvas, doc):
+    """Рисует полупрозрачную диагональную голограмму «ТЕСТ» по центру страницы.
+    Наносится на все документы, созданные на тарифе «Тест-драйв»."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.colors import Color
+
+    width, height = A4
+    canvas.saveState()
+    canvas.setFont("DejaVuSans-Bold", 92)
+    canvas.setFillColor(Color(0.75, 0.15, 0.15, alpha=0.16))
+    canvas.translate(width / 2, height / 2)
+    canvas.rotate(45)
+    canvas.drawCentredString(0, 0, "ТЕСТ")
+    canvas.restoreState()
+
+
+def draw_page_decorations(canvas, doc):
+    """Рисует все элементы страницы: печать ПЭП (если подписан) и водяной знак теста (если тариф trial)."""
+    if getattr(doc, "_is_test", False):
+        draw_test_watermark(canvas, doc)
+    draw_stamp(canvas, doc)
+
+
 def draw_stamp(canvas, doc):
     """Рисует синюю круглую печать простой электронной подписи в правом нижнем углу."""
     info = getattr(doc, "_stamp_info", None)
@@ -239,8 +262,9 @@ def draw_stamp(canvas, doc):
     canvas.restoreState()
 
 
-def build_pdf(c: dict, performer: str) -> bytes:
-    """Формирует PDF договора. Если документ подписан — добавляет синюю печать и реквизиты ПЭП."""
+def build_pdf(c: dict, performer: str, is_test: bool = False) -> bytes:
+    """Формирует PDF договора. Если документ подписан — добавляет синюю печать и реквизиты ПЭП.
+    Если is_test — на все страницы наносится полупрозрачная голограмма «ТЕСТ» (тариф «Тест-драйв»)."""
     import io
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
@@ -304,7 +328,8 @@ def build_pdf(c: dict, performer: str) -> bytes:
             "signed_label": fmt_dt(c.get("signed_at")),
         }
     doc._stamp_info = stamp
-    doc.build(flow, onFirstPage=draw_stamp, onLaterPages=draw_stamp)
+    doc._is_test = is_test
+    doc.build(flow, onFirstPage=draw_page_decorations, onLaterPages=draw_page_decorations)
     return buf.getvalue()
 
 
@@ -479,15 +504,16 @@ def handler(event: dict, context) -> dict:
                 # чтобы ссылка на документ сразу показывала подписанную версию.
                 cur.execute(f"SELECT {COLS} FROM contracts WHERE id = %s", (cid,))
                 signed_row = cur.fetchone()
-                cur.execute("SELECT full_name FROM users WHERE id = %s", (_owner_id,))
+                cur.execute("SELECT full_name, plan FROM users WHERE id = %s", (_owner_id,))
                 urow = cur.fetchone()
                 performer = (urow[0] if urow else "") or ""
+                owner_plan = urow[1] if urow else None
                 cur.close()
                 conn.close()
 
                 try:
                     import boto3
-                    pdf = build_pdf(row_to_dict(signed_row), performer)
+                    pdf = build_pdf(row_to_dict(signed_row), performer, is_test=owner_plan == "trial")
                     s3 = boto3.client(
                         "s3",
                         endpoint_url="https://bucket.poehali.dev",
@@ -622,13 +648,14 @@ def handler(event: dict, context) -> dict:
                 conn.close()
                 return {"statusCode": 403, "headers": cors, "body": json.dumps({"error": "trial_send_limit_reached"})}
 
-        cur.execute("SELECT full_name FROM users WHERE id = %s", (user_id,))
+        cur.execute("SELECT full_name, plan FROM users WHERE id = %s", (user_id,))
         urow = cur.fetchone()
         performer = (urow[0] if urow else "") or ""
+        owner_plan = urow[1] if urow else None
         cur.close()
         conn.close()
         c = row_to_dict(row)
-        pdf = build_pdf(c, performer)
+        pdf = build_pdf(c, performer, is_test=owner_plan == "trial")
 
         if action == "share_link":
             import boto3

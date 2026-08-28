@@ -4,16 +4,18 @@ import { templates, specialties, Tab } from "./constants";
 import KnowledgeTab from "@/components/app/knowledge/KnowledgeTab";
 import TemplateFillModal from "@/components/app/templates/TemplateFillModal";
 import { templateDocs } from "@/components/app/templates/docs";
+import { PlanType } from "@/lib/auth";
 
 interface Props {
   activeTab: Tab;
   phone: string;
+  userPlan?: PlanType | null;
   userEmail?: string | null;
   onSaved?: () => void;
   onGoToAccount?: () => void;
 }
 
-export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onGoToAccount }: Props) {
+export default function TemplatesTab({ activeTab, phone, userPlan, userEmail, onSaved, onGoToAccount }: Props) {
   const [openDoc, setOpenDoc] = useState<string | null>(null);
   const [soon, setSoon] = useState<string | null>(null);
   const [specOpen, setSpecOpen] = useState(false);
@@ -35,6 +37,7 @@ export default function TemplatesTab({ activeTab, phone, userEmail, onSaved, onG
           doc={templateDocs[openDoc]}
           phone={phone}
           userProfile={{ phone, email: userEmail }}
+          userPlan={userPlan}
           onClose={() => setOpenDoc(null)}
           onSaved={onSaved}
           onGoToAccount={() => { setOpenDoc(null); onGoToAccount?.(); }}

@@ -59,7 +59,7 @@ export default function TabContent({
     <>
       {activeTab === "docs" && <DocsTab phone={phone} userPlan={userPlan} onDocCreated={onDocCreated} userEmail={userEmail} onGoToAccount={onGoToAccount} />}
 
-      <TemplatesTab activeTab={activeTab} phone={phone} onSaved={onDocCreated} userEmail={userEmail} onGoToAccount={onGoToAccount} />
+      <TemplatesTab activeTab={activeTab} phone={phone} userPlan={userPlan} onSaved={onDocCreated} userEmail={userEmail} onGoToAccount={onGoToAccount} />
 
       {activeTab === "account" && (
         <AccountTab
