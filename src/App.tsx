@@ -13,6 +13,7 @@ import Offer from "./pages/Offer";
 import Privacy from "./pages/Privacy";
 import OfferPromo from "./pages/OfferPromo";
 import SmsOperators from "./pages/SmsOperators";
+import WhyNotDigital from "./pages/WhyNotDigital";
 import Templates from "./pages/Templates";
 import SharedDoc from "./pages/SharedDoc";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/offer-promo" element={<OfferPromo />} />
           <Route path="/sms-operators" element={<SmsOperators />} />
+          <Route path="/why-not-digital" element={<WhyNotDigital />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/doc/:token" element={<SharedDoc />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
