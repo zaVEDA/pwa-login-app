@@ -14,7 +14,7 @@ interface Slide {
 
 const slides: Slide[] = [
   {
-    image: "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/c738906b-844b-46c8-9997-8c48dbba699c.jpg",
+    image: "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/0e53656c-5d35-4cd2-b5e1-887131be2d1b.jpg",
     items: [
       "Если вы ничего не продаёте и не покупаете",
       "Не сдаёте и не берёте в аренду",
