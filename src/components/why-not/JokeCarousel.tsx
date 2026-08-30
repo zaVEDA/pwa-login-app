@@ -14,7 +14,7 @@ interface Slide {
 
 const slides: Slide[] = [
   {
-    image: "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/b8ffa5bc-8027-48eb-b060-936c141309ec.jpg",
+    image: "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/0a9f382e-5c66-47df-af3d-2bd4813c4a9c.jpg",
     items: [
       "Если вы ничего не продаёте и не покупаете",
       "Не сдаёте и не берёте в аренду",
@@ -62,11 +62,10 @@ export default function JokeCarousel() {
                   <img
                     src={slide.image}
                     alt=""
-                    className="w-full h-64 sm:h-80 object-contain rounded-xl mb-5"
-                    style={{ background: "hsl(36 25% 96%)" }}
+                    className="w-full aspect-[16/9] object-cover rounded-xl mb-5"
                   />
                 ) : (
-                  <div className="w-full h-64 sm:h-80 rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
+                  <div className="w-full aspect-[16/9] rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
                     style={{ borderColor: "hsl(36 28% 82%)", background: "hsl(36 25% 96%)" }}>
                     <Icon name="ImagePlus" size={28} className="text-primary/40" />
                     <span className="text-xs text-muted-foreground/70">Здесь скоро будет картинка</span>
