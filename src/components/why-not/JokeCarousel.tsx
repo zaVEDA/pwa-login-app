@@ -21,20 +21,12 @@ const slides: Slide[] = [
       "Не приобретаете б/у вещи и не получаете разные услуги по ремонту",
     ],
   },
-  {
-    items: [
-      "А также если у вас есть большой пустой шкаф, который нечем заполнить — и вы решили хранить там все документы 3 года",
-      "Если вы НЕ получаете от клиентов НИКАКИХ персональных данных: номер телефона, ФИО, электронная почта и т.д.",
-      "Вы любите работать с бумажными документами, и ваши клиенты с радостью их подписывают и отправляют вам",
-    ],
-  },
-  {
-    items: [
-      "Вы редко переезжаете, путешествуете и вообще любите проводить время за компьютером с документами",
-      "Вы всё время топите печку и, дабы не жечь чистую бумагу, собираете согласия на обработку перс. данных и соглашения — на бумаге",
-      "Ваш ноутбук не разряжается неожиданно в самый неподходящий момент, и вы не ищете розетку в аэропорту, чтобы выставить счёт или отправить договор",
-    ],
-  },
+  { items: ["А также если у вас есть большой пустой шкаф, который нечем заполнить — и вы решили хранить там все документы 3 года"] },
+  { items: ["Если вы НЕ получаете от клиентов НИКАКИХ персональных данных: номер телефона, ФИО, электронная почта и т.д."] },
+  { items: ["Вы любите работать с бумажными документами, и ваши клиенты с радостью их подписывают и отправляют вам"] },
+  { items: ["Вы редко переезжаете, путешествуете и вообще любите проводить время за компьютером с документами"] },
+  { items: ["Вы всё время топите печку и, дабы не жечь чистую бумагу, собираете согласия на обработку перс. данных и соглашения — на бумаге"] },
+  { items: ["Ваш ноутбук не разряжается неожиданно в самый неподходящий момент, и вы не ищете розетку в аэропорту, чтобы выставить счёт или отправить договор"] },
 ];
 
 export default function JokeCarousel() {
@@ -53,37 +45,61 @@ export default function JokeCarousel() {
         Вам точно не нужны электронные документы, если...
       </p>
 
-      <Carousel setApi={setApi} opts={{ align: "start", loop: true }}>
-        <CarouselContent>
-          {slides.map((slide, i) => (
-            <CarouselItem key={i}>
-              <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm h-full">
-                {slide.image ? (
-                  <img
-                    src={slide.image}
-                    alt=""
-                    className="w-full aspect-[16/9] object-cover rounded-xl mb-5"
-                  />
-                ) : (
-                  <div className="w-full aspect-[16/9] rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
-                    style={{ borderColor: "hsl(36 28% 82%)", background: "hsl(36 25% 96%)" }}>
-                    <Icon name="ImagePlus" size={28} className="text-primary/40" />
-                    <span className="text-xs text-muted-foreground/70">Здесь скоро будет картинка</span>
-                  </div>
-                )}
-                <ul className="space-y-4">
-                  {slide.items.map((r, idx) => (
-                    <li key={idx} className="text-lg sm:text-xl font-bold text-foreground leading-snug pl-6 relative">
-                      <span className="absolute left-0 top-1 text-primary">•</span>
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
+      <div className="relative">
+        <Carousel setApi={setApi} opts={{ align: "start", loop: true }}>
+          <CarouselContent>
+            {slides.map((slide, i) => (
+              <CarouselItem key={i}>
+                <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm h-full flex flex-col">
+                  {slide.image ? (
+                    <img
+                      src={slide.image}
+                      alt=""
+                      className="w-full aspect-[16/9] object-cover rounded-xl mb-5"
+                    />
+                  ) : (
+                    <div className="w-full aspect-[16/9] rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
+                      style={{ borderColor: "hsl(36 28% 82%)", background: "hsl(36 25% 96%)" }}>
+                      <Icon name="ImagePlus" size={28} className="text-primary/40" />
+                      <span className="text-xs text-muted-foreground/70">Здесь скоро будет картинка</span>
+                    </div>
+                  )}
+                  <ul className={`space-y-4 flex-1 ${slide.items.length === 1 ? "flex items-center justify-center" : ""}`}>
+                    {slide.items.map((r, idx) => (
+                      <li
+                        key={idx}
+                        className={
+                          slide.items.length === 1
+                            ? "text-xl sm:text-2xl font-bold text-foreground leading-snug text-center px-2"
+                            : "text-lg sm:text-xl font-bold text-foreground leading-snug pl-6 relative"
+                        }
+                      >
+                        {slide.items.length > 1 && <span className="absolute left-0 top-1 text-primary">•</span>}
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+
+        <button
+          onClick={() => api?.scrollPrev()}
+          aria-label="Предыдущий слайд"
+          className="absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-border flex items-center justify-center active:scale-90 transition-transform"
+        >
+          <Icon name="ChevronLeft" size={18} className="text-primary" />
+        </button>
+        <button
+          onClick={() => api?.scrollNext()}
+          aria-label="Следующий слайд"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-border flex items-center justify-center active:scale-90 transition-transform"
+        >
+          <Icon name="ChevronRight" size={18} className="text-primary" />
+        </button>
+      </div>
 
       <div className="flex items-center justify-center gap-2 mt-3">
         {slides.map((_, i) => (
@@ -99,10 +115,6 @@ export default function JokeCarousel() {
           />
         ))}
       </div>
-      <p className="text-[11px] text-muted-foreground/70 text-center mt-2 flex items-center justify-center gap-1">
-        <Icon name="Hand" size={11} />
-        Листайте пальцем или стрелками →
-      </p>
     </div>
   );
 }
