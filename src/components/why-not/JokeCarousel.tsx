@@ -49,7 +49,7 @@ export default function JokeCarousel() {
 
   return (
     <div className="mb-4">
-      <p className="text-sm font-semibold text-foreground/85 leading-relaxed mb-4 px-1">
+      <p className="text-base sm:text-lg font-bold text-foreground/90 leading-relaxed mb-4 px-1">
         Вам точно не нужны электронные документы, если...
       </p>
 
@@ -57,24 +57,24 @@ export default function JokeCarousel() {
         <CarouselContent>
           {slides.map((slide, i) => (
             <CarouselItem key={i}>
-              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm h-full">
+              <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm h-full">
                 {slide.image ? (
                   <img
                     src={slide.image}
                     alt=""
-                    className="w-full h-40 sm:h-48 object-cover rounded-xl mb-4"
+                    className="w-full h-64 sm:h-80 object-cover rounded-xl mb-5"
                   />
                 ) : (
-                  <div className="w-full h-40 sm:h-48 rounded-xl mb-4 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
+                  <div className="w-full h-64 sm:h-80 rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
                     style={{ borderColor: "hsl(36 28% 82%)", background: "hsl(36 25% 96%)" }}>
-                    <Icon name="ImagePlus" size={22} className="text-primary/40" />
-                    <span className="text-[11px] text-muted-foreground/70">Здесь скоро будет картинка</span>
+                    <Icon name="ImagePlus" size={28} className="text-primary/40" />
+                    <span className="text-xs text-muted-foreground/70">Здесь скоро будет картинка</span>
                   </div>
                 )}
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {slide.items.map((r, idx) => (
-                    <li key={idx} className="text-sm text-foreground/80 leading-relaxed pl-5 relative">
-                      <span className="absolute left-0 top-0.5 text-primary">•</span>
+                    <li key={idx} className="text-lg sm:text-xl font-bold text-foreground leading-snug pl-6 relative">
+                      <span className="absolute left-0 top-1 text-primary">•</span>
                       {r}
                     </li>
                   ))}
