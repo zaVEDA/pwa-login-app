@@ -52,11 +52,19 @@ export default function JokeCarousel() {
               <CarouselItem key={i}>
                 <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm h-full flex flex-col">
                   {slide.image ? (
-                    <img
-                      src={slide.image}
-                      alt=""
-                      className="w-full aspect-[16/9] object-cover rounded-xl mb-5"
-                    />
+                    <div className="relative w-full aspect-[16/9] rounded-xl mb-5 overflow-hidden">
+                      <img
+                        src={slide.image}
+                        alt=""
+                        aria-hidden
+                        className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl"
+                      />
+                      <img
+                        src={slide.image}
+                        alt=""
+                        className="relative w-full h-full object-contain"
+                      />
+                    </div>
                   ) : (
                     <div className="w-full aspect-[16/9] rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
                       style={{ borderColor: "hsl(36 28% 82%)", background: "hsl(36 25% 96%)" }}>
