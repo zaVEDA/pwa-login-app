@@ -68,9 +68,6 @@ export default function WhyNotDigital() {
           <h1 className="font-cormorant text-3xl sm:text-4xl font-semibold leading-tight mb-4" style={{ color: "hsl(24 20% 13%)" }}>
             Почему вам НЕ нужны<br />электронные документы
           </h1>
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Честно рассказываем, кому CapyDoc.ru точно не пригодится
-          </p>
         </div>
 
         {/* Шуточный блок — карусель */}
