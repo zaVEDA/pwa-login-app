@@ -101,6 +101,14 @@ TRIAL_SEND_LIMIT = 2
 # Дата старта тарификации для тех, кто оплатил по предпродаже — совпадает
 # с официальным запуском полной версии сервиса.
 PRESALE_START = datetime.date(2026, 9, 11)
+# До этой даты отправка документов клиенту по СМС недоступна на платных тарифах
+# (даже уже оплаченных) — сервис ещё не запущен официально. Исключения: тариф
+# «Тест-драйв» (нужен для мгновенного знакомства) и роль admin (для проверки перед запуском).
+LAUNCH_DATE = datetime.date(2026, 9, 11)
+
+
+def is_before_launch() -> bool:
+    return datetime.date.today() < LAUNCH_DATE
 
 
 def _add_months(d: datetime.date, months: int) -> datetime.date:
@@ -639,14 +647,20 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {"statusCode": 404, "headers": cors, "body": json.dumps({"error": "not found"})}
 
-        # Тестовый тариф: разовый лимит отправок (2 штуки) на весь срок действия
+        # Тестовый тариф: разовый лимит отправок (2 штуки) на весь срок действия.
+        # До официального запуска (11 сентября) отправка по СМС недоступна ни на одном
+        # платном тарифе, даже уже оплаченном — исключения: тариф «Тест-драйв» и роль admin.
         if action == "share_link" and body.get("channel") == "sms":
-            cur.execute("SELECT plan, trial_sends_used FROM users WHERE id = %s", (user_id,))
+            cur.execute("SELECT plan, trial_sends_used, role FROM users WHERE id = %s", (user_id,))
             _tu = cur.fetchone()
             if _tu and _tu[0] == "trial" and (_tu[1] or 0) >= TRIAL_SEND_LIMIT:
                 cur.close()
                 conn.close()
                 return {"statusCode": 403, "headers": cors, "body": json.dumps({"error": "trial_send_limit_reached"})}
+            if is_before_launch() and _tu and _tu[0] != "trial" and _tu[2] != "admin":
+                cur.close()
+                conn.close()
+                return {"statusCode": 403, "headers": cors, "body": json.dumps({"error": "launch_not_started", "launch_date": LAUNCH_DATE.isoformat()})}
 
         cur.execute("SELECT full_name, plan FROM users WHERE id = %s", (user_id,))
         urow = cur.fetchone()

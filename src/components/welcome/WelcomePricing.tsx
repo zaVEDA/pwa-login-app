@@ -98,6 +98,14 @@ export default function WelcomePricing() {
           При покупке тарифа на 6 месяцев отсчёт подписки начнётся с 11 сентября
         </p>
       </div>
+
+      <div className="mt-3 px-5 py-3.5 rounded-xl bg-amber-50 border border-amber-200 text-center flex items-start gap-2.5">
+        <Icon name="Rocket" size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-800 leading-relaxed text-left">
+          Даже на уже оплаченном тарифе отправка документов клиенту по СМС станет доступна с 11 сентября —
+          в день официального запуска сервиса. До этого момента можно готовить документы и знакомиться с сервисом.
+        </p>
+      </div>
     </section>
   );
 }

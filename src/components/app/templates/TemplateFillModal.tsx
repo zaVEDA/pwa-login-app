@@ -3,6 +3,7 @@ import { TemplateDoc, templateDocs, PERSONAL_DATA_TITLE } from "./docs";
 import { CONTRACTS_URL, REQUISITES_URL, Contract } from "@/components/app/tabs/constants";
 import { CLIENTS_URL, ClientInfo } from "@/components/app/invoice/types";
 import { PlanType } from "@/lib/auth";
+import { LAUNCH_DATE_SHORT } from "@/lib/launch";
 import TemplateFillHeader from "./TemplateFillHeader";
 import TemplateFillFields from "./TemplateFillFields";
 import TemplateFillFooter from "./TemplateFillFooter";
@@ -290,7 +291,14 @@ export default function TemplateFillModal({ doc, phone, userProfile, userPlan, c
       headers: { "Content-Type": "application/json", "X-Phone": phone },
       body: JSON.stringify({ action: "share_link", id: contractId, origin: window.location.origin, channel: "sms", client_phone: clientPhone }),
     });
-    if (res.status === 403) throw new Error("Лимит отправок на тестовом тарифе исчерпан. Выберите платный тариф.");
+    if (res.status === 403) {
+      const errRaw = await res.json().catch(() => ({}));
+      const err = typeof errRaw === "string" ? JSON.parse(errRaw) : errRaw;
+      if (err.error === "launch_not_started") {
+        throw new Error(`Отправка документов по СМС станет доступна ${LAUNCH_DATE_SHORT} — в день официального запуска`);
+      }
+      throw new Error("Лимит отправок на тестовом тарифе исчерпан. Выберите платный тариф.");
+    }
     const raw = await res.json();
     const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
     return !!parsed.sms_sent;
@@ -401,7 +409,13 @@ export default function TemplateFillModal({ doc, phone, userProfile, userPlan, c
         body: JSON.stringify({ action: "share_link", id: savedId, origin: window.location.origin, channel, client_phone: clientPhone }),
       });
       if (res.status === 403) {
-        setError("Лимит отправок на тестовом тарифе исчерпан (2 из 2). Выберите платный тариф.");
+        const errRaw = await res.json().catch(() => ({}));
+        const err = typeof errRaw === "string" ? JSON.parse(errRaw) : errRaw;
+        if (err.error === "launch_not_started") {
+          setError(`Отправка документов по СМС станет доступна ${LAUNCH_DATE_SHORT} — в день официального запуска`);
+        } else {
+          setError("Лимит отправок на тестовом тарифе исчерпан (2 из 2). Выберите платный тариф.");
+        }
         return;
       }
       const raw = await res.json();

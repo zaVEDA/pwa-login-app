@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import PhoneInput from "@/components/ui/phone-input";
+import { isBeforeLaunch, LAUNCH_DATE_SHORT } from "@/lib/launch";
 
 interface Props {
   mainTitle: string;
@@ -15,6 +16,7 @@ interface Props {
 export default function SendBundleModal({
   mainTitle, initialPhone = "", sending, error, isTrial, onClose, onSend,
 }: Props) {
+  const launchLocked = isBeforeLaunch() && !isTrial;
   const [phone, setPhone] = useState(initialPhone);
   const [sendMain, setSendMain] = useState(true);
   const [sendConsent, setSendConsent] = useState(true);
@@ -58,6 +60,15 @@ export default function SendBundleModal({
             <p className="text-[11px] text-amber-800 leading-relaxed">
               На тарифе «Тест-драйв» документ будет с полупрозрачной голограммой «ТЕСТ» —
               и в отправленной клиенту версии, и при сохранении PDF.
+            </p>
+          </div>
+        )}
+
+        {launchLocked && (
+          <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2">
+            <Icon name="Rocket" size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-800 leading-relaxed">
+              Отправка документов клиенту по СМС станет доступна {LAUNCH_DATE_SHORT} — в день официального запуска сервиса.
             </p>
           </div>
         )}

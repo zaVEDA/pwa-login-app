@@ -3,6 +3,7 @@ import { formatDate } from "@/lib/date";
 import { INVOICES_URL, HELP_URL, CONTRACTS_URL, HelpTip, Invoice, RealizationDoc, Contract } from "./constants";
 import type { DateRange } from "react-day-picker";
 import { PlanType } from "@/lib/auth";
+import { LAUNCH_DATE_SHORT } from "@/lib/launch";
 import { toast } from "sonner";
 import DocsTabModals from "./docs/DocsTabModals";
 import DocsTabHeader from "./docs/DocsTabHeader";
@@ -357,7 +358,13 @@ export default function DocsTab({ phone, userPlan, userEmail, onDocCreated, onGo
         body: JSON.stringify({ action: "share_link", id: c.id, origin: window.location.origin, channel, client_phone: clientPhone }),
       });
       if (res.status === 403) {
-        toast("Лимит отправок на тестовом тарифе исчерпан (2 из 2). Выберите платный тариф.", { icon: "🎟" });
+        const errRaw = await res.json().catch(() => ({}));
+        const err = typeof errRaw === "string" ? JSON.parse(errRaw) : errRaw;
+        if (err.error === "launch_not_started") {
+          toast(`Отправка документов по СМС станет доступна ${LAUNCH_DATE_SHORT} — в день официального запуска`, { icon: "🚀" });
+        } else {
+          toast("Лимит отправок на тестовом тарифе исчерпан (2 из 2). Выберите платный тариф.", { icon: "🎟" });
+        }
         return;
       }
       const raw = await res.json();

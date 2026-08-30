@@ -160,6 +160,7 @@ export default function PlanModal({ currentPlan, familyRequestStatus, trialStart
             <Icon name="Info" size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-800 leading-relaxed">
               Документы, созданные и подписанные до 11 сентября 2026 (запуск полной версии), будут учтены в лимите вашего тарифа после запуска.
+              Отправка документов клиенту по СМС на платных тарифах станет доступна только с 11 сентября 2026, даже если тариф уже оплачен.
             </p>
           </div>
 

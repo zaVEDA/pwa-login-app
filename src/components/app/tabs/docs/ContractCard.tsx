@@ -4,6 +4,7 @@ import PhoneInput from "@/components/ui/phone-input";
 import { formatDate } from "@/lib/date";
 import { Contract } from "../constants";
 import { PlanType } from "@/lib/auth";
+import { isBeforeLaunch, LAUNCH_DATE_SHORT } from "@/lib/launch";
 
 interface Props {
   contract: Contract;
@@ -120,6 +121,11 @@ export default function ContractCard({
                     {userPlan === "trial" && (
                       <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5 leading-relaxed">
                         На тарифе «Тест-драйв» документ будет с голограммой «ТЕСТ»
+                      </p>
+                    )}
+                    {userPlan !== "trial" && isBeforeLaunch() && (
+                      <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5 leading-relaxed">
+                        Отправка по СМС станет доступна {LAUNCH_DATE_SHORT} — в день официального запуска
                       </p>
                     )}
                     <PhoneInput
