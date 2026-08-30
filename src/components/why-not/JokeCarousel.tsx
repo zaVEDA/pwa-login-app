@@ -14,7 +14,7 @@ interface Slide {
 
 const slides: Slide[] = [
   {
-    image: "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/6a66aa1b-6e4a-41a6-b5ee-084bde795518.jpg",
+    image: "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/c738906b-844b-46c8-9997-8c48dbba699c.jpg",
     items: [
       "Если вы ничего не продаёте и не покупаете",
       "Не сдаёте и не берёте в аренду",
@@ -62,7 +62,8 @@ export default function JokeCarousel() {
                   <img
                     src={slide.image}
                     alt=""
-                    className="w-full h-64 sm:h-80 object-cover rounded-xl mb-5"
+                    className="w-full h-64 sm:h-80 object-contain rounded-xl mb-5"
+                    style={{ background: "hsl(36 25% 96%)" }}
                   />
                 ) : (
                   <div className="w-full h-64 sm:h-80 rounded-xl mb-5 border-2 border-dashed flex flex-col items-center justify-center gap-1.5"
