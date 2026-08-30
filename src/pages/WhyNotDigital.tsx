@@ -1,19 +1,8 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import RevealItem from "@/components/why-not/RevealItem";
+import JokeCarousel from "@/components/why-not/JokeCarousel";
 import { reachGoal } from "@/lib/metrika";
-
-const jokeReasons = [
-  "Если вы ничего не продаёте и не покупаете",
-  "Не сдаёте и не берёте в аренду",
-  "Не приобретаете б/у вещи и не получаете разные услуги по ремонту",
-  "А также если у вас есть большой пустой шкаф, который нечем заполнить — и вы решили хранить там все документы 3 года",
-  "Если вы НЕ получаете от клиентов НИКАКИХ персональных данных: номер телефона, ФИО, электронная почта и т.д.",
-  "Вы любите работать с бумажными документами, и ваши клиенты с радостью их подписывают и отправляют вам",
-  "Вы редко переезжаете, путешествуете и вообще любите проводить время за компьютером с документами",
-  "Вы всё время топите печку и, дабы не жечь чистую бумагу, собираете согласия на обработку перс. данных и соглашения — на бумаге",
-  "Ваш ноутбук не разряжается неожиданно в самый неподходящий момент, и вы не ищете розетку в аэропорту, чтобы выставить счёт или отправить договор",
-];
 
 const spheres = [
   "Услуги: консультации, групповые сессии, тренинги, психологические или околопсихологические консультации",
@@ -84,21 +73,9 @@ export default function WhyNotDigital() {
           </p>
         </div>
 
-        {/* Шуточный блок */}
+        {/* Шуточный блок — карусель */}
         <RevealItem>
-          <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm mb-4">
-            <p className="text-sm font-semibold text-foreground/85 leading-relaxed mb-4">
-              Вам точно не нужны электронные документы, если...
-            </p>
-            <ul className="space-y-3">
-              {jokeReasons.map((r, i) => (
-                <li key={i} className="text-sm text-foreground/80 leading-relaxed pl-5 relative">
-                  <span className="absolute left-0 top-0.5 text-primary">•</span>
-                  {r}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <JokeCarousel />
         </RevealItem>
 
         {/* Раскрывающийся список сфер */}
