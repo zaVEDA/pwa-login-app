@@ -2,7 +2,7 @@ import Icon from "@/components/ui/icon";
 import PromoTemplateBanner from "@/components/promo/PromoTemplateBanner";
 import { reachGoal } from "@/lib/metrika";
 
-const LAUNCH_DATE = "11 сентября 2026";
+const LAUNCH_DATE = "1 октября 2026";
 
 const READY_TEMPLATES = [
   {
@@ -162,7 +162,7 @@ export default function Templates() {
                 На этом тарифе можно добавить свой собственный шаблон договора в сервис — без ожидания очереди*.
               </p>
               <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-1.5">
-                * В течение 24 часов с момента выгрузки, с даты официального запуска сервиса — 11 сентября 2026.
+                * В течение 24 часов с момента выгрузки, с даты официального запуска сервиса — 1 октября 2026.
               </p>
             </div>
             <Icon name="ChevronRight" size={18} className="text-muted-foreground flex-shrink-0 mt-1" />
