@@ -30,6 +30,12 @@ const ARSHAN_SKY_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cb832e8e-23a9-42a2-9529-d51aeafa8e9e.jpg";
 const DATSAN_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
+const HEART_LAKE_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/0e7a6a7e-a921-4810-9589-0a93ab64f6a2.jpg";
+const HEART_LAKE_GIRL_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/78f4d908-2101-4a9c-97a0-3525e0f25043.jpg";
+const BANYA_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/e30e5d5c-2e00-47d1-900b-08f1869daf6e.png";
 
 const stops = [
   {
@@ -181,6 +187,29 @@ const stops = [
     title: "Совместное чаепитие",
     text: "Как и в предыдущие вечера, собираемся вместе за чаем — подвести итоги дня и пообщаться.",
   },
+  {
+    day: 5,
+    time: "9:00",
+    icon: "Music",
+    title: "Завтрак и зарядка",
+    text: "Начинаем день как обычно — вместе завтракаем и делаем лёгкую зарядку.",
+  },
+  {
+    day: 5,
+    time: "По желанию",
+    icon: "Mountain",
+    title: "Поездка на озеро Сердце — для желающих",
+    text: "Для тех, кто хочет — поездка к живописному озеру Сердце. Остальные могут провести день свободно.",
+    images: [HEART_LAKE_IMAGE, HEART_LAKE_GIRL_IMAGE],
+  },
+  {
+    day: 5,
+    time: "Вечер",
+    icon: "Flame",
+    title: "Баня",
+    text: "Завершаем день в тёплой бане — расслабляемся и набираемся сил.",
+    image: BANYA_IMAGE,
+  },
 ];
 
 const dayLabels: Record<number, string> = {
@@ -188,6 +217,7 @@ const dayLabels: Record<number, string> = {
   2: "Второй день",
   3: "Третий день",
   4: "Четвёртый день",
+  5: "Пятый день",
 };
 
 export default function GetawayItinerary() {
