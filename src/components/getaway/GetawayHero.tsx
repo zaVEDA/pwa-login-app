@@ -67,13 +67,6 @@ export default function GetawayHero() {
           <Icon name="Users" size={18} />
           Мини-группа — всего 6 мест
         </span>
-        <span
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-base font-semibold shadow-sm"
-          style={{ background: "hsl(140 40% 45% / 0.12)", color: "hsl(140 40% 30%)" }}
-        >
-          <Icon name="Wallet" size={18} />
-          От 265 000 ₽
-        </span>
       </div>
       <p className="text-xs text-muted-foreground text-center mt-3">
         Количество мест ограничено — набор закрывается по факту заполнения группы

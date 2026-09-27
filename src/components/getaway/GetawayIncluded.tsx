@@ -95,6 +95,16 @@ export default function GetawayIncluded() {
           </div>
         ))}
       </div>
+
+      <div className="flex justify-center mt-10">
+        <span
+          className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl text-lg font-bold shadow-md"
+          style={{ background: "hsl(140 40% 45% / 0.12)", color: "hsl(140 40% 30%)" }}
+        >
+          <Icon name="Wallet" size={20} />
+          От 265 000 ₽
+        </span>
+      </div>
     </section>
   );
 }
