@@ -38,13 +38,13 @@ export default function GetawayHero() {
       </div>
 
       <div
-        className="relative z-10 rounded-3xl overflow-hidden border-2 shadow-sm aspect-[16/9]"
+        className="relative z-10 rounded-3xl overflow-hidden border-2 shadow-sm aspect-[4/3] max-w-md mx-auto"
         style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
       >
         <img
           src={HERO_COVER_IMAGE}
           alt="Аршан — вид на горное озеро"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
       </div>
 
