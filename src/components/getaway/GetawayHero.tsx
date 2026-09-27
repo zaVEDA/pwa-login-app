@@ -5,12 +5,31 @@ const HERO_COVER_IMAGE =
 
 export default function GetawayHero() {
   return (
-    <section className="relative overflow-hidden px-5 pt-20 pb-14 max-w-5xl mx-auto">
+    <section className="relative overflow-hidden px-5 pt-6 pb-14 max-w-5xl mx-auto">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-10 left-1/4 w-64 h-64 rounded-full opacity-20"
           style={{ background: "radial-gradient(circle, hsl(140 40% 45%), transparent)" }} />
         <div className="absolute bottom-0 right-1/4 w-48 h-48 rounded-full opacity-10"
           style={{ background: "radial-gradient(circle, hsl(35 72% 48%), transparent)" }} />
+      </div>
+
+      <div className="relative z-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-10 text-sm">
+        <a href="tel:+79016625752" className="inline-flex items-center gap-1.5 font-medium transition-colors hover:opacity-70"
+          style={{ color: "hsl(140 40% 28%)" }}>
+          <Icon name="Phone" size={15} />
+          +7 901 662-57-52
+        </a>
+        <a href="https://t.me/+79016625752" target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 font-medium transition-colors hover:opacity-70"
+          style={{ color: "hsl(140 40% 28%)" }}>
+          <Icon name="Send" size={15} />
+          Telegram
+        </a>
+        <a href="mailto:89016625752@mail.ru" className="inline-flex items-center gap-1.5 font-medium transition-colors hover:opacity-70"
+          style={{ color: "hsl(140 40% 28%)" }}>
+          <Icon name="Mail" size={15} />
+          89016625752@mail.ru
+        </a>
       </div>
 
       <div className="relative z-10 text-center max-w-2xl mx-auto mb-10">

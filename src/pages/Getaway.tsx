@@ -5,6 +5,7 @@ import GetawayIncluded from "@/components/getaway/GetawayIncluded";
 import GetawayLogistics from "@/components/getaway/GetawayLogistics";
 import GetawayAtmosphere from "@/components/getaway/GetawayAtmosphere";
 import GetawayRequestForm from "@/components/getaway/GetawayRequestForm";
+import GetawayFooter from "@/components/getaway/GetawayFooter";
 
 export default function Getaway() {
   return (
@@ -21,6 +22,7 @@ export default function Getaway() {
       <section id="signup" className="px-5 py-14">
         <GetawayRequestForm />
       </section>
+      <GetawayFooter />
     </div>
   );
 }
