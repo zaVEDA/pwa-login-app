@@ -43,6 +43,8 @@ const DATSAN_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
 const DATSAN_AUTUMN_RIVER_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/55ee12c4-e190-4d76-a515-6092709a2edb.png";
+const BAIKAL_TRIP_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/48c34a46-1f43-4e21-b527-a61085554ca3.png";
 const HEART_LAKE_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/0e7a6a7e-a921-4810-9589-0a93ab64f6a2.jpg";
 const HEART_LAKE_GIRL_IMAGE =
@@ -243,6 +245,8 @@ const stops = [
     icon: "Waves",
     title: "Выезд на Байкал и шашлыки",
     text: "Едем на берег Байкала — свежий воздух, красивые виды и шашлыки в компании.",
+    image: BAIKAL_TRIP_IMAGE,
+    highlight: true,
   },
   {
     day: 6,
