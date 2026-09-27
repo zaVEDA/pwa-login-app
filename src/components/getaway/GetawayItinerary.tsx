@@ -31,6 +31,14 @@ const ARSHAN_SKY_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cb832e8e-23a9-42a2-9529-d51aeafa8e9e.jpg";
 const ARSHAN_RIVER_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/963e0a7a-28f1-4353-87b9-441bd7ff38d1.png";
+const FREE_DAY_CAR_VIEW_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/34401ac0-5f9b-4bec-ba17-1f44485b7a79.png";
+const FREE_DAY_BOOK_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/af9d926d-668c-4164-9538-f0d2b7a1c38d.png";
+const FREE_DAY_MARALS_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/45f33f23-9c92-4351-b78f-e3d0155c0c0f.png";
+const FREE_DAY_RIVER_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cf5290e7-21b6-421c-a977-21dd5c13c4b2.png";
 const DATSAN_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
 const HEART_LAKE_IMAGE =
@@ -162,6 +170,7 @@ const stops = [
     icon: "Sun",
     title: "Свободное время — как душе угодно",
     text: "Можно погулять по округе, сходить на ферму маралов, съездить на источники или просто отдохнуть с книгой.",
+    images: [FREE_DAY_CAR_VIEW_IMAGE, FREE_DAY_BOOK_IMAGE, FREE_DAY_MARALS_IMAGE, FREE_DAY_RIVER_IMAGE],
   },
   {
     day: 4,
