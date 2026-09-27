@@ -77,15 +77,21 @@ export default function GetawayLogistics() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 mb-10">
-        <div
-          className="rounded-3xl overflow-hidden border-2 shadow-sm"
-          style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
-        >
-          <img
-            src={CAR_BMW_FRONT_IMAGE}
-            alt="Авто и дорога"
-            className="w-full h-full aspect-[4/3] object-cover"
-          />
+        <div className="grid grid-cols-2 gap-2">
+          {carImages.map((img, idx) => (
+            <div
+              key={img}
+              className="rounded-2xl overflow-hidden border-2 shadow-sm"
+              style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+            >
+              <img
+                src={img}
+                alt={`Автомобиль для поездки — фото ${idx + 1}`}
+                className="w-full aspect-[4/3] object-cover"
+                style={img === CAR_CROWN_SIDE_IMAGE ? { objectPosition: "50% 85%" } : undefined}
+              />
+            </div>
+          ))}
         </div>
         <div className="grid grid-cols-2 gap-2">
           {roomImages.map((img, idx) => (
@@ -103,6 +109,10 @@ export default function GetawayLogistics() {
           ))}
         </div>
       </div>
+
+      <p className="text-sm text-muted-foreground text-center -mt-6 mb-10">
+        Варианты машин зависят от количества гостей
+      </p>
 
       <div
         className="rounded-2xl border bg-white/60 overflow-hidden mb-10"
@@ -158,42 +168,6 @@ export default function GetawayLogistics() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="mt-14">
-        <div className="text-center max-w-xl mx-auto mb-8">
-          <span
-            className="inline-flex items-center gap-2 text-xs font-semibold mb-4 tracking-wider uppercase justify-center"
-            style={{ color: "hsl(140 40% 32%)" }}
-          >
-            <Icon name="Car" size={14} />
-            Транспорт и дорога
-          </span>
-          <h2 className="font-cormorant text-3xl md:text-4xl font-semibold" style={{ color: "hsl(24 20% 13%)" }}>
-            Едем с комфортом
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {carImages.map((img, idx) => (
-            <div
-              key={img}
-              className="rounded-2xl overflow-hidden border-2 shadow-sm"
-              style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
-            >
-              <img
-                src={img}
-                alt={`Автомобиль для поездки — фото ${idx + 1}`}
-                className="w-full aspect-[4/3] object-cover"
-                style={img === CAR_CROWN_SIDE_IMAGE ? { objectPosition: "50% 85%" } : undefined}
-              />
-            </div>
-          ))}
-        </div>
-
-        <p className="text-sm text-muted-foreground text-center mt-4">
-          Варианты машин зависят от количества гостей
-        </p>
       </div>
     </section>
   );
