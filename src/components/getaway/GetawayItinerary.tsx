@@ -14,6 +14,12 @@ const HOTEL_ROOM_DETAILS_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/385a0cd3-58d7-4ae0-8fe7-c058d4c86b0a.png";
 const MARAL_FARM_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/e749c1f7-3771-4fd6-a361-3d4b84ecf0e9.png";
+const MATCHA_COCOA_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/f44ccb2e-7a56-4d32-b2ac-d561e6eaefb3.png";
+const GIFTS_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/5ec7b3d0-073c-4f09-ad27-b35b3e17a3f6.png";
+const CAFE_DRINKS_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/94e6a1bb-c1c0-40a1-a73f-3a1eeb9ac82a.png";
 
 const stops = [
   {
@@ -67,6 +73,20 @@ const stops = [
     icon: "Camera",
     title: "Идём на ферму маралов",
     text: "Фотографируемся, наслаждаемся видами и свежим воздухом — успеваем застать маралов до вечера.",
+  },
+  {
+    time: "Вечер",
+    icon: "Soup",
+    title: "Ужинаем в кафе — по желанию",
+    text: "Ужин самостоятельно: выбираем кафе по вкусу и настроению.",
+    image: CAFE_DRINKS_IMAGE,
+  },
+  {
+    time: "~19:30",
+    icon: "Gift",
+    title: "Вечернее какао, знакомство и подарочки",
+    text: "Собираемся на 1,5–2 часа за какао или матчей — знакомимся друг с другом и получаем небольшие подарочки.",
+    images: [MATCHA_COCOA_IMAGE, GIFTS_IMAGE],
   },
 ];
 
