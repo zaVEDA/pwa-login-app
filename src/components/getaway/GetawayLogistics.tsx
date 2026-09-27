@@ -61,13 +61,6 @@ const roomFeatureGroups = [
   },
 ];
 
-const items = [
-  { icon: "Car", title: "Доставка", text: "Организую выезд из города до места и обратно — на люксовых авто на протяжении всего путешествия." },
-  { icon: "BedDouble", title: "Проживание", text: "Размещаемся в гостинице — у каждого свой номер и комфортные условия." },
-  { icon: "Coffee", title: "Завтраки", text: "Каждое утро готовлю сама и приглашаю всех в свой домик." },
-  { icon: "Sunrise", title: "Зарядка", text: "По утрам собираемся вместе — мягкая зарядка на природе." },
-];
-
 export default function GetawayLogistics() {
   const [roomDetailsOpen, setRoomDetailsOpen] = useState(false);
 
@@ -157,22 +150,6 @@ export default function GetawayLogistics() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        {items.map((item) => (
-          <div key={item.title} className="flex gap-4 p-5 rounded-2xl bg-white/70 border shadow-sm"
-            style={{ borderColor: "hsl(36 28% 82%)" }}>
-            <div className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
-              style={{ background: "hsl(140 40% 45% / 0.12)" }}>
-              <Icon name={item.icon} size={20} style={{ color: "hsl(140 40% 32%)" }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm mb-1">{item.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
-            </div>
-          </div>
-        ))}
       </div>
 
       <div className="mt-14">
