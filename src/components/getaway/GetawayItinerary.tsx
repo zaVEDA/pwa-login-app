@@ -77,6 +77,7 @@ const stops = [
     title: "Заселяемся в отель с видом и фермой маралов",
     text: "Номера с видом на горы и панорамные окна на природу. А рядом — своя ферма маралов, куда можно прийти познакомиться поближе.",
     images: [HOTEL_VIEW_IMAGE, HOTEL_ROOM_VIEW_IMAGE, HOTEL_ROOM_DETAILS_IMAGE, MARAL_FARM_IMAGE],
+    highlight: true,
   },
   {
     day: 1,
@@ -307,20 +308,84 @@ export default function GetawayItinerary() {
       <div className="space-y-4">
         {dayGroups.map((group) => {
           const isOpen = openDay === group.day;
+          const highlight = group.items.find((s) => s.highlight);
+          const restItems = highlight ? group.items.filter((s) => s !== highlight) : group.items;
           return (
             <div
               key={group.day}
               className="rounded-2xl border bg-white/60 overflow-hidden"
               style={{ borderColor: "hsl(36 28% 82%)" }}
             >
+              <div className="px-5 pt-4">
+                <h3 className="font-cormorant text-xl md:text-2xl font-bold mb-3" style={{ color: "hsl(140 40% 28%)" }}>
+                  {dayLabels[group.day] ?? `День ${group.day}`}
+                </h3>
+
+                {highlight && (
+                  <div className="mb-4">
+                    <span
+                      className="inline-block text-xs font-bold uppercase tracking-wider mb-2"
+                      style={{ color: "hsl(140 40% 32%)" }}
+                    >
+                      {highlight.time}
+                    </span>
+                    <div className="flex items-start gap-3 mb-2">
+                      <div
+                        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ background: "hsl(140 40% 45% / 0.12)" }}
+                      >
+                        <Icon name={highlight.icon} size={18} style={{ color: "hsl(140 40% 32%)" }} />
+                      </div>
+                      <h4 className="font-cormorant text-2xl font-semibold pt-1.5" style={{ color: "hsl(24 20% 13%)" }}>
+                        {highlight.title}
+                      </h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">{highlight.text}</p>
+
+                    {highlight.image && (
+                      <div
+                        className="rounded-3xl overflow-hidden border-2 shadow-sm max-w-2xl"
+                        style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+                      >
+                        <img
+                          src={highlight.image}
+                          alt={highlight.title}
+                          className="w-full aspect-[16/10] object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {highlight.images && (
+                      <div className="grid grid-cols-2 gap-3 max-w-2xl">
+                        {highlight.images.map((img, idx) => (
+                          <div
+                            key={img}
+                            className="rounded-2xl overflow-hidden border-2 shadow-sm"
+                            style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+                          >
+                            <img
+                              src={img}
+                              alt={`${highlight.title} — фото ${idx + 1}`}
+                              className="w-full aspect-[4/3] object-cover"
+                              style={img === ARSHAN_MOUNTAINS_GIRL_IMAGE ? { objectPosition: "50% 15%" } : undefined}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setOpenDay(isOpen ? null : group.day)}
-                className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+                className="w-full flex items-center justify-between gap-3 px-5 py-3 text-left border-t"
+                style={{ borderColor: "hsl(36 28% 88%)" }}
               >
-                <h3 className="font-cormorant text-xl md:text-2xl font-bold" style={{ color: "hsl(140 40% 28%)" }}>
-                  {dayLabels[group.day] ?? `День ${group.day}`}
-                </h3>
+                <span className="text-sm font-medium" style={{ color: "hsl(140 40% 32%)" }}>
+                  {isOpen ? "Скрыть остальные события дня" : "Показать остальные события дня"}
+                </span>
                 <Icon
                   name="ChevronDown"
                   size={20}
@@ -337,7 +402,7 @@ export default function GetawayItinerary() {
                   />
 
                   <div className="space-y-10">
-                    {group.items.map((stop) => (
+                    {restItems.map((stop) => (
                       <div key={stop.title} className="relative">
                         <div
                           className="absolute -left-8 md:-left-10 top-1 w-6 h-6 rounded-full flex items-center justify-center border-4"
