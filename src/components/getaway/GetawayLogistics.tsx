@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import ImagePlaceholder from "./ImagePlaceholder";
 
 const CAR_BMW_FRONT_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/2a9dfac2-182a-4b3b-bba9-f4d32dc79745.png";
@@ -78,7 +77,16 @@ export default function GetawayLogistics() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 mb-10">
-        <ImagePlaceholder label="Фото: авто / дорога" />
+        <div
+          className="rounded-3xl overflow-hidden border-2 shadow-sm"
+          style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+        >
+          <img
+            src={CAR_BMW_FRONT_IMAGE}
+            alt="Авто и дорога"
+            className="w-full h-full aspect-[4/3] object-cover"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           {roomImages.map((img, idx) => (
             <div
