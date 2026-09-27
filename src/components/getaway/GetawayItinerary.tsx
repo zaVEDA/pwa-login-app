@@ -279,12 +279,15 @@ export default function GetawayItinerary() {
           Как проходит путешествие
         </h2>
         <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-2"
           style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 60% 35%)" }}
         >
           <Icon name="CalendarClock" size={13} />
           Даты уточняются
         </span>
+        <p className="text-xs text-muted-foreground">
+          Расписание примерное — ориентируемся по погоде и дороге
+        </p>
       </div>
 
       <div className="relative pl-8 md:pl-10">
