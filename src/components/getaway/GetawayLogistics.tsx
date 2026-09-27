@@ -79,6 +79,7 @@ export default function GetawayLogistics() {
                 src={img}
                 alt={`Автомобиль для поездки — фото ${idx + 1}`}
                 className="w-full aspect-[4/3] object-cover"
+                style={img === CAR_CROWN_SIDE_IMAGE ? { objectPosition: "50% 85%" } : undefined}
               />
             </div>
           ))}
