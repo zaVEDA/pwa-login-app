@@ -31,12 +31,14 @@ const ARSHAN_SKY_IMAGE =
 
 const stops = [
   {
+    day: 1,
     time: "10:00",
     icon: "Car",
     title: "Старт из Иркутска",
     text: "Забираем каждого с указанного адреса на комфортных авто — никуда добираться самостоятельно не нужно.",
   },
   {
+    day: 1,
     time: "День 1",
     icon: "Church",
     title: "Храм Казанской иконы Божией Матери",
@@ -44,6 +46,7 @@ const stops = [
     image: CHURCH_IMAGE,
   },
   {
+    day: 1,
     time: "По пути",
     icon: "Waves",
     title: "Выходим поздороваться с Байкалом",
@@ -51,6 +54,7 @@ const stops = [
     image: BAIKAL_SHORE_IMAGE,
   },
   {
+    day: 1,
     time: "По пути",
     icon: "Fish",
     title: "Покупаем омуля",
@@ -58,6 +62,7 @@ const stops = [
     image: OMUL_IMAGE,
   },
   {
+    day: 1,
     time: "Аршан",
     icon: "Mountain",
     title: "Заселяемся в отель с видом и фермой маралов",
@@ -65,24 +70,28 @@ const stops = [
     images: [HOTEL_VIEW_IMAGE, HOTEL_ROOM_VIEW_IMAGE, HOTEL_ROOM_DETAILS_IMAGE, MARAL_FARM_IMAGE],
   },
   {
+    day: 1,
     time: "Аршан",
     icon: "UtensilsCrossed",
     title: "Обедаем рыбкой и вкусностями вместе",
     text: "Садимся за общий стол — омуль и другие вкусности, приготовленные специально для нас.",
   },
   {
+    day: 1,
     time: "Аршан",
     icon: "Luggage",
     title: "Отдыхаем и раскладываем вещи",
     text: "Немного времени, чтобы перевести дух и устроиться в номере — без спешки.",
   },
   {
+    day: 1,
     time: "До 20:00",
     icon: "Camera",
     title: "Идём на ферму маралов",
     text: "Фотографируемся, наслаждаемся видами и свежим воздухом — успеваем застать маралов до вечера.",
   },
   {
+    day: 1,
     time: "Вечер",
     icon: "Soup",
     title: "Ужинаем в кафе — по желанию",
@@ -90,6 +99,7 @@ const stops = [
     image: CAFE_DRINKS_IMAGE,
   },
   {
+    day: 1,
     time: "~19:30",
     icon: "Gift",
     title: "Вечернее какао, знакомство и подарочки",
@@ -97,6 +107,7 @@ const stops = [
     images: [MATCHA_COCOA_IMAGE, GIFTS_IMAGE],
   },
   {
+    day: 2,
     time: "9:00",
     icon: "Music",
     title: "Зарядка и завтрак",
@@ -104,6 +115,7 @@ const stops = [
     image: MORNING_DANCE_IMAGE,
   },
   {
+    day: 2,
     time: "День 2",
     icon: "TreePine",
     title: "Выезжаем на источники и водопады Аршана",
@@ -111,18 +123,26 @@ const stops = [
     images: [ARSHAN_GORGE_IMAGE, ARSHAN_MOUNTAINS_GIRL_IMAGE, ARSHAN_SKY_IMAGE],
   },
   {
+    day: 2,
     time: "Обед и ужин",
     icon: "Soup",
     title: "Обедаем и ужинаем в кафе — по желанию",
     text: "Питание самостоятельно: выбираем кафе по вкусу и настроению.",
   },
   {
+    day: 2,
     time: "Вечер",
     icon: "Coffee",
     title: "Встречаемся за чаем, какао и матча",
     text: "Собираемся вместе на пару часов — тёплый чай, какао или матча и приятные разговоры.",
   },
 ];
+
+const dayLabels: Record<number, string> = {
+  1: "Первый день",
+  2: "Второй день",
+  3: "Третий день",
+};
 
 export default function GetawayItinerary() {
   return (
@@ -136,7 +156,7 @@ export default function GetawayItinerary() {
           Маршрут
         </span>
         <h2 className="font-cormorant text-3xl md:text-4xl font-semibold mb-3" style={{ color: "hsl(24 20% 13%)" }}>
-          Как проходит первый день
+          Как проходит путешествие
         </h2>
         <span
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
@@ -154,8 +174,19 @@ export default function GetawayItinerary() {
         />
 
         <div className="space-y-10">
-          {stops.map((stop) => (
-            <div key={stop.title} className="relative">
+          {stops.map((stop, index) => {
+            const isNewDay = index === 0 || stops[index - 1].day !== stop.day;
+            return (
+            <div key={stop.title}>
+              {isNewDay && (
+                <h3
+                  className="font-cormorant text-xl md:text-2xl font-bold mb-4"
+                  style={{ color: "hsl(140 40% 28%)" }}
+                >
+                  {dayLabels[stop.day] ?? `День ${stop.day}`}
+                </h3>
+              )}
+              <div className="relative">
               <div
                 className="absolute -left-8 md:-left-10 top-1 w-6 h-6 rounded-full flex items-center justify-center border-4"
                 style={{ background: "hsl(140 40% 42%)", borderColor: "hsl(38 35% 96%)" }}
@@ -213,8 +244,10 @@ export default function GetawayItinerary() {
                   ))}
                 </div>
               )}
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
