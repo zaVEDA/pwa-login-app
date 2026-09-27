@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import AdminPanel from "./pages/AdminPanel";
 import Investor from "./pages/Investor";
+import Getaway from "./pages/Getaway";
 import Welcome from "./pages/Welcome";
 import Legal from "./pages/Legal";
 import Offer from "./pages/Offer";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/app" element={<Index />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/investor" element={<Investor />} />
+          <Route path="/getaway" element={<Getaway />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/offer" element={<Offer />} />

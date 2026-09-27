@@ -1,0 +1,40 @@
+import Icon from "@/components/ui/icon";
+import ImagePlaceholder from "./ImagePlaceholder";
+
+export default function GetawayHero() {
+  return (
+    <section className="relative overflow-hidden px-5 pt-20 pb-14 max-w-5xl mx-auto">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-10 left-1/4 w-64 h-64 rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle, hsl(140 40% 45%), transparent)" }} />
+        <div className="absolute bottom-0 right-1/4 w-48 h-48 rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, hsl(35 72% 48%), transparent)" }} />
+      </div>
+
+      <div className="relative z-10 text-center max-w-2xl mx-auto mb-10">
+        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6 tracking-wider uppercase"
+          style={{ background: "hsl(140 40% 45% / 0.12)", color: "hsl(140 40% 30%)" }}>
+          Getaway · Байкал и Аршан
+        </span>
+        <h1 className="font-cormorant text-4xl md:text-6xl font-semibold leading-tight mb-5"
+          style={{ color: "hsl(24 20% 13%)" }}>
+          Путешествие-перезагрузка<br />
+          <span style={{ color: "hsl(140 40% 38%)" }}>для своих</span>
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
+          Не ретрит с программой по расписанию — а бережный выезд на природу, где можно наконец расслабиться, выспаться и услышать себя.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#format"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
+            style={{ background: "linear-gradient(135deg, hsl(140 40% 42%), hsl(140 40% 32%))", color: "white" }}>
+            <Icon name="Compass" size={16} />
+            Узнать подробнее
+          </a>
+        </div>
+      </div>
+
+      <ImagePlaceholder label="Обложка: Байкал / Аршан" aspect="aspect-[16/9]" />
+    </section>
+  );
+}
