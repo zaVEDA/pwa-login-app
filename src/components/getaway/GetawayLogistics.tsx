@@ -10,7 +10,7 @@ const CAR_INTERIOR_IMAGE =
 const CAR_CROWN_BLACK_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/34c5d05c-f0c8-4a93-a1c7-7ed186545d3c.png";
 
-const carImages = [CAR_BMW_FRONT_IMAGE, CAR_CROWN_SIDE_IMAGE, CAR_INTERIOR_IMAGE, CAR_CROWN_BLACK_IMAGE];
+const carImages = [CAR_CROWN_SIDE_IMAGE, CAR_CROWN_BLACK_IMAGE, CAR_BMW_FRONT_IMAGE, CAR_INTERIOR_IMAGE];
 
 const items = [
   { icon: "Car", title: "Доставка", text: "Организую выезд из города до места и обратно — на люксовых авто на протяжении всего путешествия." },
