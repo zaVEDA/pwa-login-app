@@ -1,5 +1,7 @@
 import Icon from "@/components/ui/icon";
-import ImagePlaceholder from "./ImagePlaceholder";
+
+const HERO_COVER_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/47414a47-24fe-4be4-bdab-df78329ad1ac.jpg";
 
 export default function GetawayHero() {
   return (
@@ -35,7 +37,16 @@ export default function GetawayHero() {
         </div>
       </div>
 
-      <ImagePlaceholder label="Обложка: Байкал / Аршан" aspect="aspect-[16/9]" />
+      <div
+        className="relative z-10 rounded-3xl overflow-hidden border-2 shadow-sm aspect-[16/9]"
+        style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+      >
+        <img
+          src={HERO_COVER_IMAGE}
+          alt="Аршан — вид на горное озеро"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       <div className="relative z-10 flex flex-wrap items-center justify-center gap-4 mt-10">
         <span
