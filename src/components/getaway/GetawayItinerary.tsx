@@ -219,6 +219,7 @@ const stops = [
     title: "Поездка на озеро Сердце — для желающих",
     text: "Для тех, кто хочет — поездка к живописному озеру Сердце. В вашем распоряжении будут машины и водители. Остальные могут провести день свободно.",
     images: [HEART_LAKE_IMAGE, HEART_LAKE_GIRL_IMAGE],
+    highlight: true,
   },
   {
     day: 5,
@@ -227,6 +228,7 @@ const stops = [
     title: "Баня",
     text: "Завершаем день в тёплой бане — расслабляемся и набираемся сил.",
     image: BANYA_IMAGE,
+    highlight: true,
   },
   {
     day: 6,
@@ -324,7 +326,7 @@ export default function GetawayItinerary() {
       <div className="space-y-4">
         {dayGroups.map((group) => {
           const isOpen = openDay === group.day;
-          const highlight = group.items.find((s) => s.highlight);
+          const highlights = group.items.filter((s) => s.highlight);
           return (
             <div
               key={group.day}
@@ -336,58 +338,62 @@ export default function GetawayItinerary() {
                   {dayLabels[group.day] ?? `День ${group.day}`}
                 </h3>
 
-                {highlight && !isOpen && (
-                  <div className="mb-4">
-                    <span
-                      className="inline-block text-xs font-bold uppercase tracking-wider mb-2"
-                      style={{ color: "hsl(140 40% 32%)" }}
-                    >
-                      {highlight.time}
-                    </span>
-                    <div className="flex items-start gap-3 mb-2">
-                      <div
-                        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ background: "hsl(140 40% 45% / 0.12)" }}
-                      >
-                        <Icon name={highlight.icon} size={18} style={{ color: "hsl(140 40% 32%)" }} />
-                      </div>
-                      <h4 className="font-cormorant text-2xl font-semibold pt-1.5" style={{ color: "hsl(24 20% 13%)" }}>
-                        {highlight.title}
-                      </h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">{highlight.text}</p>
-
-                    {highlight.image && (
-                      <div
-                        className="rounded-3xl overflow-hidden border-2 shadow-sm max-w-2xl"
-                        style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
-                      >
-                        <img
-                          src={highlight.image}
-                          alt={highlight.title}
-                          className="w-full aspect-[16/10] object-cover"
-                        />
-                      </div>
-                    )}
-
-                    {highlight.images && (
-                      <div className="grid grid-cols-2 gap-3 max-w-2xl">
-                        {highlight.images.map((img, idx) => (
+                {highlights.length > 0 && !isOpen && (
+                  <div className="space-y-6">
+                    {highlights.map((highlight) => (
+                      <div key={highlight.title} className="mb-4">
+                        <span
+                          className="inline-block text-xs font-bold uppercase tracking-wider mb-2"
+                          style={{ color: "hsl(140 40% 32%)" }}
+                        >
+                          {highlight.time}
+                        </span>
+                        <div className="flex items-start gap-3 mb-2">
                           <div
-                            key={img}
-                            className="rounded-2xl overflow-hidden border-2 shadow-sm"
+                            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{ background: "hsl(140 40% 45% / 0.12)" }}
+                          >
+                            <Icon name={highlight.icon} size={18} style={{ color: "hsl(140 40% 32%)" }} />
+                          </div>
+                          <h4 className="font-cormorant text-2xl font-semibold pt-1.5" style={{ color: "hsl(24 20% 13%)" }}>
+                            {highlight.title}
+                          </h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">{highlight.text}</p>
+
+                        {highlight.image && (
+                          <div
+                            className="rounded-3xl overflow-hidden border-2 shadow-sm max-w-2xl"
                             style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
                           >
                             <img
-                              src={img}
-                              alt={`${highlight.title} — фото ${idx + 1}`}
-                              className="w-full aspect-[4/3] object-cover"
-                              style={img === ARSHAN_MOUNTAINS_GIRL_IMAGE ? { objectPosition: "50% 15%" } : undefined}
+                              src={highlight.image}
+                              alt={highlight.title}
+                              className="w-full aspect-[16/10] object-cover"
                             />
                           </div>
-                        ))}
+                        )}
+
+                        {highlight.images && (
+                          <div className="grid grid-cols-2 gap-3 max-w-2xl">
+                            {highlight.images.map((img, idx) => (
+                              <div
+                                key={img}
+                                className="rounded-2xl overflow-hidden border-2 shadow-sm"
+                                style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+                              >
+                                <img
+                                  src={img}
+                                  alt={`${highlight.title} — фото ${idx + 1}`}
+                                  className="w-full aspect-[4/3] object-cover"
+                                  style={img === ARSHAN_MOUNTAINS_GIRL_IMAGE ? { objectPosition: "50% 15%" } : undefined}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
                 )}
               </div>
