@@ -1,6 +1,7 @@
 import GetawayHero from "@/components/getaway/GetawayHero";
 import GetawayFormat from "@/components/getaway/GetawayFormat";
 import GetawayItinerary from "@/components/getaway/GetawayItinerary";
+import GetawayIncluded from "@/components/getaway/GetawayIncluded";
 import GetawayLogistics from "@/components/getaway/GetawayLogistics";
 import GetawayAtmosphere from "@/components/getaway/GetawayAtmosphere";
 
@@ -13,6 +14,7 @@ export default function Getaway() {
       <GetawayHero />
       <GetawayFormat />
       <GetawayItinerary />
+      <GetawayIncluded />
       <GetawayLogistics />
       <GetawayAtmosphere />
     </div>
