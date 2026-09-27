@@ -1,5 +1,7 @@
 import Icon from "@/components/ui/icon";
-import ImagePlaceholder from "./ImagePlaceholder";
+
+const FORMAT_DEER_GIRL_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/3b4a4a38-8698-49a7-8696-aaafb58365db.png";
 
 const formatPoints = [
   {
@@ -48,7 +50,16 @@ export default function GetawayFormat() {
           ))}
         </div>
       </div>
-      <ImagePlaceholder label="Фото: природа / выезд" />
+      <div
+        className="rounded-3xl overflow-hidden border-2 shadow-sm aspect-[4/5]"
+        style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+      >
+        <img
+          src={FORMAT_DEER_GIRL_IMAGE}
+          alt="Знакомство с оленем на ферме маралов"
+          className="w-full h-full object-cover object-top"
+        />
+      </div>
     </section>
   );
 }
