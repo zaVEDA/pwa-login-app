@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import ImagePlaceholder from "./ImagePlaceholder";
 
@@ -23,6 +24,43 @@ const ROOM_BATHROOM_IMAGE =
 
 const roomImages = [ROOM_BED_IMAGE, ROOM_LOUNGE_IMAGE, ROOM_OVERVIEW_IMAGE, ROOM_BATHROOM_IMAGE];
 
+const roomFeatureGroups = [
+  {
+    title: "В номере",
+    icon: "BedDouble",
+    items: [
+      "Кондиционирование / система климат-контроля",
+      "Обогреватель",
+      "Рабочее пространство",
+      "Шкаф / гардероб",
+      "Москитная сетка",
+      "Дополнительные подушки и одеяла",
+      "Светонепроницаемые шторы",
+      "Балкон",
+    ],
+  },
+  {
+    title: "Ванная комната",
+    icon: "ShowerHead",
+    items: ["Собственный санузел", "Тапочки", "Туалетно-косметические принадлежности", "Душ"],
+  },
+  {
+    title: "Кухня",
+    icon: "CookingPot",
+    items: ["Холодильник", "Столовые приборы", "Обеденный стол", "Кофе / чай", "Чайник"],
+  },
+  {
+    title: "Электроника и развлечения",
+    icon: "Tv",
+    items: ["Телевизор", "WiFi"],
+  },
+  {
+    title: "Вид",
+    icon: "Mountain",
+    items: ["Вид на горы и внутренний двор"],
+  },
+];
+
 const items = [
   { icon: "Car", title: "Доставка", text: "Организую выезд из города до места и обратно — на люксовых авто на протяжении всего путешествия." },
   { icon: "BedDouble", title: "Проживание", text: "Размещаемся в гостинице — у каждого свой номер и комфортные условия." },
@@ -31,6 +69,8 @@ const items = [
 ];
 
 export default function GetawayLogistics() {
+  const [roomDetailsOpen, setRoomDetailsOpen] = useState(false);
+
   return (
     <section className="px-5 py-14 max-w-5xl mx-auto">
       <div className="text-center max-w-xl mx-auto mb-10">
@@ -61,6 +101,62 @@ export default function GetawayLogistics() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div
+        className="rounded-2xl border bg-white/60 overflow-hidden mb-10"
+        style={{ borderColor: "hsl(36 28% 82%)" }}
+      >
+        <button
+          type="button"
+          onClick={() => setRoomDetailsOpen((v) => !v)}
+          className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+        >
+          <div>
+            <h3 className="font-cormorant text-xl md:text-2xl font-bold mb-1" style={{ color: "hsl(140 40% 28%)" }}>
+              Новый корпус с 18 номерами повышенной комфортности
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              В номере 2 односпальные кровати спринг-бокс, которые по необходимости объединяются в одну
+              большую двуспальную. Возможно предоставление дополнительного места в виде раскладушки за
+              отдельную плату. Площадь номера — 24 кв.м.
+            </p>
+          </div>
+          <Icon
+            name="ChevronDown"
+            size={20}
+            className="flex-shrink-0 transition-transform duration-200 mt-1"
+            style={{ color: "hsl(140 40% 32%)", transform: roomDetailsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+          />
+        </button>
+
+        {roomDetailsOpen && (
+          <div className="px-5 pb-6 grid sm:grid-cols-2 gap-6">
+            {roomFeatureGroups.map((group) => (
+              <div key={group.title}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon name={group.icon} size={16} style={{ color: "hsl(140 40% 32%)" }} />
+                  <h4 className="text-sm font-semibold" style={{ color: "hsl(24 20% 13%)" }}>
+                    {group.title}
+                  </h4>
+                </div>
+                <ul className="space-y-1.5">
+                  {group.items.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <Icon
+                        name="Check"
+                        size={14}
+                        className="flex-shrink-0 mt-0.5"
+                        style={{ color: "hsl(140 40% 42%)" }}
+                      />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
