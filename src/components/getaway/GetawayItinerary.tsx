@@ -6,6 +6,14 @@ const BAIKAL_SHORE_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/248c1cc8-24dc-4a8d-b960-741dd2e969c6.png";
 const OMUL_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/65456cd1-1ecc-401b-970c-619d2a53b757.png";
+const HOTEL_VIEW_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/e14124e1-7a6a-4079-b041-d20cc1e4adec.png";
+const HOTEL_ROOM_VIEW_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/914dd1cb-bef7-4fce-93ac-2bbffbd0a472.png";
+const HOTEL_ROOM_DETAILS_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/385a0cd3-58d7-4ae0-8fe7-c058d4c86b0a.png";
+const MARAL_FARM_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/e749c1f7-3771-4fd6-a361-3d4b84ecf0e9.png";
 
 const stops = [
   {
@@ -34,6 +42,13 @@ const stops = [
     title: "Покупаем омуля",
     text: "Заедем за настоящим байкальским омулем — свежим или копчёным, чтобы попробовать в дороге и привезти гостинец.",
     image: OMUL_IMAGE,
+  },
+  {
+    time: "Аршан",
+    icon: "Mountain",
+    title: "Заселяемся в отель с видом и фермой маралов",
+    text: "Номера с видом на горы и панорамные окна на природу. А рядом — своя ферма маралов, куда можно прийти познакомиться поближе.",
+    images: [HOTEL_VIEW_IMAGE, HOTEL_ROOM_VIEW_IMAGE, HOTEL_ROOM_DETAILS_IMAGE, MARAL_FARM_IMAGE],
   },
 ];
 
@@ -103,9 +118,27 @@ export default function GetawayItinerary() {
                 >
                   <img
                     src={stop.image}
-                    alt="Храм Казанской иконы Божией Матери, Усть-Куда"
+                    alt={stop.title}
                     className="w-full aspect-[16/10] object-cover"
                   />
+                </div>
+              )}
+
+              {stop.images && (
+                <div className="grid grid-cols-2 gap-3 max-w-2xl">
+                  {stop.images.map((img, idx) => (
+                    <div
+                      key={img}
+                      className="rounded-2xl overflow-hidden border-2 shadow-sm"
+                      style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+                    >
+                      <img
+                        src={img}
+                        alt={`${stop.title} — фото ${idx + 1}`}
+                        className="w-full aspect-[4/3] object-cover"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
