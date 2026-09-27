@@ -65,7 +65,7 @@ export default function GetawayIncluded() {
           <Icon name="CheckCircle2" size={14} />
           Стоимость
         </span>
-        <h2 className="font-cormorant text-3xl md:text-4xl font-semibold" style={{ color: "hsl(24 20% 13%)" }}>
+        <h2 className="font-cormorant text-3xl md:text-4xl font-semibold" style={{ color: "hsl(140 40% 30%)" }}>
           Что входит в стоимость
         </h2>
       </div>
