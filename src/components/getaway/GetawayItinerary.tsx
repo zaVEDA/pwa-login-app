@@ -304,7 +304,7 @@ const groupByDay = () => {
 
 export default function GetawayItinerary() {
   const dayGroups = groupByDay();
-  const [openDay, setOpenDay] = useState<number | null>(dayGroups[0]?.day ?? null);
+  const [openDay, setOpenDay] = useState<number | null>(null);
 
   return (
     <section id="route" className="px-5 py-14 max-w-5xl mx-auto">
