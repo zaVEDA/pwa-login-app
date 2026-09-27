@@ -18,11 +18,11 @@ export default function GetawayHero() {
         </span>
         <h1 className="font-cormorant text-4xl md:text-6xl font-semibold leading-tight mb-5"
           style={{ color: "hsl(24 20% 13%)" }}>
-          Путешествие-перезагрузка<br />
-          <span style={{ color: "hsl(140 40% 38%)" }}>для своих</span>
+          Путешествие —<br />
+          <span style={{ color: "hsl(140 40% 38%)" }}>возвращение к себе</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed font-medium">
-          Не ретрит с программой по расписанию — а бережный выезд на природу, где можно наконец расслабиться, выспаться и услышать себя.
+          Без психологов и целей — просто время для тела, чтобы отдохнуть, и для души, чтобы наполниться. Возможность прокричаться в горах и наконец позволить себе проживать настоящие чувства.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a href="#format"
