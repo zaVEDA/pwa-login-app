@@ -309,7 +309,6 @@ export default function GetawayItinerary() {
         {dayGroups.map((group) => {
           const isOpen = openDay === group.day;
           const highlight = group.items.find((s) => s.highlight);
-          const restItems = highlight ? group.items.filter((s) => s !== highlight) : group.items;
           return (
             <div
               key={group.day}
@@ -321,7 +320,7 @@ export default function GetawayItinerary() {
                   {dayLabels[group.day] ?? `День ${group.day}`}
                 </h3>
 
-                {highlight && (
+                {highlight && !isOpen && (
                   <div className="mb-4">
                     <span
                       className="inline-block text-xs font-bold uppercase tracking-wider mb-2"
@@ -402,7 +401,7 @@ export default function GetawayItinerary() {
                   />
 
                   <div className="space-y-10">
-                    {restItems.map((stop) => (
+                    {group.items.map((stop) => (
                       <div key={stop.title} className="relative">
                         <div
                           className="absolute -left-8 md:-left-10 top-1 w-6 h-6 rounded-full flex items-center justify-center border-4"
