@@ -2,6 +2,10 @@ import Icon from "@/components/ui/icon";
 
 const CHURCH_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/f84cbca9-5a37-4c1a-921d-212a1ce131ad.png";
+const BAIKAL_SHORE_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/248c1cc8-24dc-4a8d-b960-741dd2e969c6.png";
+const OMUL_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/65456cd1-1ecc-401b-970c-619d2a53b757.png";
 
 const stops = [
   {
@@ -16,6 +20,20 @@ const stops = [
     title: "Храм Казанской иконы Божией Матери",
     text: "Усть-Куда, 1803 год. Один из старейших действующих храмов Иркутской области — тихое и намоленное место для начала пути.",
     image: CHURCH_IMAGE,
+  },
+  {
+    time: "По пути",
+    icon: "Waves",
+    title: "Выходим поздороваться с Байкалом",
+    text: "Остановимся на берегу — подышать, полюбоваться простором и сделать красивые фотографии, прежде чем ехать дальше в Аршан.",
+    image: BAIKAL_SHORE_IMAGE,
+  },
+  {
+    time: "По пути",
+    icon: "Fish",
+    title: "Покупаем омуля",
+    text: "Заедем за настоящим байкальским омулем — свежим или копчёным, чтобы попробовать в дороге и привезти гостинец.",
+    image: OMUL_IMAGE,
   },
 ];
 
