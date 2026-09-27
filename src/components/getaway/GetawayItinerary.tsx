@@ -412,13 +412,16 @@ export default function GetawayItinerary() {
                 className="w-full flex items-center justify-between gap-3 px-5 py-3 text-left border-t"
                 style={{ borderColor: "hsl(36 28% 88%)" }}
               >
-                <span className="text-sm font-medium" style={{ color: "hsl(140 40% 32%)" }}>
-                  {isOpen ? "Скрыть остальные события дня" : "Показать остальные события дня"}
+                <span
+                  className={`text-sm font-semibold ${!isOpen ? "animate-pulse" : ""}`}
+                  style={{ color: "hsl(140 40% 32%)" }}
+                >
+                  {isOpen ? "Скрыть остальные события дня" : "Показать подробнее"}
                 </span>
                 <Icon
                   name="ChevronDown"
                   size={20}
-                  className="flex-shrink-0 transition-transform duration-200"
+                  className={`flex-shrink-0 transition-transform duration-200 ${!isOpen ? "animate-pulse" : ""}`}
                   style={{ color: "hsl(140 40% 32%)", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                 />
               </button>
