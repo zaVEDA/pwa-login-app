@@ -359,6 +359,7 @@ export default function GetawayItinerary() {
                         src={img}
                         alt={`${stop.title} — фото ${idx + 1}`}
                         className="w-full aspect-[4/3] object-cover"
+                        style={img === ARSHAN_MOUNTAINS_GIRL_IMAGE ? { objectPosition: "50% 15%" } : undefined}
                       />
                     </div>
                   ))}
