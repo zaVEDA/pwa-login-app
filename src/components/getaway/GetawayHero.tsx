@@ -73,6 +73,15 @@ export default function GetawayHero() {
         />
       </div>
 
+      <div
+        className="relative z-10 max-w-xl mx-auto mt-8 p-5 rounded-2xl text-center"
+        style={{ background: "hsl(140 40% 45% / 0.08)", border: "1px solid hsl(140 30% 55% / 0.3)" }}
+      >
+        <p className="text-sm leading-relaxed" style={{ color: "hsl(24 20% 20%)" }}>
+          Октябрь — самый классный месяц для посещения Аршана: нет мошки и комаров, клещи и мишки тоже наелись и отдыхают 😉 А температура днём — ещё плюсовая.
+        </p>
+      </div>
+
       <div className="relative z-10 flex flex-wrap items-center justify-center gap-4 mt-10">
         <span
           className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-base font-semibold shadow-sm"
