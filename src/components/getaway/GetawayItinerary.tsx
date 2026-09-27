@@ -28,6 +28,8 @@ const ARSHAN_MOUNTAINS_GIRL_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/51fc9493-2e31-4011-bc52-ead7ccffdec3.jpg";
 const ARSHAN_SKY_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cb832e8e-23a9-42a2-9529-d51aeafa8e9e.jpg";
+const DATSAN_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
 
 const stops = [
   {
@@ -150,12 +152,42 @@ const stops = [
     title: "Свободное время — как душе угодно",
     text: "Можно погулять по округе, сходить на ферму маралов, съездить на источники или просто отдохнуть с книгой.",
   },
+  {
+    day: 4,
+    time: "9:00",
+    icon: "Music",
+    title: "Совместный завтрак и зарядка",
+    text: "Начинаем день вместе — лёгкая зарядка и завтрак в тёплой компании.",
+  },
+  {
+    day: 4,
+    time: "Поездка",
+    icon: "Landmark",
+    title: "Нилова пустынь и Дацан",
+    text: "Едем к целебным источникам Ниловой пустыни и знакомимся с буддийским дацаном — ярким и атмосферным местом.",
+    image: DATSAN_IMAGE,
+  },
+  {
+    day: 4,
+    time: "Прогулка",
+    icon: "Trees",
+    title: "Прогулка по эко тропе",
+    text: "Неспешная прогулка на свежем воздухе по благоустроенной эко тропе среди природы.",
+  },
+  {
+    day: 4,
+    time: "Вечер",
+    icon: "Coffee",
+    title: "Совместное чаепитие",
+    text: "Как и в предыдущие вечера, собираемся вместе за чаем — подвести итоги дня и пообщаться.",
+  },
 ];
 
 const dayLabels: Record<number, string> = {
   1: "Первый день",
   2: "Второй день",
   3: "Третий день",
+  4: "Четвёртый день",
 };
 
 export default function GetawayItinerary() {
