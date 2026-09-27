@@ -41,6 +41,8 @@ const FREE_DAY_RIVER_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cf5290e7-21b6-421c-a977-21dd5c13c4b2.png";
 const DATSAN_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
+const DATSAN_GATE_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/70a06281-1f8d-4a35-b170-1fef1eb21c73.png";
 const HEART_LAKE_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/0e7a6a7e-a921-4810-9589-0a93ab64f6a2.jpg";
 const HEART_LAKE_GIRL_IMAGE =
@@ -186,7 +188,8 @@ const stops = [
     icon: "Landmark",
     title: "Нилова пустынь и Дацан",
     text: "Едем к целебным источникам Ниловой пустыни и знакомимся с буддийским дацаном — ярким и атмосферным местом.",
-    image: DATSAN_IMAGE,
+    images: [DATSAN_IMAGE, DATSAN_GATE_IMAGE],
+    highlight: true,
   },
   {
     day: 4,
