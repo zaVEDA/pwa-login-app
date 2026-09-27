@@ -43,6 +43,8 @@ const DATSAN_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
 const DATSAN_AUTUMN_RIVER_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/55ee12c4-e190-4d76-a515-6092709a2edb.png";
+const GROUP_HUG_PHOTO_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/c84860bc-4a46-4c08-ac4c-925040760da4.jpg";
 const BAIKAL_TRIP_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/48c34a46-1f43-4e21-b527-a61085554ca3.png";
 const HEART_LAKE_IMAGE =
@@ -268,6 +270,8 @@ const stops = [
     icon: "Camera",
     title: "Фото обнимашки",
     text: "Делаем общее фото на память перед прощанием.",
+    image: GROUP_HUG_PHOTO_IMAGE,
+    highlight: true,
   },
   {
     day: 7,
