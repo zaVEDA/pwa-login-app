@@ -20,6 +20,8 @@ const GIFTS_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/5ec7b3d0-073c-4f09-ad27-b35b3e17a3f6.png";
 const CAFE_DRINKS_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/94e6a1bb-c1c0-40a1-a73f-3a1eeb9ac82a.png";
+const MORNING_DANCE_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/b6c3e6e7-564c-4d79-9392-84ebfb053036.jpg";
 
 const stops = [
   {
@@ -87,6 +89,13 @@ const stops = [
     title: "Вечернее какао, знакомство и подарочки",
     text: "Собираемся на 1,5–2 часа за какао или матчей — знакомимся друг с другом и получаем небольшие подарочки.",
     images: [MATCHA_COCOA_IMAGE, GIFTS_IMAGE],
+  },
+  {
+    time: "9:00",
+    icon: "Music",
+    title: "Зарядка и завтрак",
+    text: "Утром просыпаемся под лёгкую танцевальную зарядку на кухне, а затем вместе завтракаем.",
+    image: MORNING_DANCE_IMAGE,
   },
 ];
 
