@@ -171,6 +171,7 @@ const stops = [
     title: "Свободное время — как душе угодно",
     text: "Можно погулять по округе, сходить на ферму маралов, съездить на источники или просто отдохнуть с книгой.",
     images: [FREE_DAY_CAR_VIEW_IMAGE, FREE_DAY_BOOK_IMAGE, FREE_DAY_MARALS_IMAGE, FREE_DAY_RIVER_IMAGE],
+    highlight: true,
   },
   {
     day: 4,
