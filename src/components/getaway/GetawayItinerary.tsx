@@ -324,7 +324,7 @@ export default function GetawayItinerary() {
           style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 60% 35%)" }}
         >
           <Icon name="CalendarClock" size={13} />
-          Даты уточняются
+          Старт с 12 октября
         </span>
         <p className="text-xs text-muted-foreground">
           Расписание примерное — ориентируемся по погоде и дороге
