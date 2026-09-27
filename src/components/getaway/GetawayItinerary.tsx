@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
 const CHURCH_IMAGE =
@@ -264,7 +265,20 @@ const dayLabels: Record<number, string> = {
   7: "Седьмой день",
 };
 
+const groupByDay = () => {
+  const groups: { day: number; items: typeof stops }[] = [];
+  stops.forEach((stop) => {
+    const last = groups[groups.length - 1];
+    if (last && last.day === stop.day) last.items.push(stop);
+    else groups.push({ day: stop.day, items: [stop] });
+  });
+  return groups;
+};
+
 export default function GetawayItinerary() {
+  const dayGroups = groupByDay();
+  const [openDay, setOpenDay] = useState<number | null>(dayGroups[0]?.day ?? null);
+
   return (
     <section id="route" className="px-5 py-14 max-w-5xl mx-auto">
       <div className="text-center max-w-xl mx-auto mb-10">
@@ -290,89 +304,107 @@ export default function GetawayItinerary() {
         </p>
       </div>
 
-      <div className="relative pl-8 md:pl-10">
-        <div
-          className="absolute left-3 md:left-4 top-2 bottom-2 w-px"
-          style={{ background: "hsl(140 30% 55% / 0.35)" }}
-        />
-
-        <div className="space-y-10">
-          {stops.map((stop, index) => {
-            const isNewDay = index === 0 || stops[index - 1].day !== stop.day;
-            return (
-            <div key={stop.title}>
-              {isNewDay && (
-                <h3
-                  className="font-cormorant text-xl md:text-2xl font-bold mb-4"
-                  style={{ color: "hsl(140 40% 28%)" }}
-                >
-                  {dayLabels[stop.day] ?? `День ${stop.day}`}
-                </h3>
-              )}
-              <div className="relative">
-              <div
-                className="absolute -left-8 md:-left-10 top-1 w-6 h-6 rounded-full flex items-center justify-center border-4"
-                style={{ background: "hsl(140 40% 42%)", borderColor: "hsl(38 35% 96%)" }}
+      <div className="space-y-4">
+        {dayGroups.map((group) => {
+          const isOpen = openDay === group.day;
+          return (
+            <div
+              key={group.day}
+              className="rounded-2xl border bg-white/60 overflow-hidden"
+              style={{ borderColor: "hsl(36 28% 82%)" }}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenDay(isOpen ? null : group.day)}
+                className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
               >
-              </div>
-
-              <span
-                className="inline-block text-xs font-bold uppercase tracking-wider mb-2"
-                style={{ color: "hsl(140 40% 32%)" }}
-              >
-                {stop.time}
-              </span>
-
-              <div className="flex items-start gap-3 mb-2">
-                <div
-                  className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: "hsl(140 40% 45% / 0.12)" }}
-                >
-                  <Icon name={stop.icon} size={18} style={{ color: "hsl(140 40% 32%)" }} />
-                </div>
-                <h3 className="font-cormorant text-2xl font-semibold pt-1.5" style={{ color: "hsl(24 20% 13%)" }}>
-                  {stop.title}
+                <h3 className="font-cormorant text-xl md:text-2xl font-bold" style={{ color: "hsl(140 40% 28%)" }}>
+                  {dayLabels[group.day] ?? `День ${group.day}`}
                 </h3>
-              </div>
+                <Icon
+                  name="ChevronDown"
+                  size={20}
+                  className="flex-shrink-0 transition-transform duration-200"
+                  style={{ color: "hsl(140 40% 32%)", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
+              </button>
 
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">{stop.text}</p>
-
-              {stop.image && (
-                <div
-                  className="rounded-3xl overflow-hidden border-2 shadow-sm max-w-2xl"
-                  style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
-                >
-                  <img
-                    src={stop.image}
-                    alt={stop.title}
-                    className="w-full aspect-[16/10] object-cover"
+              {isOpen && (
+                <div className="relative pl-8 md:pl-10 pr-5 pb-6">
+                  <div
+                    className="absolute left-3 md:left-4 top-0 bottom-6 w-px"
+                    style={{ background: "hsl(140 30% 55% / 0.35)" }}
                   />
-                </div>
-              )}
 
-              {stop.images && (
-                <div className="grid grid-cols-2 gap-3 max-w-2xl">
-                  {stop.images.map((img, idx) => (
-                    <div
-                      key={img}
-                      className="rounded-2xl overflow-hidden border-2 shadow-sm"
-                      style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
-                    >
-                      <img
-                        src={img}
-                        alt={`${stop.title} — фото ${idx + 1}`}
-                        className="w-full aspect-[4/3] object-cover"
-                        style={img === ARSHAN_MOUNTAINS_GIRL_IMAGE ? { objectPosition: "50% 15%" } : undefined}
-                      />
-                    </div>
-                  ))}
+                  <div className="space-y-10">
+                    {group.items.map((stop) => (
+                      <div key={stop.title} className="relative">
+                        <div
+                          className="absolute -left-8 md:-left-10 top-1 w-6 h-6 rounded-full flex items-center justify-center border-4"
+                          style={{ background: "hsl(140 40% 42%)", borderColor: "hsl(38 35% 96%)" }}
+                        >
+                        </div>
+
+                        <span
+                          className="inline-block text-xs font-bold uppercase tracking-wider mb-2"
+                          style={{ color: "hsl(140 40% 32%)" }}
+                        >
+                          {stop.time}
+                        </span>
+
+                        <div className="flex items-start gap-3 mb-2">
+                          <div
+                            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{ background: "hsl(140 40% 45% / 0.12)" }}
+                          >
+                            <Icon name={stop.icon} size={18} style={{ color: "hsl(140 40% 32%)" }} />
+                          </div>
+                          <h4 className="font-cormorant text-2xl font-semibold pt-1.5" style={{ color: "hsl(24 20% 13%)" }}>
+                            {stop.title}
+                          </h4>
+                        </div>
+
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">{stop.text}</p>
+
+                        {stop.image && (
+                          <div
+                            className="rounded-3xl overflow-hidden border-2 shadow-sm max-w-2xl"
+                            style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+                          >
+                            <img
+                              src={stop.image}
+                              alt={stop.title}
+                              className="w-full aspect-[16/10] object-cover"
+                            />
+                          </div>
+                        )}
+
+                        {stop.images && (
+                          <div className="grid grid-cols-2 gap-3 max-w-2xl">
+                            {stop.images.map((img, idx) => (
+                              <div
+                                key={img}
+                                className="rounded-2xl overflow-hidden border-2 shadow-sm"
+                                style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+                              >
+                                <img
+                                  src={img}
+                                  alt={`${stop.title} — фото ${idx + 1}`}
+                                  className="w-full aspect-[4/3] object-cover"
+                                  style={img === ARSHAN_MOUNTAINS_GIRL_IMAGE ? { objectPosition: "50% 15%" } : undefined}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-              </div>
             </div>
-            );
-          })}
-        </div>
+          );
+        })}
       </div>
 
       <div
