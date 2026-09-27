@@ -64,7 +64,7 @@ export default function GetawayLogistics() {
   const [roomDetailsOpen, setRoomDetailsOpen] = useState(false);
 
   return (
-    <section className="px-5 py-14 max-w-5xl mx-auto">
+    <section className="px-5 pt-14 pb-6 max-w-5xl mx-auto">
       <div className="text-center max-w-xl mx-auto mb-10">
         <span className="inline-flex items-center gap-2 text-xs font-semibold mb-4 tracking-wider uppercase justify-center"
           style={{ color: "hsl(140 40% 32%)" }}>
@@ -115,7 +115,7 @@ export default function GetawayLogistics() {
       </p>
 
       <div
-        className="rounded-2xl border bg-white/60 overflow-hidden mb-10"
+        className="rounded-2xl border bg-white/60 overflow-hidden"
         style={{ borderColor: "hsl(36 28% 82%)" }}
       >
         <button
