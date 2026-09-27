@@ -25,33 +25,6 @@ export default function GetawayHero() {
           Без психологов и целей — просто время для тела, чтобы отдохнуть, и для души, чтобы наполниться. Возможность прокричаться в горах и наконец позволить себе проживать настоящие чувства.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 60% 35%)" }}
-          >
-            <Icon name="CalendarClock" size={13} />
-            Старт с 12 октября
-          </span>
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: "hsl(0 65% 55% / 0.12)", color: "hsl(0 55% 42%)" }}
-          >
-            <Icon name="Users" size={13} />
-            Мини-группа — всего 6 мест
-          </span>
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: "hsl(140 40% 45% / 0.12)", color: "hsl(140 40% 30%)" }}
-          >
-            <Icon name="Wallet" size={13} />
-            От 265 000 ₽
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground mb-8 -mt-5">
-          Количество мест ограничено — набор закрывается по факту заполнения группы
-        </p>
-
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a href="#format"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
@@ -63,6 +36,37 @@ export default function GetawayHero() {
       </div>
 
       <ImagePlaceholder label="Обложка: Байкал / Аршан" aspect="aspect-[16/9]" />
+
+      <div className="relative z-10 flex flex-wrap items-center justify-center gap-4 mt-10">
+        <span
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-base font-semibold shadow-sm"
+          style={{ background: "hsl(35 72% 48% / 0.12)", color: "hsl(35 60% 35%)" }}
+        >
+          <Icon name="CalendarClock" size={18} />
+          Старт с 12 октября
+        </span>
+        <span
+          className="relative inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-base font-bold shadow-md animate-pulse"
+          style={{
+            background: "linear-gradient(135deg, hsl(0 70% 58%), hsl(0 65% 48%))",
+            color: "white",
+            boxShadow: "0 0 0 4px hsl(0 70% 58% / 0.15), 0 4px 16px hsl(0 65% 48% / 0.35)",
+          }}
+        >
+          <Icon name="Users" size={18} />
+          Мини-группа — всего 6 мест
+        </span>
+        <span
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-base font-semibold shadow-sm"
+          style={{ background: "hsl(140 40% 45% / 0.12)", color: "hsl(140 40% 30%)" }}
+        >
+          <Icon name="Wallet" size={18} />
+          От 265 000 ₽
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground text-center mt-3">
+        Количество мест ограничено — набор закрывается по факту заполнения группы
+      </p>
     </section>
   );
 }
