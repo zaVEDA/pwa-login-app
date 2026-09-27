@@ -133,6 +133,7 @@ const stops = [
     title: "Выезжаем на источники и водопады Аршана",
     text: "Небольшой поход с потрясающими видами на горы и ущелья. А рядом можно будет купить местные чаи, ягоды и травы.",
     images: [ARSHAN_GORGE_IMAGE, ARSHAN_MOUNTAINS_GIRL_IMAGE, ARSHAN_SKY_IMAGE, ARSHAN_RIVER_IMAGE],
+    highlight: true,
   },
   {
     day: 2,
