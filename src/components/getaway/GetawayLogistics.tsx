@@ -12,6 +12,17 @@ const CAR_CROWN_BLACK_IMAGE =
 
 const carImages = [CAR_CROWN_SIDE_IMAGE, CAR_CROWN_BLACK_IMAGE, CAR_BMW_FRONT_IMAGE, CAR_INTERIOR_IMAGE];
 
+const ROOM_BED_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/aa3429c8-53ec-442e-a148-1f8e58d5ef22.png";
+const ROOM_LOUNGE_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/f31a80f6-db70-47c5-b6cc-134e51201559.png";
+const ROOM_OVERVIEW_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/68717564-0f33-48bc-8959-0f97cbc564c2.png";
+const ROOM_BATHROOM_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/db757be6-3feb-49bf-a713-cd6375467db9.png";
+
+const roomImages = [ROOM_BED_IMAGE, ROOM_LOUNGE_IMAGE, ROOM_OVERVIEW_IMAGE, ROOM_BATHROOM_IMAGE];
+
 const items = [
   { icon: "Car", title: "Доставка", text: "Организую выезд из города до места и обратно — на люксовых авто на протяжении всего путешествия." },
   { icon: "BedDouble", title: "Проживание", text: "Размещаемся в гостинице — у каждого свой номер и комфортные условия." },
@@ -35,7 +46,21 @@ export default function GetawayLogistics() {
 
       <div className="grid md:grid-cols-2 gap-8 mb-10">
         <ImagePlaceholder label="Фото: авто / дорога" />
-        <ImagePlaceholder label="Фото: номер / гостиница" />
+        <div className="grid grid-cols-2 gap-2">
+          {roomImages.map((img, idx) => (
+            <div
+              key={img}
+              className="rounded-2xl overflow-hidden border-2 shadow-sm"
+              style={{ borderColor: "hsl(140 30% 55% / 0.35)" }}
+            >
+              <img
+                src={img}
+                alt={`Номер в отеле — фото ${idx + 1}`}
+                className="w-full aspect-[4/3] object-cover"
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
