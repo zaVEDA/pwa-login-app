@@ -29,6 +29,8 @@ const ARSHAN_MOUNTAINS_GIRL_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/51fc9493-2e31-4011-bc52-ead7ccffdec3.jpg";
 const ARSHAN_SKY_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cb832e8e-23a9-42a2-9529-d51aeafa8e9e.jpg";
+const ARSHAN_RIVER_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/963e0a7a-28f1-4353-87b9-441bd7ff38d1.png";
 const DATSAN_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/a9e5f8cc-db8b-4558-8738-d95782b0a7cf.png";
 const HEART_LAKE_IMAGE =
@@ -130,7 +132,7 @@ const stops = [
     icon: "TreePine",
     title: "Выезжаем на источники и водопады Аршана",
     text: "Небольшой поход с потрясающими видами на горы и ущелья. А рядом можно будет купить местные чаи, ягоды и травы.",
-    images: [ARSHAN_GORGE_IMAGE, ARSHAN_MOUNTAINS_GIRL_IMAGE, ARSHAN_SKY_IMAGE],
+    images: [ARSHAN_GORGE_IMAGE, ARSHAN_MOUNTAINS_GIRL_IMAGE, ARSHAN_SKY_IMAGE, ARSHAN_RIVER_IMAGE],
   },
   {
     day: 2,
