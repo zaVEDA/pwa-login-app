@@ -22,6 +22,12 @@ const CAFE_DRINKS_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/94e6a1bb-c1c0-40a1-a73f-3a1eeb9ac82a.png";
 const MORNING_DANCE_IMAGE =
   "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/files/b6c3e6e7-564c-4d79-9392-84ebfb053036.jpg";
+const ARSHAN_GORGE_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/bddc5e84-2c20-4f6e-94c1-8eb9f1de79ab.jpg";
+const ARSHAN_MOUNTAINS_GIRL_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/51fc9493-2e31-4011-bc52-ead7ccffdec3.jpg";
+const ARSHAN_SKY_IMAGE =
+  "https://cdn.poehali.dev/projects/213d0799-3b2e-46b3-b3d9-f3cb0a984b4f/bucket/cb832e8e-23a9-42a2-9529-d51aeafa8e9e.jpg";
 
 const stops = [
   {
@@ -96,6 +102,13 @@ const stops = [
     title: "Зарядка и завтрак",
     text: "Утром просыпаемся под лёгкую танцевальную зарядку на кухне, а затем вместе завтракаем.",
     image: MORNING_DANCE_IMAGE,
+  },
+  {
+    time: "День 2",
+    icon: "TreePine",
+    title: "Выезжаем на источники и водопады Аршана",
+    text: "Небольшой поход с потрясающими видами на горы и ущелья. А рядом можно будет купить местные чаи, ягоды и травы.",
+    images: [ARSHAN_GORGE_IMAGE, ARSHAN_MOUNTAINS_GIRL_IMAGE, ARSHAN_SKY_IMAGE],
   },
 ];
 
