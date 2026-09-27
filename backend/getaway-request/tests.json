@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing fields returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Invalid phone returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Иван", "phone": "123", "email": "test@test.ru", "guests": "2"},
+      "expectedStatus": 400
+    }
+  ]
+}

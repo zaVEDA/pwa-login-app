@@ -28,11 +28,17 @@ export default function GetawayHero() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="#format"
+          <a href="#route"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
             style={{ background: "linear-gradient(135deg, hsl(140 40% 42%), hsl(140 40% 32%))", color: "white" }}>
             <Icon name="Compass" size={16} />
             Узнать подробнее
+          </a>
+          <a href="#signup"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm shadow-md transition-all hover:shadow-lg hover:scale-[1.02] border-2"
+            style={{ borderColor: "hsl(140 40% 42%)", color: "hsl(140 40% 30%)", background: "white" }}>
+            <Icon name="Send" size={16} />
+            Записаться
           </a>
         </div>
       </div>
